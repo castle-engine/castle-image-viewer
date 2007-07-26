@@ -468,7 +468,7 @@ procedure MenuCommand(glwin: TGLWindow; Item: TMenuItem);
         [ Iff(IsImageValid, ImageFileName, '<error>'),
           Image.Width, Image.Height ]),
       ''], SList);
-    Strings_AddCamelotProgramHelpSuffix(SList,
+    Strings_AddVrmlEngineProgramHelpSuffix(SList,
       DisplayProgramName, Version, false);
     AddStrArrayToStrings([
       '',
@@ -657,7 +657,7 @@ begin
         nl+
         'By default, window size will be the same as of the first loaded image.'+nl+
         nl+
-        SCamelotProgramHelpSuffix(DisplayProgramName, Version, true)]);
+        SVrmlEngineProgramHelpSuffix(DisplayProgramName, Version, true)]);
 
       ProgramBreak;
      end;
