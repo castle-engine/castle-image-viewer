@@ -25,7 +25,7 @@ program glViewImage;
 uses GLWindow, OpenGLh, KambiGLUtils, SysUtils, KambiUtils, Images,
   OpenGLBmpFonts, OpenGLFonts, Math, Classes, KambiClassUtils, GLW_Demo,
   GLWinMessages, ImageLoading, ParseParametersUnit, ImageInvalid, EnumerateFiles,
-  VectorMath, KambiStringUtils;
+  VectorMath, KambiStringUtils, DataErrors;
 
 var
   MoveX: TGLfloat = 0;
@@ -675,6 +675,8 @@ var
   i: Integer;
   SpecifiedOptions: TGLWindowParseOptions;
 begin
+ DataNonFatalError := @DataNonFatalError_WarningWrite;
+
  ImageNamesList := TStringList.Create;
  try
   { init menu things. We must do it before we add something to ImageNamesList,

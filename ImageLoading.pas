@@ -215,8 +215,8 @@ procedure CreateGLImage;
 { wywolaj to ZAWSZE po udanym (bez wyjatkow) SetImageBegin. }
 begin
  DestroyGLImage;
- dlDrawImage := ImageDrawToDispList(Image);
- dlDrawImageExpand := ImageDrawToDispList(ImageExpand);
+ dlDrawImage := ImageDrawToDisplayList(Image);
+ dlDrawImageExpand := ImageDrawToDisplayList(ImageExpand);
 end;
 
 procedure DestroyGLImage;
