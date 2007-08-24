@@ -747,7 +747,7 @@ end.
 
 {
   Local Variables:
-  kam-compile-release-command-win32: "clean_glwindow_unit && fpcreleaseb"
-  kam-compile-release-command-unix: "clean_glwindow_unit && fpcreleaseb"
+  kam-compile-release-command-unix:  "./compile.sh && mv -fv glViewImage      ~/bin/"
+  kam-compile-release-command-win32: "./compile.sh && mv -fv glViewImage.exe c:/bin/"
   End:
 }
