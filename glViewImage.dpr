@@ -216,7 +216,7 @@ begin
  begin
   { Note: When this is compiled with GLWINDOW_GTK_1 implementation under Linux
     we need this workaround below for bug that seems to be in GtkGLArea
-    (since it doesn't occur with GLWINDOW_(GTK_2|XLIB) or Win32).
+    (since it doesn't occur with GLWINDOW_(GTK_2|XLIB) or WinAPI).
     It's commented by default, since GLWINDOW_GTK_2 is stable
     and is recommended now (since 2005-02-13).
   glClear(GL_COLOR_BUFFER_BIT); }
@@ -747,7 +747,7 @@ end.
 
 {
   Local Variables:
-  kam-compile-release-command-unix:  "./compile.sh && mv -fv glViewImage      ~/bin/"
-  kam-compile-release-command-win32: "./compile.sh && mv -fv glViewImage.exe c:/bin/"
+  kam-compile-release-command-unix:    "./compile.sh && mv -fv glViewImage      ~/bin/"
+  kam-compile-release-command-windows: "./compile.sh && mv -fv glViewImage.exe c:/bin/"
   End:
 }
