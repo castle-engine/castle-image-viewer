@@ -25,7 +25,7 @@ program glViewImage;
 uses GLWindow, OpenGLh, KambiGLUtils, SysUtils, KambiUtils, Images,
   OpenGLBmpFonts, OpenGLFonts, Math, Classes, KambiClassUtils, GLW_Demo,
   GLWinMessages, ImageLoading, ParseParametersUnit, ImageInvalid, EnumerateFiles,
-  VectorMath, KambiStringUtils, DataErrors;
+  VectorMath, KambiStringUtils, DataErrors, GLImages;
 
 var
   MoveX: TGLfloat = 0;

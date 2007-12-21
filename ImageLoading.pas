@@ -34,7 +34,7 @@ interface
 
 uses
   OpenGLh, KambiGLUtils, SysUtils, KambiUtils, Images, Math, Classes,
-  KambiClassUtils, GLWinMessages, ImageInvalid, GLWindow;
+  KambiClassUtils, GLWinMessages, ImageInvalid, GLWindow, GLImages;
 
 { Below is "image state". The idea is that for the whole time of a program
   this module manages one image. An image is:
