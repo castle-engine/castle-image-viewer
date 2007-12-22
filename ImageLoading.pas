@@ -33,7 +33,7 @@ unit ImageLoading;
 interface
 
 uses
-  OpenGLh, KambiGLUtils, SysUtils, KambiUtils, Images, Math, Classes,
+  GL, GLU, GLExt, KambiGLUtils, SysUtils, KambiUtils, Images, Math, Classes,
   KambiClassUtils, GLWinMessages, ImageInvalid, GLWindow, GLImages;
 
 { Below is "image state". The idea is that for the whole time of a program

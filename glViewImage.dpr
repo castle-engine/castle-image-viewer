@@ -22,7 +22,7 @@ program glViewImage;
 
 {$apptype GUI}
 
-uses GLWindow, OpenGLh, KambiGLUtils, SysUtils, KambiUtils, Images,
+uses GLWindow, GL, GLU, GLExt, KambiGLUtils, SysUtils, KambiUtils, Images,
   OpenGLBmpFonts, OpenGLFonts, Math, Classes, KambiClassUtils, GLW_Demo,
   GLWinMessages, ImageLoading, ParseParametersUnit, ImageInvalid, EnumerateFiles,
   VectorMath, KambiStringUtils, DataErrors, GLImages;
