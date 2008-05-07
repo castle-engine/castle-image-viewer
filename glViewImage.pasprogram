@@ -422,8 +422,6 @@ procedure MenuCommand(glwin: TGLWindow; Item: TMenuItem);
    if IsImageValid then
    begin
     FileName := ImageFileName;
-    { TODO: this dialog is somewhat stupid for now, since changing file type only changes
-      visible files, doesn't actually change filename extension. }
     if glwin.FileDialog('Save image to file', FileName, false, SaveImage_FileFilters) then
      SaveImage(Image, FileName);
    end else
