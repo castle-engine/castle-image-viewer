@@ -25,7 +25,7 @@ program glViewImage;
 uses GLWindow, GL, GLU, GLExt, KambiGLUtils, SysUtils, KambiUtils, Images,
   OpenGLBmpFonts, OpenGLFonts, Math, Classes, KambiClassUtils, GLW_Demo,
   GLWinMessages, ImageLoading, ParseParametersUnit, ImageInvalid, EnumerateFiles,
-  VectorMath, KambiStringUtils, DataErrors, GLImages;
+  VectorMath, KambiStringUtils, DataErrors, GLImages, GLWindowFileFilters;
 
 var
   MoveX: TGLfloat = 0;
@@ -422,7 +422,9 @@ procedure MenuCommand(glwin: TGLWindow; Item: TMenuItem);
    if IsImageValid then
    begin
     FileName := ImageFileName;
-    if glwin.FileDialog('Save image to file', FileName, false) then
+    { TODO: this dialog is somewhat stupid for now, since changing file type only changes
+      visible files, doesn't actually change filename extension. }
+    if glwin.FileDialog('Save image to file', FileName, false, SaveImage_FileFilters) then
      SaveImage(Image, FileName);
    end else
     MessageOK(glwin, 'No valid image loaded', taMiddle);
@@ -440,7 +442,7 @@ procedure MenuCommand(glwin: TGLWindow; Item: TMenuItem);
    if IsImageValid then
     FileName := ExtractFilePath(ImageFileName) else
     FileName := '';
-   if glwin.FileDialog('Load image from file', FileName, true) then
+   if glwin.FileDialog('Load image from file', FileName, true, LoadRGBImage_FileFilters) then
    begin
     ImageNamesList.Insert(ImageNamesListPos+1, FileName);
     ImageNamesListChanged;
