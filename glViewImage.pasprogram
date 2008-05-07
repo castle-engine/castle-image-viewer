@@ -426,12 +426,6 @@ procedure MenuCommand(glwin: TGLWindow; Item: TMenuItem);
      SaveImage(Image, FileName);
    end else
     MessageOK(glwin, 'No valid image loaded', taMiddle);
-
-   { I should say here something like
-     'Image format will be recognized from filename''s extension :' +nl+
-     ListImageExtsLong(false, true, '  ') +nl+
-     ', unrecognized extension will mean BMP format.)'
-   }
   end;
 
   procedure ImageOpen;
