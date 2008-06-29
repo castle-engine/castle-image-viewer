@@ -366,10 +366,16 @@ begin
   scale_up := 1 + SCALE_FACTOR * glw.IdleSpeed * 50;
   scale_down := 1 / scale_up;
 
-  if KeysDown[K_Numpad_Plus] then
+  if KeysDown[K_Numpad_Plus] or
+     KeysDown[K_Plus] or
+     CharactersDown['+'] then
    begin MultZoomGL(ZoomX, scale_up);   MultZoomGL(ZoomY, scale_up); end;
-  if KeysDown[K_Numpad_Minus] then
+
+  if KeysDown[K_Numpad_Minus] or
+     KeysDown[K_Minus] or
+     CharactersDown['-'] then
    begin MultZoomGL(ZoomX, scale_down); MultZoomGL(ZoomY, scale_down); end;
+
   if KeysDown[K_x] then
    if KeysDown[K_Shift] then
     MultZoomGL(ZoomX, scale_up) else
