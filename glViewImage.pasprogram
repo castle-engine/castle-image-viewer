@@ -348,7 +348,7 @@ procedure IdleGL(glwin: TGLWindow);
 
   procedure MoveGL(var value: TGLfloat; change: TGLfloat);
   begin
-   change *= 8*glwin.FpsCompSpeed;
+   change *= 8*glwin.IdleSpeed * 50;
    if glw.KeysDown[k_Ctrl] then change *= 10;
    value += change;
    glw.PostRedisplay;
@@ -363,7 +363,7 @@ begin
   if KeysDown[K_Right] then moveGL(MoveX, -1 / zoomX);
   if KeysDown[K_Left] then moveGL(MoveX, 1 / zoomX);
 
-  scale_up := 1 + SCALE_FACTOR * glw.FpsCompSpeed;
+  scale_up := 1 + SCALE_FACTOR * glw.IdleSpeed * 50;
   scale_down := 1 / scale_up;
 
   if KeysDown[K_Numpad_Plus] then
