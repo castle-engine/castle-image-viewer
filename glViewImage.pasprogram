@@ -584,14 +584,14 @@ begin
    M.Append(TMenuItem.Create('_Grayscale',                          410));
    M.Append(TMenuSeparator.Create);
    M.Append(TMenuItem.Create('Convert to _red channel',             420));
-   M.Append(TMenuItem.Create('Convert to _green channel',           421));
+   M.Append(TMenuItem.Create('Convert to gr_een channel',           421));
    M.Append(TMenuItem.Create('Convert to _blue channel',            422));
    M.Append(TMenuSeparator.Create);
    M.Append(TMenuItem.Create('Strip to red channel',                430));
    M.Append(TMenuItem.Create('Strip to green channel',              431));
    M.Append(TMenuItem.Create('Strip to blue channel',               432));
    M.Append(TMenuSeparator.Create);
-   M.Append(TMenuItem.Create('Mirror horizontally',                 440));
+   M.Append(TMenuItem.Create('_Mirror horizontally',                 440));
    { TODO: too lazy to implement it right now.
    M.Append(TMenuItem.Create('Mirror vertically',                   441));
    }
