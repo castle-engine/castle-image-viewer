@@ -348,7 +348,7 @@ procedure IdleGL(glwin: TGLWindow);
 
   procedure MoveGL(var value: TGLfloat; change: TGLfloat);
   begin
-   change *= 8*glwin.IdleSpeed * 50;
+   change *= 8*glwin.Fps.IdleSpeed * 50;
    if glw.KeysDown[k_Ctrl] then change *= 10;
    value += change;
    glw.PostRedisplay;
@@ -363,7 +363,7 @@ begin
   if KeysDown[K_Right] then moveGL(MoveX, -1 / zoomX);
   if KeysDown[K_Left] then moveGL(MoveX, 1 / zoomX);
 
-  scale_up := 1 + SCALE_FACTOR * glw.IdleSpeed * 50;
+  scale_up := 1 + SCALE_FACTOR * glw.Fps.IdleSpeed * 50;
   scale_down := 1 / scale_up;
 
   if KeysDown[K_Numpad_Plus ] or KeysDown[K_Plus ] or CharactersDown['+'] then
@@ -738,7 +738,7 @@ begin
   glw.OnClose := @CloseGL;
   glw.OnResize := @Resize2D;
 
-  glw.FpsActive := true;
+  glw.Fps.Active := true;
   glw.DepthBufferBits := 0; { depth buffer not needed here }
   glw.SetDemoOptions(K_None, #0, false);
   glw.InitLoop;
