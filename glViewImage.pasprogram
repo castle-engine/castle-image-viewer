@@ -677,7 +677,7 @@ var
   i: Integer;
   SpecifiedOptions: TGLWindowParseOptions;
 begin
- DataNonFatalError := @DataNonFatalError_WarningWrite;
+ DataWarning := @DataWarning_Write;
 
  ImageNamesList := TStringList.Create;
  try
