@@ -544,6 +544,25 @@ begin
          RemakeImageExpand;
          CreateGLImage;
        end;}
+
+  450: begin
+         DestroyGLImage;
+         Image.Rotate(1);
+         RemakeImageExpand;
+         CreateGLImage;
+       end;
+  451: begin
+         DestroyGLImage;
+         Image.Rotate(2);
+         RemakeImageExpand;
+         CreateGLImage;
+       end;
+  452: begin
+         DestroyGLImage;
+         Image.Rotate(3);
+         RemakeImageExpand;
+         CreateGLImage;
+       end;
   else
    SetImageNamesListPos(Item.IntData - 10000);
  end;
@@ -595,6 +614,10 @@ begin
    { TODO: too lazy to implement it right now.
    M.Append(TMenuItem.Create('Mirror vertically',                   441));
    }
+   M.Append(TMenuSeparator.Create);
+   M.Append(TMenuItem.Create('Rotate 90 Degrees (Clockwise)', 450));
+   M.Append(TMenuItem.Create('Rotate 180 Degrees', 451));
+   M.Append(TMenuItem.Create('Rotate 90 Degrees (Counter-Clockwise)', 452));
    Result.Append(M);
  M := TMenu.Create('Image _list');
  ImageListMenu := M;
