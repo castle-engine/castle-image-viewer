@@ -442,7 +442,7 @@ procedure MenuCommand(glwin: TGLWindow; Item: TMenuItem);
    if IsImageValid then
     FileName := ExtractFilePath(ImageFileName) else
     FileName := '';
-   if glwin.FileDialog('Load image from file', FileName, true, LoadRGBImage_FileFilters) then
+   if glwin.FileDialog('Load image from file', FileName, true, LoadImage_FileFilters) then
    begin
     ImageNamesList.Insert(ImageNamesListPos+1, FileName);
     ImageNamesListChanged;
@@ -466,9 +466,9 @@ procedure MenuCommand(glwin: TGLWindow; Item: TMenuItem);
       '  x / X             scale only horizontally,',
       '  y / Y             scale only vertically,',
       '',
-      Format('Image %s, width %d, height %d.',
+      Format('Image %s, class %s, width %d, height %d.',
         [ Iff(IsImageValid, ImageFileName, '<error>'),
-          Image.Width, Image.Height ]),
+          Image.ClassName, Image.Width, Image.Height ]),
       ''], SList);
     Strings_AddVrmlEngineProgramHelpSuffix(SList,
       DisplayProgramName, Version, false);
@@ -478,6 +478,13 @@ procedure MenuCommand(glwin: TGLWindow; Item: TMenuItem);
     SList.AddStrings(ImageNamesList);
     MessageOK(glwin, SList, taLeft);
    finally SList.Free end;
+  end;
+
+  function CheckNotGrayscale: boolean;
+  begin
+    Result := (Image is TRGBImage) or (Image is TRGBAlphaImage);
+    if not Result then
+      MessageOk(Glwin, 'This function is not available for grayscale images.');
   end;
 
 var change: TGLfloat;
@@ -512,13 +519,15 @@ begin
   310: ChangeImageNamesListPos(-1);
   311: ChangeImageNamesListPos(+1);
 
-  410: begin
+  410: if CheckNotGrayscale then
+       begin
         DestroyGLImage;
         Image.Grayscale;
         ImageExpand.Grayscale;
         CreateGLImage;
        end;
   420..422:
+       if CheckNotGrayscale then
        begin
         DestroyGLImage;
         Image.ConvertToChannelRGB(Item.IntData - 420);
@@ -526,6 +535,7 @@ begin
         CreateGLImage;
        end;
   430..432:
+       if CheckNotGrayscale then
        begin
         DestroyGLImage;
         Image.StripToChannelRGB(Item.IntData - 430);

@@ -45,7 +45,7 @@ uses
      and you can freely switch from one gl context to another without
      having to change these things. }
 var
-  Image: TRGBImage;
+  Image: TImage;
 
   { ImageExpand to ten sam image co Image ale rozszerzony o jedna kolumne wiecej
     i jeden wiersz wiecej (ostatnia kolumna i ostatni wiersz sa powielone na koncu).
@@ -65,7 +65,7 @@ var
     o ostatnia kolumne. Jezeli rysy by tam nie bylo to ta ostatnia kolumna
     zostanie przykrywa przez poczatek rysunku obok, wpp. ostatnia kolumna
     zamaluje nam miejsce gdzie bylaby rysa. }
-  ImageExpand: TRGBImage;
+  ImageExpand: TImage;
 
   { This is not valid when not IsImageValid }
   ImageFileName: string;
@@ -82,7 +82,7 @@ procedure CreateNonGLImage(glwin: TGLWindow; const fname: string); overload;
 { About this version of CreateNonGLImage: you can give already loaded
   image. After calling this CreateNonGLImage you must STOP managing
   this NewImage - it will be managed (and freed) by this unit. }
-procedure CreateNonGLImage(glwin: TGLWindow; const NewImage: TRGBImage;
+procedure CreateNonGLImage(glwin: TGLWindow; const NewImage: TImage;
   const NewImageFileName: string); overload;
 
 { ErrorFileName is used for glwin.Caption suffix,
@@ -169,15 +169,15 @@ end;
 procedure RemakeImageExpand;
 begin
   FreeAndNil(ImageExpand);
-  ImageExpand := ImageDuplicatedLastRowCol(Image) as TRGBImage;
+  ImageExpand := ImageDuplicatedLastRowCol(Image);
 end;
 
-procedure InternalCreateNonGLImage(glwin: TGLWindow; const NewImage: TRGBImage;
+procedure InternalCreateNonGLImage(glwin: TGLWindow; const NewImage: TImage;
   const NewImageFileName: string; NewIsImageValid: boolean);
 begin
  DestroyNonGLImage;
  Image := NewImage;
- ImageExpand := ImageDuplicatedLastRowCol(Image) as TRGBImage;
+ ImageExpand := ImageDuplicatedLastRowCol(Image);
  ImageFileName := NewImageFileName;
  IsImageValid := NewIsImageValid;
  if IsImageValid then
@@ -187,10 +187,10 @@ end;
 
 procedure CreateNonGLImage(glwin: TGLWindow; const fname: string);
 begin
- InternalCreateNonGLImage(glwin, LoadRGBImage(fname), fname, true);
+ InternalCreateNonGLImage(glwin, LoadImage(fname, GLImageClasses, []), fname, true);
 end;
 
-procedure CreateNonGLImage(glwin: TGLWindow; const NewImage: TRGBImage;
+procedure CreateNonGLImage(glwin: TGLWindow; const NewImage: TImage;
   const NewImageFileName: string);
 begin
  InternalCreateNonGLImage(glwin, NewImage, NewImageFileName, true);
@@ -199,7 +199,7 @@ end;
 procedure CreateNonGLImageInvalid(glwin: TGLWindow;
   const ErrorFileName: string);
 begin
- InternalCreateNonGLImage(glwin, Invalid.MakeCopy as TRGBImage, ErrorFileName, false);
+ InternalCreateNonGLImage(glwin, Invalid.MakeCopy, ErrorFileName, false);
 end;
 
 procedure DestroyNonGLImage;
@@ -229,7 +229,7 @@ end;
 
 procedure CreateImage(glwin: TGLWindow; const fname: string; OnFailSetNone: boolean);
 
-  procedure SetImage(glwin: TGLWindow; const newImage: TRGBImage);
+  procedure SetImage(glwin: TGLWindow; const newImage: TImage);
   begin
    { We call Destroy[Non]GLImage ourselves, not using the fact that
      each CreateXxx calls appropriate DestroyXxx. This is because
@@ -250,10 +250,10 @@ procedure CreateImage(glwin: TGLWindow; const fname: string; OnFailSetNone: bool
    CreateGLImage;
   end;
 
-var newImage: TRGBImage;
+var newImage: TImage;
 begin
  try
-  newImage := LoadRGBImage(fname);
+  newImage := LoadImage(fname, GLImageClasses, []);
  except
   on E: Exception do
   begin
