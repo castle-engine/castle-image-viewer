@@ -431,7 +431,12 @@ procedure MenuCommand(glwin: TGLWindow; Item: TMenuItem);
    begin
     FileName := ImageFileName;
     if glwin.FileDialog('Save image to file', FileName, false, SaveImage_FileFilters) then
-     SaveImage(Image, FileName);
+    try
+      SaveImage(Image, FileName);
+    except
+      on E: EUnableToSaveImage do
+        MessageOk(Glwin, Format('Saving image "%s" failed: %s', [FileName, E.Message]), taLeft);
+    end;
    end else
     MessageOK(glwin, 'No valid image loaded', taMiddle);
   end;
