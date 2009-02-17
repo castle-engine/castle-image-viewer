@@ -31,6 +31,7 @@ var
   MoveX: TGLfloat = 0;
   MoveY: TGLfloat = 0;
   DrawTiled: boolean = false;
+  BackgroundColor: TVector3Single;
 
 { Lista nazw obrazkow --------------------------------------------------------
 
@@ -180,6 +181,12 @@ procedure DrawGL(glwin: TGLWindow);
 
    glRasterPos2f(rx, ry);
 
+   if Image.HasAlpha then
+   begin
+     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+     glEnable(GL_BLEND);
+   end;
+
    { uzywanie display listy kiedy tylko mozemy pozwala nam znacznie przyspieszyc
      rysowanie image'ow (zwlaszcza gdy mamy male zoom i widac bardzo wiele
      obrazkow w okienku (zdecydowana wiekszosc z nich bedzie mogla byc rysowana
@@ -195,6 +202,9 @@ procedure DrawGL(glwin: TGLWindow);
      glCallList(dlDrawImage) else
      ImageDrawCutted(Image, cutX, cutY);
    end;
+
+   if Image.HasAlpha then
+     glDisable(GL_BLEND);
   end;
 
 var visibleXStart, visibleXEnd,
@@ -212,15 +222,12 @@ begin
  Width := Image.Width;
  Height := Image.Height;
 
+ { Clear color buffer bit, even when DrawTiled --- because image may
+   have alpha channel, and then background is visible. }
+ glClear(GL_COLOR_BUFFER_BIT);
+
  if DrawTiled then
  begin
-  { Note: When this is compiled with GLWINDOW_GTK_1 implementation under Linux
-    we need this workaround below for bug that seems to be in GtkGLArea
-    (since it doesn't occur with GLWINDOW_(GTK_2|XLIB) or WinAPI).
-    It's commented by default, since GLWINDOW_GTK_2 is stable
-    and is recommended now (since 2005-02-13).
-  glClear(GL_COLOR_BUFFER_BIT); }
-
   { MoveX to wspolrzedna X zasadniczego obrazka (tego ktory bylby
     wyswietlany z not DrawTiled). Znajdujemy i0 takie ze jest to najwieksze
     i dla ktorego (MoveX + i*Width)*zoomX <= 0 a wiec jest to
@@ -261,8 +268,6 @@ begin
   glDisable(GL_SCISSOR_TEST);
  end else
  begin
-  glClear(GL_COLOR_BUFFER_BIT);
-
   visibleXStart := -Round(MoveX);
   visibleXEnd   := Round(glwin.width/zoomX - MoveX);
   visibleYStart := -Round(MoveY);
@@ -417,7 +422,12 @@ begin
  while ImageListMenu.EntriesCount > 3 do
   ImageListMenu.EntryDelete(3);
 
- for i := 0 to ImageNamesList.Count-1 do
+ { Do not load all ImageNamesList.Count to the menu,
+   as this makes menu very large, making updating it (e.g. when user
+   loads new image) time-consuming, and it's not possible to navigate
+   it anyway. }
+
+ for i := 0 to Min(ImageNamesList.Count, 20) - 1 do
   ImageListMenu.Append(TMenuItem.Create(
     SQuoteMenuEntryCaption(ImageNamesList[i]), 10000 + i));
 end;
@@ -521,6 +531,9 @@ begin
        end;
   250: glw.SwapFullScreen;
 
+  260: if glwin.ColorDialog(BackgroundColor) then
+         glClearColor(BackgroundColor[0], BackgroundColor[1], BackgroundColor[2], 1);
+
   310: ChangeImageNamesListPos(-1);
   311: ChangeImageNamesListPos(+1);
 
@@ -610,6 +623,8 @@ begin
      DrawTiled, true));
    M.Append(TMenuSeparator.Create);
    M.Append(TMenuItem.Create('No _zoom and no translation',         240, K_Home));
+   M.Append(TMenuSeparator.Create);
+   M.Append(TMenuItem.Create('Background color ...',                260));
    M.Append(TMenuSeparator.Create);
    M.Append(TMenuItemChecked.Create('_FullScreen on/off',           250, K_F11,
      glw.FullScreen, true));
