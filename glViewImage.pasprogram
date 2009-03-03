@@ -419,8 +419,8 @@ var
 procedure ImageNamesListChanged;
 var i: Integer;
 begin
- while ImageListMenu.EntriesCount > 3 do
-  ImageListMenu.EntryDelete(3);
+ while ImageListMenu.EntriesCount > 6 do
+  ImageListMenu.EntryDelete(6);
 
  { Do not load all ImageNamesList.Count to the menu,
    as this makes menu very large, making updating it (e.g. when user
@@ -517,6 +517,15 @@ procedure MenuCommand(glwin: TGLWindow; Item: TMenuItem);
       MessageOk(Glwin, 'This function is not available for grayscale images.');
   end;
 
+  procedure EasyChangeDDSImageIndex(Change: Integer);
+  begin
+    if DDSImage <> nil then
+      ChangeDDSImageIndex(Glwin, ChangeIntCycle(
+        DDSImageIndex, Change, DDSImage.ImagesCount - 1)) else
+      MessageOk(Glwin, 'Available only for DDS images.');
+  end;
+
+
 var change: TGLfloat;
 begin
  case Item.IntData of
@@ -550,6 +559,9 @@ begin
 
   310: ChangeImageNamesListPos(-1);
   311: ChangeImageNamesListPos(+1);
+
+  320: EasyChangeDDSImageIndex(-1);
+  321: EasyChangeDDSImageIndex(+1);
 
   410: if CheckNotGrayscale then
        begin
@@ -665,6 +677,9 @@ begin
    Result.Append(M);
  M := TMenu.Create('_Images');
  ImageListMenu := M;
+   M.Append(TMenuItem.Create('_Previous subimage in DDS', 320, CtrlP));
+   M.Append(TMenuItem.Create('_Next subimage in DDS',     321, CtrlN));
+   M.Append(TMenuSeparator.Create);
    M.Append(TMenuItem.Create('_Previous image', 310, 'p'));
    M.Append(TMenuItem.Create('_Next image',     311, 'n'));
    M.Append(TMenuSeparator.Create);

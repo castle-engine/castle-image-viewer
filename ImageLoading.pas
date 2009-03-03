@@ -325,6 +325,8 @@ begin
 
   RemakeImageExpand;
 
+  CreateGLImage;
+
   UpdateCaption(Glwin);
 end;
 
