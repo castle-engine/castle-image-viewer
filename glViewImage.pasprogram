@@ -53,12 +53,12 @@ var
   ImageNamesListPos: Integer = 0; { change this only with SetImageNameListPos }
 
 { This changes ImageNamesListPos and tries to load newly choosen image
-  using CreateImage(glw, ImageNamesList[ImageNamesListPos], true).
+  using CreateImage(glw, ImageNamesList[ImageNamesListPos]).
   Then PostRedisplay; }
 procedure SetImageNamesListPos(NewValue: Integer);
 begin
  ImageNamesListPos := NewValue;
- CreateImage(glw, ImageNamesList[ImageNamesListPos], true);
+ CreateImage(glw, ImageNamesList[ImageNamesListPos]);
  glw.PostRedisplay;
 end;
 
@@ -464,11 +464,27 @@ procedure MenuCommand(glwin: TGLWindow; Item: TMenuItem);
     ChangeImageNamesListPos(+1);
 
     { temporary unused code: this is how to open an image without adding it to
-      ImageNamesList: CreateImage(glwin, FileName, false); }
+      ImageNamesList: CreateImage(glwin, FileName); }
    end;
   end;
 
-  procedure ShowHelp;
+  procedure ShowImageInfo;
+  var
+    S: string;
+  begin
+    if IsImageValid then
+      S := Format(
+        'File name: %s' + NL +
+        'Class: %s' +NL +
+        'Width x height: %d x %d',
+        [ImageFileName, Image.ClassName, Image.Width, Image.Height]) else
+      S := '<invalid image file>';
+    if DDSImage <> nil then
+      S += NL + Format('DDS subimage: %d', [DDSImageIndex]);
+    MessageOK(Glwin, S, taLeft);
+   end;
+
+  procedure ShowAbout;
   var SList: TStringList;
   begin
    SList := TStringList.Create;
@@ -480,17 +496,16 @@ procedure MenuCommand(glwin: TGLWindow; Item: TMenuItem);
       '  - / +             scale image,',
       '  x / X             scale only horizontally,',
       '  y / Y             scale only vertically,',
-      '',
-      Format('Image %s, class %s, width %d, height %d.',
-        [ Iff(IsImageValid, ImageFileName, '<error>'),
-          Image.ClassName, Image.Width, Image.Height ]),
       ''], SList);
     Strings_AddVrmlEngineProgramHelpSuffix(SList,
       DisplayProgramName, Version, false);
+
+    { Don't show this, long and useless for normal user:
     AddStrArrayToStrings([
       '',
       Format('Image list (%d images) :', [ImageNamesList.Count])], SList);
-    SList.AddStrings(ImageNamesList);
+    SList.AddStrings(ImageNamesList); }
+
     MessageOK(glwin, SList, taLeft);
    finally SList.Free end;
   end;
@@ -507,7 +522,6 @@ begin
  case Item.IntData of
   110: ImageOpen;
   120: ImageSave;
-  130: ShowHelp;
   140: glwin.Close;
 
   210: begin
@@ -591,6 +605,8 @@ begin
          RemakeImageExpand;
          CreateGLImage;
        end;
+  510: ShowImageInfo;
+  520: ShowAbout;
   else
    SetImageNamesListPos(Item.IntData - 10000);
  end;
@@ -607,8 +623,6 @@ begin
  M := TMenu.Create('_File');
    M.Append(TMenuItem.Create('_Open ...',                 110, CtrlO));
    M.Append(TMenuItem.Create('_Save ...',                 120, CtrlS));
-   M.Append(TMenuSeparator.Create);
-   M.Append(TMenuItem.Create('Show _help and image info', 130, K_F1));
    M.Append(TMenuSeparator.Create);
    M.Append(TMenuItem.Create('_Exit',                     140, CharEscape));
    Result.Append(M);
@@ -649,11 +663,16 @@ begin
    M.Append(TMenuItem.Create('Rotate 180 Degrees', 451));
    M.Append(TMenuItem.Create('Rotate 90 Degrees (Counter-Clockwise)', 452));
    Result.Append(M);
- M := TMenu.Create('Image _list');
+ M := TMenu.Create('_Images');
  ImageListMenu := M;
    M.Append(TMenuItem.Create('_Previous image', 310, 'p'));
    M.Append(TMenuItem.Create('_Next image',     311, 'n'));
    M.Append(TMenuSeparator.Create);
+   Result.Append(M);
+ M := TMenu.Create('_Help');
+   M.Append(TMenuItem.Create('Image Information', 510, CtrlI));
+   M.Append(TMenuSeparator.Create);
+   M.Append(TMenuItem.Create('About glViewImage', 520));
    Result.Append(M);
 end;
 
