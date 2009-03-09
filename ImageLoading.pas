@@ -315,7 +315,7 @@ end;
 procedure ChangeDDSImageIndex(Glwin: TGLWindow; NewIndex: Cardinal);
 begin
   Assert(DDSImage <> nil);
-  Assert(NewIndex < DDSImage.ImagesCount);
+  Assert(NewIndex < DDSImage.Images.Count);
   Assert(IsImageValid); { IsImageValid = always true when DDSImage <> nil }
 
   DestroyGLImage;

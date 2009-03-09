@@ -442,7 +442,19 @@ procedure MenuCommand(glwin: TGLWindow; Item: TMenuItem);
     FileName := ImageFileName;
     if glwin.FileDialog('Save image to file', FileName, false, SaveImage_FileFilters) then
     try
-      SaveImage(Image, FileName);
+      if DDSImage <> nil then
+      begin
+        if FileExtToImageFormatDef(ExtractFileExt(FileName), false, false,
+          ifBMP) = ifDDS then
+        begin
+          DDSImage.SaveToFile(FileName);
+        end else
+        begin
+          if MessageYesNo(Glwin, 'DDS image is composed from many single (normal, simple, 2D) images. Saving from DDS image to other file format will only save the current single image layer. Continue?', taLeft) then
+            SaveImage(Image, FileName);
+        end;
+      end else
+        SaveImage(Image, FileName);
     except
       on E: EUnableToSaveImage do
         MessageOk(Glwin, Format('Saving image "%s" failed: %s', [FileName, E.Message]), taLeft);
@@ -521,10 +533,9 @@ procedure MenuCommand(glwin: TGLWindow; Item: TMenuItem);
   begin
     if DDSImage <> nil then
       ChangeDDSImageIndex(Glwin, ChangeIntCycle(
-        DDSImageIndex, Change, DDSImage.ImagesCount - 1)) else
+        DDSImageIndex, Change, DDSImage.Images.Count - 1)) else
       MessageOk(Glwin, 'Available only for DDS images.');
   end;
-
 
 var change: TGLfloat;
 begin
