@@ -195,12 +195,12 @@ procedure DrawGL(glwin: TGLWindow);
    begin
     if (cutx = 0) and (cuty = 0) then
      glCallList(dlDrawImageExpand) else
-     ImageDrawCutted(ImageExpand, cutX, cutY);
+     ImageDrawPart(ImageExpand, cutX, cutY);
    end else
    begin
     if (cutx = 0) and (cuty = 0) then
      glCallList(dlDrawImage) else
-     ImageDrawCutted(Image, cutX, cutY);
+     ImageDrawPart(Image, cutX, cutY);
    end;
 
    if Image.HasAlpha then
