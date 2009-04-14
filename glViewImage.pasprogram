@@ -25,18 +25,27 @@ program glViewImage;
 uses GLWindow, GL, GLU, GLExt, KambiGLUtils, SysUtils, KambiUtils, Images,
   OpenGLBmpFonts, OpenGLFonts, Math, Classes, KambiClassUtils, GLW_Demo,
   GLWinMessages, ImageLoading, ParseParametersUnit, ImageInvalid, EnumerateFiles,
-  VectorMath, KambiStringUtils, DataErrors, GLImages, FileFilters;
+  VectorMath, KambiStringUtils, DataErrors, GLImages, FileFilters,
+  ImageWelcome;
 
 var
   MoveX: TGLfloat = 0;
   MoveY: TGLfloat = 0;
   DrawTiled: boolean = false;
   BackgroundColor: TVector3Single;
+  SavedErrorMessage: string = '';
 
 { Lista nazw obrazkow --------------------------------------------------------
 
   Items on ImageNamesList may be relative filenames, so current dir of this
   program must stay constant for all time.
+
+  A special case is an item with Object[] property <> @nil:
+  this means that an internal image, which should be loaded from
+  TImage(Object[]), should be loaded. Display name for user
+  should be the value of given string.
+  For now, this is only used to load Welcome image, possibly will
+  be used for other purposes at some time.
 
   ImageNamesListPos zawsze wskazuje na jakis istniejacy
   indeks 0..ImageNamesList.Count-1. Lista ImageNamesList tym samym zawsze
@@ -52,13 +61,20 @@ var
   ImageNamesList: TStringList;
   ImageNamesListPos: Integer = 0; { change this only with SetImageNameListPos }
 
-{ This changes ImageNamesListPos and tries to load newly choosen image
-  using CreateImage(glw, ImageNamesList[ImageNamesListPos]).
+{ This changes ImageNamesListPos and tries to load newly choosen image.
+  Uses CreateImage(glw, ImageNamesList[ImageNamesListPos]) if it's a normal
+  (not internal) image, or something else as appropriate.
   Then PostRedisplay; }
 procedure SetImageNamesListPos(NewValue: Integer);
 begin
  ImageNamesListPos := NewValue;
- CreateImage(glw, ImageNamesList[ImageNamesListPos]);
+
+ if ImageNamesList.Objects[ImageNamesListPos] = nil then
+   CreateImage(Glw, ImageNamesList[ImageNamesListPos]) else
+   CreateImage(Glw,
+     TImage(ImageNamesList.Objects[ImageNamesListPos]).MakeCopy,
+     ImageNamesList[ImageNamesListPos]);
+
  glw.PostRedisplay;
 end;
 
@@ -397,6 +413,12 @@ end;
 procedure InitGL(glwin: TGLWindow);
 begin
  CreateGLImage;
+
+ if SavedErrorMessage <> '' then
+ begin
+   MessageOk(Glwin, SavedErrorMessage, taLeft);
+   SavedErrorMessage := '';
+ end;
 end;
 
 procedure CloseGL(glwin: TGLWindow);
@@ -788,6 +810,7 @@ begin
   glw.ParseParameters(StandardParseOptions, SpecifiedOptions);
   { parse our options }
   ParseParameters(Options, @OptionProc, nil);
+
   { evaluate ImageNamesList = parse the list of image files to open }
   if Parameters.High = 0 then
   begin
@@ -804,17 +827,30 @@ begin
      AddImageNamesFromMask(Parameters[i]);
    end;
   end;
-  if ImageNamesList.Count = 0 then
-   raise Exception.Create('No images found');
+
+  { Always insert wecome image }
+  ImageNamesList.InsertObject(0, '<Welcome image>', Welcome);
+  Assert(ImageNamesList.Count > 0);
+
+  { By default, view the first loaded image, or welcome image if nothing loaded. }
+  if ImageNamesList.Count > 1 then
+    ImageNamesListPos := 1 else
+    ImageNamesListPos := 0;
+
   ImageNamesListChanged;
 
-  {inicjuj Image}
+  { initialize Image. This must be done before window is created,
+    as we want to use Image size for initial window size. }
   try
-   CreateNonGLImage(glw, ImageNamesList[ImageNamesListPos]);
+    if ImageNamesList.Objects[ImageNamesListPos] = nil then
+      CreateNonGLImage(glw, ImageNamesList[ImageNamesListPos]) else
+      CreateNonGLImage(glw,
+        TImage(ImageNamesList.Objects[ImageNamesListPos]).MakeCopy,
+        ImageNamesList[ImageNamesListPos]);
   except
    on E: Exception do
    begin
-    ErrorWrite(ExceptMessage(E, nil));
+    SavedErrorMessage := ExceptMessage(E, nil);
     CreateNonGLImageInvalid(glw, ImageNamesList[ImageNamesListPos]);
    end;
   end;

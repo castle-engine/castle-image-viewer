@@ -136,6 +136,14 @@ procedure DestroyGLImage;
   procedure CreateImage. }
 procedure CreateImage(glwin: TGLWindow; const fname: string);
 
+{ Takes the already created Image instance, and makes it loaded.
+
+  Just like regular CreateImage(glwindow, filename),
+  only it doesn't load image from file, but takes ready
+  Image instance (you should leave further freeing of this Image
+  to this unit, don't mess with it yourself). }
+procedure CreateImage(glwin: TGLWindow; Image: TImage; const Name: string);
+
 { Change DDSImageIndex.
 
   This frees GL image, then changes NonGL image portions to point
@@ -309,6 +317,14 @@ begin
     end;
   end;
 
+  CreateGLImage;
+end;
+
+procedure CreateImage(glwin: TGLWindow; Image: TImage; const Name: string);
+begin
+  DestroyGLImage;
+  DestroyNonGLImage;
+  CreateNonGLImage(Glwin, Image, Name);
   CreateGLImage;
 end;
 
