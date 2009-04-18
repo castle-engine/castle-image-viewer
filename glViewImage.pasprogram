@@ -26,7 +26,7 @@ uses GLWindow, GL, GLU, GLExt, KambiGLUtils, SysUtils, KambiUtils, Images,
   OpenGLBmpFonts, OpenGLFonts, Math, Classes, KambiClassUtils, GLW_Demo,
   GLWinMessages, ImageLoading, ParseParametersUnit, ImageInvalid, EnumerateFiles,
   VectorMath, KambiStringUtils, DataErrors, GLImages, FileFilters,
-  ImageWelcome;
+  ImageWelcome, GLWindowRecentMenu, GVIConfig;
 
 var
   MoveX: TGLfloat = 0;
@@ -130,6 +130,25 @@ begin
  for iff := Low(iff) to High(iff) do
   for i := 1 to ImageformatInfos[iff].extsCount do
    AddImageNamesFromMask(Path + '*.' + ImageFormatInfos[iff].exts[i]);
+end;
+
+{ recent files --------------------------------------------------------------- }
+
+procedure ImageNamesListChanged; forward;
+
+type
+  THelper = class
+    class procedure FileOpen(const FileName: string);
+  end;
+
+class procedure THelper.FileOpen(const FileName: string);
+begin
+  ImageNamesList.Insert(ImageNamesListPos+1, FileName);
+  ImageNamesListChanged;
+  ChangeImageNamesListPos(+1);
+
+  { temporary unused code: this is how to open an image without adding it to
+    ImageNamesList: CreateImage(glwin, FileName); }
 end;
 
 { operacje na zoom --------------------------------------------------------- }
@@ -493,12 +512,7 @@ procedure MenuCommand(glwin: TGLWindow; Item: TMenuItem);
     FileName := '';
    if glwin.FileDialog('Load image from file', FileName, true, LoadImage_FileFilters) then
    begin
-    ImageNamesList.Insert(ImageNamesListPos+1, FileName);
-    ImageNamesListChanged;
-    ChangeImageNamesListPos(+1);
-
-    { temporary unused code: this is how to open an image without adding it to
-      ImageNamesList: CreateImage(glwin, FileName); }
+     THelper.FileOpen(FileName);
    end;
   end;
 
@@ -662,13 +676,17 @@ end;
   adding something to ImageNamesList. For simplicity of "control flow" we do NOT
   call here ImageNamesListChanged. }
 function CreateMainMenu: TMenu;
-var M: TMenu;
+var
+  M: TMenu;
+  NextRecentMenuItem: TMenuEntry;
 begin
  Result := TMenu.Create('Main menu');
  M := TMenu.Create('_File');
    M.Append(TMenuItem.Create('_Open ...',                 110, CtrlO));
    M.Append(TMenuItem.Create('_Save ...',                 120, CtrlS));
-   M.Append(TMenuSeparator.Create);
+   NextRecentMenuItem := TMenuSeparator.Create;
+   M.Append(NextRecentMenuItem);
+   RecentMenu.NextMenuItem := NextRecentMenuItem;
    M.Append(TMenuItem.Create('_Exit',                     140, CharEscape));
    Result.Append(M);
  M := TMenu.Create('_View');
@@ -803,6 +821,9 @@ begin
  try
   { init menu things. We must do it before we add something to ImageNamesList,
     this is required by CreateMainMenu. }
+  RecentMenu := TGLRecentMenu.Create;
+  RecentMenu.LoadFromConfig(ConfigFile, 'recent_files');
+  RecentMenu.OnOpenRecent := @THelper(nil).FileOpen;
   glw.MainMenu := CreateMainMenu;
   glw.OnMenuCommand := @MenuCommand;
 
@@ -876,8 +897,11 @@ begin
   glw.DepthBufferBits := 0; { depth buffer not needed here }
   glw.SetDemoOptions(K_None, #0, false);
   glw.InitLoop;
+
+  RecentMenu.SaveToConfig(ConfigFile, 'recent_files');
  finally
-  ImageNamesList.Free;
+  FreeAndNil(ImageNamesList);
+  FreeAndNil(RecentMenu);
  end;
 end.
 

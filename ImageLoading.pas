@@ -32,9 +32,9 @@ unit ImageLoading;
 
 interface
 
-uses
-  GL, GLU, GLExt, KambiGLUtils, SysUtils, KambiUtils, Images, Math, Classes,
-  KambiClassUtils, GLWinMessages, ImageInvalid, GLWindow, GLImages, DDS;
+uses GL, GLU, GLExt, KambiGLUtils, SysUtils, KambiUtils, Images, Math, Classes,
+  KambiClassUtils, GLWinMessages, ImageInvalid, GLWindow, GLImages, DDS,
+  GLWindowRecentMenu;
 
 { Below is "image state". The idea is that for the whole time of a program
   this module manages one image. An image is:
@@ -154,6 +154,10 @@ procedure CreateImage(glwin: TGLWindow; Image: TImage; const Name: string);
   (NewIndex < DDSImages.ImagesCount). }
 procedure ChangeDDSImageIndex(Glwin: TGLWindow; NewIndex: Cardinal);
 
+var
+  { CreateImage will add to this. }
+  RecentMenu: TGLRecentMenu;
+
 implementation
 
 { zwraca Image ktory ma ostatnia (prawa) kolumne powtorzona i
@@ -255,6 +259,9 @@ begin
     InternalCreateNonGLImage(glwin,
       LoadImage(fname, GLImageClasses, []), fname, true);
   end;
+  { If InternalCreateNonGLImage went without exceptions,
+    add to RecentMenu. }
+  RecentMenu.Add(FName);
 end;
 
 procedure CreateNonGLImage(glwin: TGLWindow; const NewImage: TImage;
