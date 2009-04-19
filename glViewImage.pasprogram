@@ -882,8 +882,16 @@ begin
   {set size, unless already requested some size}
   if not (poGeometry in SpecifiedOptions) then
   begin
-   glw.width := KambiUtils.Min(Image.Width, glwm.ScreenWidth-50);
-   glw.height := KambiUtils.Min(Image.Height, glwm.ScreenHeight-50);
+   { Clamp to not make window too large (some window managers accept it
+     and show window that's uncomfortable for user, covers top/bottom
+     panels and such), and don't make it too small (as then messages
+     and other things are uncomfortable
+     (this includes error messages,
+     remember that Image.Width/Height may come from ImageInvalid
+     if command-line image is invalid)). }
+
+   glw.width  := Clamped(Image.Width , 200, glwm.ScreenWidth -50);
+   glw.height := Clamped(Image.Height, 200, glwm.ScreenHeight-50);
   end;
 
   {go for it}
