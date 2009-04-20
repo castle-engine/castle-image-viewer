@@ -219,7 +219,9 @@ begin
   DestroyNonGLImage;
   DDSImage := NewImage;
   DDSImageIndex := 0;
-  Image := DDSImage.Images[0];
+  if DDSImage.Images[0] is TImage then
+    Image := TImage(DDSImage.Images[0]) else
+    raise Exception.Create('glViewImage cannot display S3TC compressed textures from DDS');
   ImageExpand := ImageDuplicatedLastRowCol(Image);
   ImageFileName := NewImageFileName;
   IsImageValid := true;
@@ -344,7 +346,7 @@ begin
   DestroyGLImage;
 
   DDSImageIndex := NewIndex;
-  Image := DDSImage.Images[NewIndex];
+  Image := DDSImage.Images[NewIndex] as TImage;
 
   RemakeImageExpand;
 
