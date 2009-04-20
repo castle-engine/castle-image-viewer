@@ -251,6 +251,7 @@ begin
     NewDDS := TDDSImage.Create;
     try
       NewDDS.LoadFromFile(FName);
+      NewDDS.Flatten3d;
     except
       FreeAndNil(NewDDS);
       raise;
