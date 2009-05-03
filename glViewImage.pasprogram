@@ -431,6 +431,8 @@ end;
 
 procedure InitGL(glwin: TGLWindow);
 begin
+ DecompressS3TC := @GLDecompressS3TC;
+
  CreateGLImage;
 
  if SavedErrorMessage <> '' then

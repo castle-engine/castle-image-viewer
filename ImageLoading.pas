@@ -252,6 +252,7 @@ begin
     try
       NewDDS.LoadFromFile(FName);
       NewDDS.Flatten3d;
+      NewDDS.DecompressS3TC;
     except
       FreeAndNil(NewDDS);
       raise;
