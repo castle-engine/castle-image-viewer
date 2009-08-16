@@ -567,6 +567,25 @@ procedure MenuCommand(glwin: TGLWindow; Item: TMenuItem);
       MessageOk(Glwin, 'This function is not available for grayscale images.');
   end;
 
+  procedure ImageClear;
+  var
+    Color4: TVector4Byte;
+    Color3: TVector3Byte absolute Color4;
+  begin
+    if CheckNotGrayscale then
+    begin
+      Color3 := Vector3Byte(255, 255, 255);
+      if glwin.ColorDialog(Color3) then
+      begin
+        Color4[3] := 255;
+        DestroyGLImage;
+        Image.Clear(Color4);
+        ImageExpand.Clear(Color4);
+        CreateGLImage;
+      end;
+    end;
+  end;
+
   procedure EasyChangeDDSImageIndex(Change: Integer);
   begin
     if DDSImage <> nil then
@@ -666,6 +685,7 @@ begin
          RemakeImageExpand;
          CreateGLImage;
        end;
+  460: ImageClear;
   510: ShowImageInfo;
   520: ShowAbout;
   else
@@ -727,6 +747,8 @@ begin
    M.Append(TMenuItem.Create('Rotate 90 Degrees (Clockwise)', 450));
    M.Append(TMenuItem.Create('Rotate 180 Degrees', 451));
    M.Append(TMenuItem.Create('Rotate 90 Degrees (Counter-Clockwise)', 452));
+   M.Append(TMenuSeparator.Create);
+   M.Append(TMenuItem.Create('Clear ...', 460));
    Result.Append(M);
  M := TMenu.Create('_Images');
  ImageListMenu := M;
