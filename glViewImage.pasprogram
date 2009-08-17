@@ -26,7 +26,7 @@ uses GLWindow, GL, GLU, GLExt, KambiGLUtils, SysUtils, KambiUtils, Images,
   OpenGLBmpFonts, OpenGLFonts, Math, Classes, KambiClassUtils, GLW_Demo,
   GLWinMessages, ImageLoading, ParseParametersUnit, ImageInvalid, EnumerateFiles,
   VectorMath, KambiStringUtils, DataErrors, GLImages, FileFilters,
-  ImageWelcome, GLWindowRecentMenu, GVIConfig;
+  ImageWelcome, GLWindowRecentMenu, GVIConfig, DDS;
 
 var
   MoveX: TGLfloat = 0;
@@ -519,6 +519,21 @@ procedure MenuCommand(glwin: TGLWindow; Item: TMenuItem);
   end;
 
   procedure ShowImageInfo;
+
+    function DDSImageInfo(DImg: TDDSImage): string;
+    begin
+      Result := Format(
+        'Containing DDS image info:' +NL+
+        '  Width x Height x Depth: %d x %d %d'  +NL+
+        '  Type: %s' +NL+
+        '  Mipmaps: %s' +NL+
+        '  Simple 2D images inside: %d',
+        [ DImg.Width, DImg.Height, DImg.Depth,
+          DDSTypeToString[DImg.DDSType],
+          BoolToStr[DImg.Mipmaps],
+          DImg.Images.Count ]);
+    end;
+
   var
     S: string;
   begin
@@ -530,7 +545,8 @@ procedure MenuCommand(glwin: TGLWindow; Item: TMenuItem);
         [ImageFileName, Image.ClassName, Image.Width, Image.Height]) else
       S := '<invalid image file>';
     if DDSImage <> nil then
-      S += NL + Format('DDS subimage: %d', [DDSImageIndex]);
+      S += NL + Format('DDS subimage: %d', [DDSImageIndex]) + NL +
+        DDSImageInfo(DDSImage);
     MessageOK(Glwin, S, taLeft);
    end;
 
