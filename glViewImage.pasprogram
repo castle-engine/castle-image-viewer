@@ -556,12 +556,12 @@ procedure MenuCommand(glwin: TGLWindow; Item: TMenuItem);
    SList := TStringList.Create;
    try
     AddStrArrayToStrings([
-      'Keybindings not documented already in the menu:',
-      '  Arrows            move image,',
-      '  Arrows + Ctrl     move image 10 x faster,',
-      '  - / +             scale image,',
-      '  x / X             scale only horizontally,',
-      '  y / Y             scale only vertically,',
+      'Keys (the ones not documented already in the menu):',
+      'Arrows: move image,',
+      'Arrows + Ctrl: move image 10 x faster,',
+      '- / +: scale image,',
+      'x / X: scale only horizontally,',
+      'y / Y: scale only vertically.',
       ''], SList);
     Strings_AddVrmlEngineProgramHelpSuffix(SList,
       DisplayProgramName, Version, false);
@@ -922,16 +922,21 @@ begin
   {set size, unless already requested some size}
   if not (poGeometry in SpecifiedOptions) then
   begin
-   { Clamp to not make window too large (some window managers accept it
-     and show window that's uncomfortable for user, covers top/bottom
-     panels and such), and don't make it too small (as then messages
-     and other things are uncomfortable
-     (this includes error messages,
-     remember that Image.Width/Height may come from ImageInvalid
-     if command-line image is invalid)). }
-
-   glw.width  := Clamped(Image.Width , 200, glwm.ScreenWidth -50);
-   glw.height := Clamped(Image.Height, 200, glwm.ScreenHeight-50);
+   { Clamp to:
+     - not make window too large (some window managers accept it
+       and show window that's uncomfortable for user, covers top/bottom
+       panels and such),
+     - not make window too small (as then messages ("about", "image info",
+       errors when reading images etc.) and other things are uncomfortable.
+       Remember that Image.Width/Height may come from ImageInvalid
+       if command-line image is invalid.)
+       Under Windows, this also should avoid menu bar wrapping (at least with
+       typical themes), which avoids accidentaly creating too small OpenGL area
+       and having to display scrollbars. (see GLWindow WinAPI comments about
+       AdjustWindowRectEx, this is documented WinAPI bug without any sensible
+       workaround.) }
+   glw.width  := Clamped(Image.Width , 400, glwm.ScreenWidth -50);
+   glw.height := Clamped(Image.Height, 400, glwm.ScreenHeight-50);
   end;
 
   {go for it}
