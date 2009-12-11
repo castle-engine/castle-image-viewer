@@ -935,8 +935,8 @@ begin
        and having to display scrollbars. (see GLWindow WinAPI comments about
        AdjustWindowRectEx, this is documented WinAPI bug without any sensible
        workaround.) }
-   glw.width  := Clamped(Image.Width , 400, glwm.ScreenWidth -50);
-   glw.height := Clamped(Image.Height, 400, glwm.ScreenHeight-50);
+   glw.width  := Clamped(Image.Width , 400, Application.ScreenWidth -50);
+   glw.height := Clamped(Image.Height, 400, Application.ScreenHeight-50);
   end;
 
   {go for it}
@@ -949,7 +949,7 @@ begin
   glw.Fps.Active := true;
   glw.DepthBufferBits := 0; { depth buffer not needed here }
   glw.SetDemoOptions(K_None, #0, false);
-  glw.InitLoop;
+  glw.InitAndRun;
 
   RecentMenu.SaveToConfig(ConfigFile, 'recent_files');
  finally
