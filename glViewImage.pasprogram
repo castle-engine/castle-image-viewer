@@ -23,12 +23,13 @@ program glViewImage;
 {$apptype GUI}
 
 uses GLWindow, GL, GLU, GLExt, KambiGLUtils, SysUtils, KambiUtils, Images,
-  OpenGLBmpFonts, OpenGLFonts, Math, Classes, KambiClassUtils, GLW_Demo,
+  OpenGLBmpFonts, OpenGLFonts, Math, Classes, KambiClassUtils,
   GLWinMessages, ImageLoading, ParseParametersUnit, ImageInvalid, EnumerateFiles,
   VectorMath, KambiStringUtils, DataErrors, GLImages, FileFilters,
   ImageWelcome, GLWindowRecentMenu, GVIConfig, DDS;
 
 var
+  Glw: TGLWindowDemo;
   MoveX: TGLfloat = 0;
   MoveY: TGLfloat = 0;
   DrawTiled: boolean = false;
@@ -855,6 +856,8 @@ var
   i: Integer;
   SpecifiedOptions: TGLWindowParseOptions;
 begin
+ Glw := TGLWindowDemo.Create(Application);
+
  DataWarning := @DataWarning_Write;
 
  ImageNamesList := TStringList.Create;
