@@ -26,7 +26,7 @@ uses GLWindow, GL, GLU, GLExt, KambiGLUtils, SysUtils, KambiUtils, Images,
   OpenGLBmpFonts, OpenGLFonts, Math, Classes, KambiClassUtils,
   GLWinMessages, ImageLoading, ParseParametersUnit, ImageInvalid, EnumerateFiles,
   VectorMath, KambiStringUtils, DataErrors, GLImages, FileFilters,
-  ImageWelcome, GLWindowRecentMenu, GVIConfig, DDS;
+  ImageWelcome, GLWindowRecentFiles, GVIConfig, DDS;
 
 var
   Glw: TGLWindowDemo;
@@ -864,7 +864,7 @@ begin
  try
   { init menu things. We must do it before we add something to ImageNamesList,
     this is required by CreateMainMenu. }
-  RecentMenu := TGLRecentMenu.Create;
+  RecentMenu := TGLRecentFiles.Create(nil);
   RecentMenu.LoadFromConfig(ConfigFile, 'recent_files');
   RecentMenu.OnOpenRecent := @THelper(nil).FileOpen;
   glw.MainMenu := CreateMainMenu;
