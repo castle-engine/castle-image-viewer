@@ -390,7 +390,7 @@ procedure IdleGL(glwin: TGLWindow);
   procedure MoveGL(var value: TGLfloat; change: TGLfloat);
   begin
    change *= 8*glwin.Fps.IdleSpeed * 50;
-   if glw.KeysDown[k_Ctrl] then change *= 10;
+   if glw.Pressed[k_Ctrl] then change *= 10;
    value += change;
    glw.PostRedisplay;
   end;
@@ -399,32 +399,32 @@ const SCALE_FACTOR = 0.1;
 var scale_up, scale_down: Single;
 begin
  with glw do begin
-  if KeysDown[K_Up] then moveGL(MoveY, -1 / zoomY);
-  if KeysDown[K_Down] then moveGL(MoveY, 1 / zoomY);
-  if KeysDown[K_Right] then moveGL(MoveX, -1 / zoomX);
-  if KeysDown[K_Left] then moveGL(MoveX, 1 / zoomX);
+  if Pressed[K_Up] then moveGL(MoveY, -1 / zoomY);
+  if Pressed[K_Down] then moveGL(MoveY, 1 / zoomY);
+  if Pressed[K_Right] then moveGL(MoveX, -1 / zoomX);
+  if Pressed[K_Left] then moveGL(MoveX, 1 / zoomX);
 
   scale_up := 1 + SCALE_FACTOR * glw.Fps.IdleSpeed * 50;
   scale_down := 1 / scale_up;
 
-  if KeysDown[K_Numpad_Plus ] or KeysDown[K_Plus ] or CharactersDown['+'] then
+  if Pressed[K_Numpad_Plus ] or Pressed[K_Plus ] or Pressed.Characters['+'] then
   begin
     MultZoomGL(ZoomX, scale_up);
     MultZoomGL(ZoomY, scale_up);
   end;
 
-  if KeysDown[K_Numpad_Minus] or KeysDown[K_Minus] or CharactersDown['-'] then
+  if Pressed[K_Numpad_Minus] or Pressed[K_Minus] or Pressed.Characters['-'] then
   begin
     MultZoomGL(ZoomX, scale_down);
     MultZoomGL(ZoomY, scale_down);
   end;
 
-  if KeysDown[K_x] then
-   if KeysDown[K_Shift] then
+  if Pressed[K_x] then
+   if Pressed[K_Shift] then
     MultZoomGL(ZoomX, scale_up) else
     MultZoomGL(ZoomX, scale_down);
-  if KeysDown[K_y] then
-   if KeysDown[K_Shift] then
+  if Pressed[K_y] then
+   if Pressed[K_Shift] then
     MultZoomGL(ZoomY, scale_up) else
     MultZoomGL(ZoomY, scale_down);
  end;
