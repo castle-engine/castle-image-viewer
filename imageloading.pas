@@ -35,7 +35,7 @@ unit ImageLoading;
 interface
 
 uses GL, GLU, GLExt, KambiGLUtils, SysUtils, KambiUtils, Images, Math, Classes,
-  KambiClassUtils, GLWinMessages, ImageInvalid, GLWindow, GLImages, DDS,
+  KambiClassUtils, GLWinMessages, GLWindow, GLImages, DDS,
   GLWindowRecentFiles;
 
 { Below is "image state". The idea is that for the whole time of a program
@@ -161,6 +161,8 @@ var
   RecentMenu: TGLRecentFiles;
 
 implementation
+
+uses GVIImages;
 
 { zwraca Image ktory ma ostatnia (prawa) kolumne powtorzona i
   powtorzony ostatni (gorny) wiersz. Wiec wynik ma o jeden wieksze

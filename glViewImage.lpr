@@ -26,9 +26,9 @@ program glViewImage;
 
 uses GLWindow, GL, GLU, GLExt, KambiGLUtils, SysUtils, KambiUtils, Images,
   OpenGLBmpFonts, OpenGLFonts, Math, Classes, KambiClassUtils,
-  GLWinMessages, ImageLoading, ParseParametersUnit, ImageInvalid, EnumerateFiles,
+  GLWinMessages, ImageLoading, ParseParametersUnit, GVIImages, EnumerateFiles,
   VectorMath, KambiStringUtils, DataErrors, GLImages, FileFilters,
-  ImageWelcome, GLWindowRecentFiles, GVIConfig, DDS;
+  GLWindowRecentFiles, GVIConfig, DDS;
 
 var
   Glw: TGLWindowDemo;
