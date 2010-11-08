@@ -25,7 +25,7 @@ unit GVIConfig;
 
 interface
 
-uses KambiUtils, KambiXMLCfg;
+uses KambiUtils, KambiXMLConfig;
 
 var
   { User config file.
