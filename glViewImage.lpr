@@ -432,7 +432,7 @@ begin
  end;
 end;
 
-procedure InitGL(glwin: TGLWindow);
+procedure OpenGL(glwin: TGLWindow);
 begin
  DecompressS3TC := @GLDecompressS3TC;
 
@@ -947,14 +947,14 @@ begin
   {go for it}
   glw.OnIdle := @idleGL;
   glw.OnDraw := @DrawGL;
-  glw.OnInit := @InitGL;
+  glw.OnOpen := @OpenGL;
   glw.OnClose := @CloseGL;
   glw.OnResize := @Resize2D;
 
   glw.Fps.Active := true;
   glw.DepthBufferBits := 0; { depth buffer not needed here }
   glw.SetDemoOptions(K_None, #0, false);
-  glw.InitAndRun;
+  glw.OpenAndRun;
 
   RecentMenu.SaveToConfig(ConfigFile, 'recent_files');
  finally
