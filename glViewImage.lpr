@@ -28,7 +28,7 @@ uses GLWindow, GL, GLU, GLExt, KambiGLUtils, SysUtils, KambiUtils, Images,
   OpenGLBmpFonts, OpenGLFonts, Math, Classes, KambiClassUtils,
   GLWinMessages, ImageLoading, ParseParametersUnit, GVIImages, EnumerateFiles,
   VectorMath, KambiStringUtils, DataErrors, GLImages, FileFilters,
-  GLWindowRecentFiles, GVIConfig, DDS;
+  GLWindowRecentFiles, GVIConfig, DDS, KambiFilesUtils;
 
 var
   Glw: TGLWindowDemo;
