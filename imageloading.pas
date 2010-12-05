@@ -84,17 +84,17 @@ var
   DDSImageIndex: Integer;
 
 { Note: CreateNonGLImage first automatically calls DestroyNonGLImage }
-procedure CreateNonGLImage(glwin: TGLWindow; const fname: string); overload;
+procedure CreateNonGLImage(Window: TGLWindow; const fname: string); overload;
 
 { About this version of CreateNonGLImage: you can give already loaded
   image. After calling this CreateNonGLImage you must STOP managing
   this NewImage - it will be managed (and freed) by this unit. }
-procedure CreateNonGLImage(glwin: TGLWindow; const NewImage: TImage;
+procedure CreateNonGLImage(Window: TGLWindow; const NewImage: TImage;
   const NewImageFileName: string); overload;
 
-{ ErrorFileName is used for glwin.Caption suffix,
+{ ErrorFileName is used for Window.Caption suffix,
   give here image name that can't be loaded. }
-procedure CreateNonGLImageInvalid(glwin: TGLWindow;
+procedure CreateNonGLImageInvalid(Window: TGLWindow;
   const ErrorFileName: string);
 
 { It is valid NOP to call DestroyNonGLImage on already destroyed image.
@@ -134,9 +134,9 @@ procedure DestroyGLImage;
   But if (for any reason) loading of image from fname fails, then
   it will replace current image with special InvalidImage.
   Message about failing to load an image will be shown using
-  MessageOK(glwin,...) and no exception will be raised outside of this
+  MessageOK(Window,...) and no exception will be raised outside of this
   procedure CreateImage. }
-procedure CreateImage(glwin: TGLWindow; const fname: string);
+procedure CreateImage(Window: TGLWindow; const fname: string);
 
 { Takes the already created Image instance, and makes it loaded.
 
@@ -144,7 +144,7 @@ procedure CreateImage(glwin: TGLWindow; const fname: string);
   only it doesn't load image from file, but takes ready
   Image instance (you should leave further freeing of this Image
   to this unit, don't mess with it yourself). }
-procedure CreateImage(glwin: TGLWindow; Image: TImage; const Name: string);
+procedure CreateImage(Window: TGLWindow; Image: TImage; const Name: string);
 
 { Change DDSImageIndex.
 
@@ -154,7 +154,7 @@ procedure CreateImage(glwin: TGLWindow; Image: TImage; const Name: string);
   When calling this, always make sure that NonGL image is already loaded,
   and it's a DDSImage (DDSImage <> nil) and NewIndex is allowed
   (NewIndex < DDSImages.ImagesCount). }
-procedure ChangeDDSImageIndex(Glwin: TGLWindow; NewIndex: Cardinal);
+procedure ChangeDDSImageIndex(Window: TGLWindow; NewIndex: Cardinal);
 
 var
   { CreateImage will add to this. }
@@ -200,7 +200,7 @@ begin
   ImageExpand := ImageDuplicatedLastRowCol(Image);
 end;
 
-procedure UpdateCaption(Glwin: TGLWindow);
+procedure UpdateCaption(Window: TGLWindow);
 var
   S: string;
 begin
@@ -214,10 +214,10 @@ begin
 
   S += ' - glViewImage';
 
-  Glwin.Caption := S;
+  Window.Caption := S;
 end;
 
-procedure InternalCreateNonGLImageDDS(glwin: TGLWindow; const NewImage: TDDSImage;
+procedure InternalCreateNonGLImageDDS(Window: TGLWindow; const NewImage: TDDSImage;
   const NewImageFileName: string);
 begin
   DestroyNonGLImage;
@@ -229,10 +229,10 @@ begin
   ImageExpand := ImageDuplicatedLastRowCol(Image);
   ImageFileName := NewImageFileName;
   IsImageValid := true;
-  UpdateCaption(Glwin);
+  UpdateCaption(Window);
 end;
 
-procedure InternalCreateNonGLImage(glwin: TGLWindow; const NewImage: TImage;
+procedure InternalCreateNonGLImage(Window: TGLWindow; const NewImage: TImage;
   const NewImageFileName: string; NewIsImageValid: boolean);
 begin
   DestroyNonGLImage;
@@ -242,10 +242,10 @@ begin
   ImageExpand := ImageDuplicatedLastRowCol(Image);
   ImageFileName := NewImageFileName;
   IsImageValid := NewIsImageValid;
-  UpdateCaption(Glwin);
+  UpdateCaption(Window);
 end;
 
-procedure CreateNonGLImage(glwin: TGLWindow; const fname: string);
+procedure CreateNonGLImage(Window: TGLWindow; const fname: string);
 var
   NewDDS: TDDSImage;
 begin
@@ -261,10 +261,10 @@ begin
       FreeAndNil(NewDDS);
       raise;
     end;
-    InternalCreateNonGLImageDDS(Glwin, NewDDS, FName);
+    InternalCreateNonGLImageDDS(Window, NewDDS, FName);
   end else
   begin
-    InternalCreateNonGLImage(glwin,
+    InternalCreateNonGLImage(Window,
       LoadImage(fname, PixelsImageClasses, []), fname, true);
   end;
   { If InternalCreateNonGLImage went without exceptions,
@@ -272,16 +272,16 @@ begin
   RecentMenu.Add(FName);
 end;
 
-procedure CreateNonGLImage(glwin: TGLWindow; const NewImage: TImage;
+procedure CreateNonGLImage(Window: TGLWindow; const NewImage: TImage;
   const NewImageFileName: string);
 begin
- InternalCreateNonGLImage(glwin, NewImage, NewImageFileName, true);
+ InternalCreateNonGLImage(Window, NewImage, NewImageFileName, true);
 end;
 
-procedure CreateNonGLImageInvalid(glwin: TGLWindow;
+procedure CreateNonGLImageInvalid(Window: TGLWindow;
   const ErrorFileName: string);
 begin
- InternalCreateNonGLImage(glwin, Invalid.MakeCopy, ErrorFileName, false);
+ InternalCreateNonGLImage(Window, Invalid.MakeCopy, ErrorFileName, false);
 end;
 
 { Zwolnij rzeczy obrazka ktore nie zaleza od kontekstu OpenGLa.
@@ -315,19 +315,19 @@ begin
  glFreeDisplayList(dlDrawImageExpand);
 end;
 
-procedure CreateImage(glwin: TGLWindow; const fname: string);
+procedure CreateImage(Window: TGLWindow; const fname: string);
 begin
   DestroyGLImage;
   DestroyNonGLImage;
 
   try
-    CreateNonGLImage(glwin, FName);
+    CreateNonGLImage(Window, FName);
   except
     on E: Exception do
     begin
-      CreateNonGLImageInvalid(glwin, fname);
+      CreateNonGLImageInvalid(Window, fname);
       CreateGLImage;
-      MessageOK(glwin, ExceptMessage(E, nil), taLeft);
+      MessageOK(Window, ExceptMessage(E, nil), taLeft);
       Exit;
     end;
   end;
@@ -335,15 +335,15 @@ begin
   CreateGLImage;
 end;
 
-procedure CreateImage(glwin: TGLWindow; Image: TImage; const Name: string);
+procedure CreateImage(Window: TGLWindow; Image: TImage; const Name: string);
 begin
   DestroyGLImage;
   DestroyNonGLImage;
-  CreateNonGLImage(Glwin, Image, Name);
+  CreateNonGLImage(Window, Image, Name);
   CreateGLImage;
 end;
 
-procedure ChangeDDSImageIndex(Glwin: TGLWindow; NewIndex: Cardinal);
+procedure ChangeDDSImageIndex(Window: TGLWindow; NewIndex: Cardinal);
 begin
   Assert(DDSImage <> nil);
   Assert(NewIndex < Cardinal(DDSImage.Images.Count));
@@ -358,7 +358,7 @@ begin
 
   CreateGLImage;
 
-  UpdateCaption(Glwin);
+  UpdateCaption(Window);
 end;
 
 initialization

@@ -31,7 +31,7 @@ uses GLWindow, GL, GLU, GLExt, KambiGLUtils, SysUtils, KambiUtils, Images,
   GLWindowRecentFiles, GVIConfig, DDS, KambiFilesUtils;
 
 var
-  Glw: TGLWindowDemo;
+  Window: TGLWindowDemo;
   MoveX: TGLfloat = 0;
   MoveY: TGLfloat = 0;
   DrawTiled: boolean = false;
@@ -65,7 +65,7 @@ var
   ImageNamesListPos: Integer = 0; { change this only with SetImageNameListPos }
 
 { This changes ImageNamesListPos and tries to load newly choosen image.
-  Uses CreateImage(glw, ImageNamesList[ImageNamesListPos]) if it's a normal
+  Uses CreateImage(Window, ImageNamesList[ImageNamesListPos]) if it's a normal
   (not internal) image, or something else as appropriate.
   Then PostRedisplay; }
 procedure SetImageNamesListPos(NewValue: Integer);
@@ -73,12 +73,12 @@ begin
  ImageNamesListPos := NewValue;
 
  if ImageNamesList.Objects[ImageNamesListPos] = nil then
-   CreateImage(Glw, ImageNamesList[ImageNamesListPos]) else
-   CreateImage(Glw,
+   CreateImage(Window, ImageNamesList[ImageNamesListPos]) else
+   CreateImage(Window,
      TImage(ImageNamesList.Objects[ImageNamesListPos]).MakeCopy,
      ImageNamesList[ImageNamesListPos]);
 
- glw.PostRedisplay;
+ Window.PostRedisplay;
 end;
 
 procedure ChangeImageNamesListPos(Change: Integer);
@@ -151,7 +151,7 @@ begin
   ChangeImageNamesListPos(+1);
 
   { temporary unused code: this is how to open an image without adding it to
-    ImageNamesList: CreateImage(glwin, FileName); }
+    ImageNamesList: CreateImage(Window, FileName); }
 end;
 
 { operacje na zoom --------------------------------------------------------- }
@@ -173,23 +173,23 @@ var
 procedure SetZoomGL(var Zoom: Single; const NewZoom: Single);
 begin
  Zoom := Clamped(NewZoom, MinZoom, MaxZoom);
- glw.PostRedisplay;
+ Window.PostRedisplay;
 end;
 
 procedure MultZoomGL(var Zoom: Single; const Multiplier: Single);
 begin
  Zoom *= Multiplier;
  Clamp(Zoom, MinZoom, MaxZoom);
- glw.PostRedisplay;
+ Window.PostRedisplay;
 end;
 
 { glw callbacks ---------------------------------------------------------- }
 
-procedure DrawGL(glwin: TGLWindow);
+procedure DrawGL(Window: TGLWindow);
 
   procedure Arrow(const Angle: TGLfloat);
   begin
-   glTranslatef(glwin.width div 2, glwin.height div 2, 0);
+   glTranslatef(Window.width div 2, Window.height div 2, 0);
    glRotatef(Angle, 0, 0, 1);
    glColorv(Yellow3Single);
    glScalef(50, 50, 0);
@@ -270,7 +270,7 @@ begin
     wyswietlany z not DrawTiled). Znajdujemy i0 takie ze jest to najwieksze
     i dla ktorego (MoveX + i*Width)*zoomX <= 0 a wiec jest to
     i dla lewej kolumny kafelkow. Podobnie, i1 dla prawej kolumny
-    kafelkow to najmniejsze i t.ze (MoveX + (i+1)*Width)*zoomx >= glwin.width.
+    kafelkow to najmniejsze i t.ze (MoveX + (i+1)*Width)*zoomx >= Window.width.
     Podobnie znajdujemy j0, j1.
 
     (operujemy przesuwajac MoveX o Width ale pamietamy ze
@@ -279,22 +279,22 @@ begin
     (MoveX + i0*Width)*zoomX <= 0 wiec
       i0 <= -MoveX/Width wiec
       i0 = Floor(-MoveX/Width)
-    (MoveX + (i1 + 1)*Width)*zoomx >= glwin.Width wiec
-      i1 >= (glwin.Width/zoomx - MoveX)/Width - 1 wiec
-      i1 = Ceil((glwin.width/zoomx - MoveX)/Width - 1)
+    (MoveX + (i1 + 1)*Width)*zoomx >= Window.Width wiec
+      i1 >= (Window.Width/zoomx - MoveX)/Width - 1 wiec
+      i1 = Ceil((Window.width/zoomx - MoveX)/Width - 1)
   }
 
   i0 := Floor(-MoveX/Width);
-  i1 := Ceil((glwin.Width/zoomX - MoveX)/Width - 1);
+  i1 := Ceil((Window.Width/zoomX - MoveX)/Width - 1);
   j0 := Floor(-MoveY/Height);
-  j1 := Ceil((glwin.Height/zoomY - MoveY)/Height - 1);
+  j1 := Ceil((Window.Height/zoomY - MoveY)/Height - 1);
 
   { As strange as it seems, some graphic cards (mine NVidia GForce2 MX 100/200
     with drivers Linux-x86-1.0-6629) require that in case the image is large
     and it's top-right corner is outside the window, I must explicitly
     use scissor to cut it down, otherwise strange artifacts (black area
     at the bottom of the window) appear. }
-  glScissor(0, 0, glwin.width, glwin.height);
+  glScissor(0, 0, Window.width, Window.height);
   glEnable(GL_SCISSOR_TEST);
 
   glPixelZoom(zoomX, zoomY);
@@ -307,9 +307,9 @@ begin
  end else
  begin
   visibleXStart := -Round(MoveX);
-  visibleXEnd   := Round(glwin.width/zoomX - MoveX);
+  visibleXEnd   := Round(Window.width/zoomX - MoveX);
   visibleYStart := -Round(MoveY);
-  visibleYEnd   := Round(glwin.height/zoomY - MoveY);
+  visibleYEnd   := Round(Window.height/zoomY - MoveY);
 
   if visibleXStart > Width  then Arrow(90) else
   if visibleXEnd < 0        then Arrow(-90) else
@@ -326,23 +326,23 @@ begin
 
    if horizPrzewijak and vertPrzewijak then
    begin
-    glScissor(przewThick+1, przewThick+1, glwin.width, glwin.height);
+    glScissor(przewThick+1, przewThick+1, Window.width, Window.height);
     glEnable(GL_SCISSOR_TEST);
    end else
    if horizPrzewijak then
    begin
-    glScissor(0, przewThick+1, glwin.width, glwin.height);
+    glScissor(0, przewThick+1, Window.width, Window.height);
     glEnable(GL_SCISSOR_TEST);
    end else
    if vertPrzewijak then
    begin
-    glScissor(przewThick+1, 0, glwin.width, glwin.height);
+    glScissor(przewThick+1, 0, Window.width, Window.height);
     glEnable(GL_SCISSOR_TEST);
    end else
    begin
     { This seems useless, but see comments for analogous code for the case
       DrawTiled = true. }
-    glScissor(0, 0, glwin.width, glwin.height);
+    glScissor(0, 0, Window.width, Window.height);
     glEnable(GL_SCISSOR_TEST);
    end;
 
@@ -357,13 +357,13 @@ begin
     glColorv(Yellow3Single);
     glBegin(GL_LINES);
      glVertex2f(przewThick, przewThick);
-     glVertex2f(glwin.width, przewThick);
+     glVertex2f(Window.width, przewThick);
      glVertex2f(przewThick, 0);
      glVertex2f(przewThick, przewThick);
     glEnd;
 
-    visibleXStart := Round(MapRange(visibleXStart, 0, Width, przewThick+przewMarg, glwin.width-przewMarg));
-    visibleXEnd   := Round(MapRange(visibleXEnd,   0, Width, przewThick+przewMarg, glwin.width-przewMarg));
+    visibleXStart := Round(MapRange(visibleXStart, 0, Width, przewThick+przewMarg, Window.width-przewMarg));
+    visibleXEnd   := Round(MapRange(visibleXEnd,   0, Width, przewThick+przewMarg, Window.width-przewMarg));
     glColorv(Gray3Single);
     glRecti(visibleXStart, przewMarg, visibleXEnd, przewThick-przewMarg);
    end;
@@ -373,13 +373,13 @@ begin
     glColorv(Yellow3Single);
     glBegin(GL_LINES);
      glVertex2f(przewThick, przewThick);
-     glVertex2f(przewThick, glwin.height);
+     glVertex2f(przewThick, Window.height);
      glVertex2f(0, przewThick);
      glVertex2f(przewThick, przewThick);
     glEnd;
 
-    visibleYStart := Round(MapRange(visibleYStart, 0, Height, przewThick+przewMarg, glwin.height-przewMarg));
-    visibleYEnd  :=Round(MapRange(visibleYEnd,   0, Height, przewThick+przewMarg, glwin.height-przewMarg));
+    visibleYStart := Round(MapRange(visibleYStart, 0, Height, przewThick+przewMarg, Window.height-przewMarg));
+    visibleYEnd  :=Round(MapRange(visibleYEnd,   0, Height, przewThick+przewMarg, Window.height-przewMarg));
     glColorv(Gray3Single);
     glRecti(przewMarg, visibleYStart, przewThick-przewMarg, visibleYEnd);
    end;
@@ -387,26 +387,26 @@ begin
  end;
 end;
 
-procedure IdleGL(glwin: TGLWindow);
+procedure IdleGL(Window: TGLWindow);
 
   procedure MoveGL(var value: TGLfloat; change: TGLfloat);
   begin
-   change *= 8*glwin.Fps.IdleSpeed * 50;
-   if glw.Pressed[k_Ctrl] then change *= 10;
+   change *= 8*Window.Fps.IdleSpeed * 50;
+   if Window.Pressed[k_Ctrl] then change *= 10;
    value += change;
-   glw.PostRedisplay;
+   Window.PostRedisplay;
   end;
 
 const SCALE_FACTOR = 0.1;
 var scale_up, scale_down: Single;
 begin
- with glw do begin
+ with Window do begin
   if Pressed[K_Up] then moveGL(MoveY, -1 / zoomY);
   if Pressed[K_Down] then moveGL(MoveY, 1 / zoomY);
   if Pressed[K_Right] then moveGL(MoveX, -1 / zoomX);
   if Pressed[K_Left] then moveGL(MoveX, 1 / zoomX);
 
-  scale_up := 1 + SCALE_FACTOR * glw.Fps.IdleSpeed * 50;
+  scale_up := 1 + SCALE_FACTOR * Window.Fps.IdleSpeed * 50;
   scale_down := 1 / scale_up;
 
   if Pressed[K_Numpad_Plus ] or Pressed[K_Plus ] or Pressed.Characters['+'] then
@@ -432,7 +432,7 @@ begin
  end;
 end;
 
-procedure OpenGL(glwin: TGLWindow);
+procedure OpenGL(Window: TGLWindow);
 begin
  DecompressS3TC := @GLDecompressS3TC;
 
@@ -440,12 +440,12 @@ begin
 
  if SavedErrorMessage <> '' then
  begin
-   MessageOk(Glwin, SavedErrorMessage, taLeft);
+   MessageOk(Window, SavedErrorMessage, taLeft);
    SavedErrorMessage := '';
  end;
 end;
 
-procedure CloseGL(glwin: TGLWindow);
+procedure CloseGL(Window: TGLWindow);
 begin
  DestroyGLImage;
 end;
@@ -478,7 +478,7 @@ begin
     SQuoteMenuEntryCaption(ImageNamesList[i]), 10000 + i));
 end;
 
-procedure MenuCommand(glwin: TGLWindow; Item: TMenuItem);
+procedure MenuCommand(Window: TGLWindow; Item: TMenuItem);
 
   procedure ImageSave;
   var FileName: string;
@@ -486,7 +486,7 @@ procedure MenuCommand(glwin: TGLWindow; Item: TMenuItem);
    if IsImageValid then
    begin
     FileName := ImageFileName;
-    if glwin.FileDialog('Save image to file', FileName, false, SaveImage_FileFilters) then
+    if Window.FileDialog('Save image to file', FileName, false, SaveImage_FileFilters) then
     try
       if DDSImage <> nil then
       begin
@@ -496,17 +496,17 @@ procedure MenuCommand(glwin: TGLWindow; Item: TMenuItem);
           DDSImage.SaveToFile(FileName);
         end else
         begin
-          if MessageYesNo(Glwin, 'DDS image is composed from many single (normal, simple, 2D) images. Saving from DDS image to other file format will only save the current single image layer. Continue?', taLeft) then
+          if MessageYesNo(Window, 'DDS image is composed from many single (normal, simple, 2D) images. Saving from DDS image to other file format will only save the current single image layer. Continue?', taLeft) then
             SaveImage(Image, FileName);
         end;
       end else
         SaveImage(Image, FileName);
     except
       on E: EUnableToSaveImage do
-        MessageOk(Glwin, Format('Saving image "%s" failed: %s', [FileName, E.Message]), taLeft);
+        MessageOk(Window, Format('Saving image "%s" failed: %s', [FileName, E.Message]), taLeft);
     end;
    end else
-    MessageOK(glwin, 'No valid image loaded', taMiddle);
+    MessageOK(Window, 'No valid image loaded', taMiddle);
   end;
 
   procedure ImageOpen;
@@ -515,7 +515,7 @@ procedure MenuCommand(glwin: TGLWindow; Item: TMenuItem);
    if IsImageValid then
     FileName := ExtractFilePath(ImageFileName) else
     FileName := '';
-   if glwin.FileDialog('Load image from file', FileName, true, LoadImage_FileFilters) then
+   if Window.FileDialog('Load image from file', FileName, true, LoadImage_FileFilters) then
    begin
      THelper.FileOpen(FileName);
    end;
@@ -550,7 +550,7 @@ procedure MenuCommand(glwin: TGLWindow; Item: TMenuItem);
     if DDSImage <> nil then
       S += NL + Format('DDS subimage: %d', [DDSImageIndex]) + NL +
         DDSImageInfo(DDSImage);
-    MessageOK(Glwin, S, taLeft);
+    MessageOK(Window, S, taLeft);
    end;
 
   procedure ShowAbout;
@@ -575,7 +575,7 @@ procedure MenuCommand(glwin: TGLWindow; Item: TMenuItem);
       Format('Image list (%d images) :', [ImageNamesList.Count])], SList);
     SList.AddStrings(ImageNamesList); }
 
-    MessageOK(glwin, SList, taLeft);
+    MessageOK(Window, SList, taLeft);
    finally SList.Free end;
   end;
 
@@ -583,7 +583,7 @@ procedure MenuCommand(glwin: TGLWindow; Item: TMenuItem);
   begin
     Result := (Image is TRGBImage) or (Image is TRGBAlphaImage);
     if not Result then
-      MessageOk(Glwin, 'This function is not available for grayscale images.');
+      MessageOk(Window, 'This function is not available for grayscale images.');
   end;
 
   procedure ImageClear;
@@ -594,7 +594,7 @@ procedure MenuCommand(glwin: TGLWindow; Item: TMenuItem);
     if CheckNotGrayscale then
     begin
       Color3 := Vector3Byte(255, 255, 255);
-      if glwin.ColorDialog(Color3) then
+      if Window.ColorDialog(Color3) then
       begin
         Color4[3] := 255;
         DestroyGLImage;
@@ -608,9 +608,9 @@ procedure MenuCommand(glwin: TGLWindow; Item: TMenuItem);
   procedure EasyChangeDDSImageIndex(Change: Integer);
   begin
     if DDSImage <> nil then
-      ChangeDDSImageIndex(Glwin, ChangeIntCycle(
+      ChangeDDSImageIndex(Window, ChangeIntCycle(
         DDSImageIndex, Change, DDSImage.Images.Count - 1)) else
-      MessageOk(Glwin, 'Available only for DDS images.');
+      MessageOk(Window, 'Available only for DDS images.');
   end;
 
 var change: TGLfloat;
@@ -618,20 +618,20 @@ begin
  case Item.IntData of
   110: ImageOpen;
   120: ImageSave;
-  140: glwin.Close;
+  140: Window.Close;
 
   210: begin
-        change:=(glwin.Width / Image.Width) / zoomx;
+        change:=(Window.Width / Image.Width) / zoomx;
         MultZoomGL(ZoomX, change);
         MultZoomGL(ZoomY, change);
        end;
   211: begin
-        change:=(glwin.Height / Image.Height) / zoomy;
+        change:=(Window.Height / Image.Height) / zoomy;
         MultZoomGL(ZoomX, change);
         MultZoomGL(ZoomY, change);
        end;
-  220: SetZoomGL(ZoomX, glwin.Width / Image.Width);
-  221: SetZoomGL(ZoomY, glwin.Height / Image.Height);
+  220: SetZoomGL(ZoomX, Window.Width / Image.Width);
+  221: SetZoomGL(ZoomY, Window.Height / Image.Height);
   230: DrawTiled := not DrawTiled;
   240: begin
         SetZoomGL(ZoomX, 1.0);
@@ -639,9 +639,9 @@ begin
         MoveX := 0;
         MoveY := 0;
        end;
-  250: glw.SwapFullScreen;
+  250: (Window as TGLUIWindow).SwapFullScreen;
 
-  260: if glwin.ColorDialog(BackgroundColor) then
+  260: if Window.ColorDialog(BackgroundColor) then
          glClearColor(BackgroundColor[0], BackgroundColor[1], BackgroundColor[2], 1);
 
   310: ChangeImageNamesListPos(-1);
@@ -710,7 +710,7 @@ begin
   else
    SetImageNamesListPos(Item.IntData - 10000);
  end;
- glwin.PostRedisplay;
+ Window.PostRedisplay;
 end;
 
 { This assumes that ImageNamesList is empty, so be sure to call this before
@@ -745,7 +745,7 @@ begin
    M.Append(TMenuItem.Create('Background color ...',                260));
    M.Append(TMenuSeparator.Create);
    M.Append(TMenuItemChecked.Create('_FullScreen on/off',           250, K_F11,
-     glw.FullScreen, true));
+     Window.FullScreen, true));
    Result.Append(M);
  M := TMenu.Create('_Edit');
    M.Append(TMenuItem.Create('_Grayscale',                          410));
@@ -858,7 +858,7 @@ var
   i: Integer;
   SpecifiedOptions: TGLWindowParseOptions;
 begin
- Glw := TGLWindowDemo.Create(Application);
+ Window := TGLWindowDemo.Create(Application);
 
  DataWarning := @DataWarning_Write;
 
@@ -869,11 +869,11 @@ begin
   RecentMenu := TGLRecentFiles.Create(nil);
   RecentMenu.LoadFromConfig(ConfigFile, 'recent_files');
   RecentMenu.OnOpenRecent := @THelper(nil).FileOpen;
-  glw.MainMenu := CreateMainMenu;
-  glw.OnMenuCommand := @MenuCommand;
+  Window.MainMenu := CreateMainMenu;
+  Window.OnMenuCommand := @MenuCommand;
 
   { parse glw options }
-  glw.ParseParameters(StandardParseOptions, SpecifiedOptions);
+  Window.ParseParameters(StandardParseOptions, SpecifiedOptions);
   { parse our options }
   ParseParameters(Options, @OptionProc, nil);
 
@@ -909,15 +909,15 @@ begin
     as we want to use Image size for initial window size. }
   try
     if ImageNamesList.Objects[ImageNamesListPos] = nil then
-      CreateNonGLImage(glw, ImageNamesList[ImageNamesListPos]) else
-      CreateNonGLImage(glw,
+      CreateNonGLImage(Window, ImageNamesList[ImageNamesListPos]) else
+      CreateNonGLImage(Window,
         TImage(ImageNamesList.Objects[ImageNamesListPos]).MakeCopy,
         ImageNamesList[ImageNamesListPos]);
   except
    on E: Exception do
    begin
     SavedErrorMessage := ExceptMessage(E, nil);
-    CreateNonGLImageInvalid(glw, ImageNamesList[ImageNamesListPos]);
+    CreateNonGLImageInvalid(Window, ImageNamesList[ImageNamesListPos]);
    end;
   end;
 
@@ -940,21 +940,21 @@ begin
        and having to display scrollbars. (see GLWindow WinAPI comments about
        AdjustWindowRectEx, this is documented WinAPI bug without any sensible
        workaround.) }
-   glw.width  := Clamped(Image.Width , 400, Application.ScreenWidth -50);
-   glw.height := Clamped(Image.Height, 400, Application.ScreenHeight-50);
+   Window.width  := Clamped(Image.Width , 400, Application.ScreenWidth -50);
+   Window.height := Clamped(Image.Height, 400, Application.ScreenHeight-50);
   end;
 
   {go for it}
-  glw.OnIdle := @idleGL;
-  glw.OnDraw := @DrawGL;
-  glw.OnOpen := @OpenGL;
-  glw.OnClose := @CloseGL;
-  glw.OnResize := @Resize2D;
+  Window.OnIdle := @idleGL;
+  Window.OnDraw := @DrawGL;
+  Window.OnOpen := @OpenGL;
+  Window.OnClose := @CloseGL;
+  Window.OnResize := @Resize2D;
 
-  glw.Fps.Active := true;
-  glw.DepthBufferBits := 0; { depth buffer not needed here }
-  glw.SetDemoOptions(K_None, #0, false);
-  glw.OpenAndRun;
+  Window.Fps.Active := true;
+  Window.DepthBufferBits := 0; { depth buffer not needed here }
+  Window.SetDemoOptions(K_None, #0, false);
+  Window.OpenAndRun;
 
   RecentMenu.SaveToConfig(ConfigFile, 'recent_files');
  finally
