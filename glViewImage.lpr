@@ -37,6 +37,7 @@ var
   DrawTiled: boolean = false;
   BackgroundColor: TVector3Single;
   SavedErrorMessage: string = '';
+  UseImageAlpha: boolean = true;
 
 { Lista nazw obrazkow --------------------------------------------------------
 
@@ -219,7 +220,7 @@ procedure DrawGL(Window: TGLWindow);
 
    glRasterPos2f(rx, ry);
 
-   if Image.HasAlpha then
+   if Image.HasAlpha and UseImageAlpha then
    begin
      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
      glEnable(GL_BLEND);
@@ -241,7 +242,7 @@ procedure DrawGL(Window: TGLWindow);
      ImageDrawPart(Image, cutX, cutY);
    end;
 
-   if Image.HasAlpha then
+   if Image.HasAlpha and UseImageAlpha then
      glDisable(GL_BLEND);
   end;
 
@@ -643,6 +644,7 @@ begin
 
   260: if Window.ColorDialog(BackgroundColor) then
          glClearColor(BackgroundColor[0], BackgroundColor[1], BackgroundColor[2], 1);
+  270: UseImageAlpha := not UseImageAlpha;
 
   310: ChangeImageNamesListPos(-1);
   311: ChangeImageNamesListPos(+1);
@@ -742,6 +744,7 @@ begin
    M.Append(TMenuSeparator.Create);
    M.Append(TMenuItem.Create('No _zoom and no translation',         240, K_Home));
    M.Append(TMenuSeparator.Create);
+   M.Append(TMenuItemChecked.Create('Use Image Alpha Channel', 270,  UseImageAlpha, true));
    M.Append(TMenuItem.Create('Background color ...',                260));
    M.Append(TMenuSeparator.Create);
    M.Append(TMenuItemChecked.Create('_FullScreen on/off',           250, K_F11,
