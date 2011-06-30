@@ -24,10 +24,10 @@ program glViewImage;
 
 {$apptype GUI}
 
-uses GLWindow, GL, GLU, GLExt, KambiGLUtils, SysUtils, KambiUtils, Images,
-  OpenGLBmpFonts, OpenGLFonts, Math, Classes, KambiClassUtils,
+uses GLWindow, GL, KambiGLUtils, SysUtils, KambiUtils, Images,
+  Math, Classes, KambiClassUtils,
   GLWinMessages, ImageLoading, ParseParametersUnit, GVIImages, EnumerateFiles,
-  VectorMath, KambiStringUtils, DataErrors, GLImages, FileFilters,
+  VectorMath, KambiStringUtils, DataErrors, GLImages,
   GLWindowRecentFiles, GVIConfig, DDS, KambiFilesUtils;
 
 var

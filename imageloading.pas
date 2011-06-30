@@ -34,7 +34,7 @@ unit ImageLoading;
 
 interface
 
-uses GL, GLU, GLExt, KambiGLUtils, SysUtils, KambiUtils, Images, Math, Classes,
+uses GL, KambiGLUtils, SysUtils, KambiUtils, Images, Classes,
   KambiClassUtils, GLWinMessages, GLWindow, GLImages, DDS,
   GLWindowRecentFiles;
 
