@@ -27,7 +27,7 @@ program glViewImage;
 uses GLWindow, GL, KambiGLUtils, SysUtils, KambiUtils, Images,
   Math, Classes, KambiClassUtils,
   GLWinMessages, ImageLoading, ParseParametersUnit, GVIImages, EnumerateFiles,
-  VectorMath, KambiStringUtils, DataErrors, GLImages,
+  VectorMath, KambiStringUtils, KambiWarnings, GLImages,
   GLWindowRecentFiles, GVIConfig, DDS, KambiFilesUtils;
 
 var
@@ -863,7 +863,7 @@ var
 begin
  Window := TGLWindowDemo.Create(Application);
 
- DataWarning := @DataWarning_Write;
+ OnWarning := @OnWarningWrite;
 
  ImageNamesList := TStringList.Create;
  try
