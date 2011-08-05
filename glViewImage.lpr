@@ -26,7 +26,7 @@ program glViewImage;
 
 uses GLWindow, GL, KambiGLUtils, SysUtils, KambiUtils, Images,
   Math, Classes, KambiClassUtils,
-  GLWinMessages, ImageLoading, ParseParametersUnit, GVIImages, EnumerateFiles,
+  GLWinMessages, ImageLoading, KambiParameters, GVIImages, EnumerateFiles,
   VectorMath, KambiStringUtils, KambiWarnings, GLImages,
   GLWindowRecentFiles, GVIConfig, DDS, KambiFilesUtils;
 
@@ -878,7 +878,7 @@ begin
   { parse glw options }
   Window.ParseParameters(StandardParseOptions, SpecifiedOptions);
   { parse our options }
-  ParseParameters(Options, @OptionProc, nil);
+  Parameters.Parse(Options, @OptionProc, nil);
 
   { evaluate ImageNamesList = parse the list of image files to open }
   if Parameters.High = 0 then
