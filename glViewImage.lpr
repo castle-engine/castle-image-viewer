@@ -503,7 +503,7 @@ procedure MenuCommand(Window: TGLWindow; Item: TMenuItem);
       end else
         SaveImage(Image, FileName);
     except
-      on E: EUnableToSaveImage do
+      on E: EImageSaveError do
         MessageOk(Window, Format('Saving image "%s" failed: %s', [FileName, E.Message]), taLeft);
     end;
    end else
