@@ -567,7 +567,7 @@ procedure MenuCommand(Window: TGLWindow; Item: TMenuItem);
       'x / X: scale only horizontally,',
       'y / Y: scale only vertically.',
       ''], SList);
-    Strings_AddVrmlEngineProgramHelpSuffix(SList,
+    Strings_AddCastleEngineProgramHelpSuffix(SList,
       DisplayProgramName, Version, false);
 
     { Don't show this, long and useless for normal user:
@@ -843,7 +843,7 @@ begin
         nl+
         'By default, window size will be the same as of the first loaded image.'+nl+
         nl+
-        SVrmlEngineProgramHelpSuffix(DisplayProgramName, Version, true)]);
+        SCastleEngineProgramHelpSuffix(DisplayProgramName, Version, true)]);
 
       ProgramBreak;
      end;
