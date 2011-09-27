@@ -640,7 +640,7 @@ begin
         MoveX := 0;
         MoveY := 0;
        end;
-  250: (Window as TGLUIWindow).SwapFullScreen;
+  250: (Window as TGLWindowDemo).SwapFullScreen;
 
   260: if Window.ColorDialog(BackgroundColor) then
          glClearColor(BackgroundColor[0], BackgroundColor[1], BackgroundColor[2], 1);
@@ -956,7 +956,6 @@ begin
 
   Window.Fps.Active := true;
   Window.DepthBufferBits := 0; { depth buffer not needed here }
-  Window.SetDemoOptions(K_None, #0, false);
   Window.OpenAndRun;
 
   RecentMenu.SaveToConfig(ConfigFile, 'recent_files');
