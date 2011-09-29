@@ -35,8 +35,8 @@ unit ImageLoading;
 interface
 
 uses GL, CastleGLUtils, SysUtils, CastleUtils, Images, Classes,
-  CastleClassUtils, GLWinMessages, GLWindow, GLImages, DDS,
-  GLWindowRecentFiles;
+  CastleClassUtils, CastleMessages, CastleWindow, GLImages, DDS,
+  CastleRecentFiles;
 
 { Below is "image state". The idea is that for the whole time of a program
   this module manages one image. An image is:
@@ -140,7 +140,7 @@ procedure CreateImage(Window: TCastleWindowBase; const fname: string);
 
 { Takes the already created Image instance, and makes it loaded.
 
-  Just like regular CreateImage(glwindow, filename),
+  Just like regular CreateImage(Window, filename),
   only it doesn't load image from file, but takes ready
   Image instance (you should leave further freeing of this Image
   to this unit, don't mess with it yourself). }

@@ -24,11 +24,11 @@ program glViewImage;
 
 {$apptype GUI}
 
-uses GLWindow, GL, CastleGLUtils, SysUtils, CastleUtils, Images,
+uses CastleWindow, GL, CastleGLUtils, SysUtils, CastleUtils, Images,
   Math, Classes, CastleClassUtils,
-  GLWinMessages, ImageLoading, CastleParameters, GVIImages, EnumerateFiles,
+  CastleMessages, ImageLoading, CastleParameters, GVIImages, EnumerateFiles,
   VectorMath, CastleStringUtils, CastleWarnings, GLImages,
-  GLWindowRecentFiles, GVIConfig, DDS, CastleFilesUtils;
+  CastleRecentFiles, GVIConfig, DDS, CastleFilesUtils;
 
 var
   Window: TCastleWindowDemo;
@@ -924,8 +924,8 @@ begin
    end;
   end;
 
-  {inicjuj GLWinMessages}
-  GLWinMessagesTheme.TextCol := Green3Single;
+  {inicjuj CastleMessages}
+  MessagesTheme.TextCol := Green3Single;
 
   {set size, unless already requested some size}
   if not (poGeometry in SpecifiedOptions) then
@@ -940,7 +940,7 @@ begin
        if command-line image is invalid.)
        Under Windows, this also should avoid menu bar wrapping (at least with
        typical themes), which avoids accidentaly creating too small OpenGL area
-       and having to display scrollbars. (see GLWindow WinAPI comments about
+       and having to display scrollbars. (see CastleWindow WinAPI comments about
        AdjustWindowRectEx, this is documented WinAPI bug without any sensible
        workaround.) }
    Window.width  := Clamped(Image.Width , 400, Application.ScreenWidth -50);
