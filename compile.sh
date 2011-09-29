@@ -11,7 +11,7 @@ set -eu
 
 cd ../castle_game_engine/
 
-# Force rebuilding GLWindow unit with proper backend.
-make clean-glwindow
+# Force rebuilding CastleWindow unit with proper backend.
+make clean-window
 
 fpc -dRELEASE "${KAMBI_FPC_OPTIONS:-}" @kambi.cfg ../glviewimage/glViewImage.lpr
