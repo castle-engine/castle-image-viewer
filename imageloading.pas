@@ -34,8 +34,8 @@ unit ImageLoading;
 
 interface
 
-uses GL, KambiGLUtils, SysUtils, KambiUtils, Images, Classes,
-  KambiClassUtils, GLWinMessages, GLWindow, GLImages, DDS,
+uses GL, CastleGLUtils, SysUtils, CastleUtils, Images, Classes,
+  CastleClassUtils, GLWinMessages, GLWindow, GLImages, DDS,
   GLWindowRecentFiles;
 
 { Below is "image state". The idea is that for the whole time of a program

@@ -24,11 +24,11 @@ program glViewImage;
 
 {$apptype GUI}
 
-uses GLWindow, GL, KambiGLUtils, SysUtils, KambiUtils, Images,
-  Math, Classes, KambiClassUtils,
-  GLWinMessages, ImageLoading, KambiParameters, GVIImages, EnumerateFiles,
-  VectorMath, KambiStringUtils, KambiWarnings, GLImages,
-  GLWindowRecentFiles, GVIConfig, DDS, KambiFilesUtils;
+uses GLWindow, GL, CastleGLUtils, SysUtils, CastleUtils, Images,
+  Math, Classes, CastleClassUtils,
+  GLWinMessages, ImageLoading, CastleParameters, GVIImages, EnumerateFiles,
+  VectorMath, CastleStringUtils, CastleWarnings, GLImages,
+  GLWindowRecentFiles, GVIConfig, DDS, CastleFilesUtils;
 
 var
   Window: TCastleWindowDemo;
