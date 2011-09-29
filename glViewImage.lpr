@@ -31,7 +31,7 @@ uses GLWindow, GL, KambiGLUtils, SysUtils, KambiUtils, Images,
   GLWindowRecentFiles, GVIConfig, DDS, KambiFilesUtils;
 
 var
-  Window: TGLWindowDemo;
+  Window: TCastleWindowDemo;
   MoveX: TGLfloat = 0;
   MoveY: TGLfloat = 0;
   DrawTiled: boolean = false;
@@ -186,7 +186,7 @@ end;
 
 { glw callbacks ---------------------------------------------------------- }
 
-procedure DrawGL(Window: TGLWindow);
+procedure DrawGL(Window: TCastleWindowBase);
 
   procedure Arrow(const Angle: TGLfloat);
   begin
@@ -388,7 +388,7 @@ begin
  end;
 end;
 
-procedure IdleGL(Window: TGLWindow);
+procedure IdleGL(Window: TCastleWindowBase);
 
   procedure MoveGL(var value: TGLfloat; change: TGLfloat);
   begin
@@ -433,7 +433,7 @@ begin
  end;
 end;
 
-procedure OpenGL(Window: TGLWindow);
+procedure OpenGL(Window: TCastleWindowBase);
 begin
  DecompressS3TC := @GLDecompressS3TC;
 
@@ -446,7 +446,7 @@ begin
  end;
 end;
 
-procedure CloseGL(Window: TGLWindow);
+procedure CloseGL(Window: TCastleWindowBase);
 begin
  DestroyGLImage;
 end;
@@ -479,7 +479,7 @@ begin
     SQuoteMenuEntryCaption(ImageNamesList[i]), 10000 + i));
 end;
 
-procedure MenuCommand(Window: TGLWindow; Item: TMenuItem);
+procedure MenuCommand(Window: TCastleWindowBase; Item: TMenuItem);
 
   procedure ImageSave;
   var FileName: string;
@@ -640,7 +640,7 @@ begin
         MoveX := 0;
         MoveY := 0;
        end;
-  250: (Window as TGLWindowDemo).SwapFullScreen;
+  250: (Window as TCastleWindowDemo).SwapFullScreen;
 
   260: if Window.ColorDialog(BackgroundColor) then
          glClearColor(BackgroundColor[0], BackgroundColor[1], BackgroundColor[2], 1);
@@ -839,7 +839,7 @@ begin
         HelpOptionHelp+ nl+
         VersionOptionHelp +nl+
         nl+
-        TGLWindow.ParseParametersHelp(StandardParseOptions, true) +nl+
+        TCastleWindowBase.ParseParametersHelp(StandardParseOptions, true) +nl+
         nl+
         'By default, window size will be the same as of the first loaded image.'+nl+
         nl+
@@ -859,9 +859,9 @@ end;
 
 var
   i: Integer;
-  SpecifiedOptions: TGLWindowParseOptions;
+  SpecifiedOptions: TWindowParseOptions;
 begin
- Window := TGLWindowDemo.Create(Application);
+ Window := TCastleWindowDemo.Create(Application);
 
  OnWarning := @OnWarningWrite;
 
@@ -869,7 +869,7 @@ begin
  try
   { init menu things. We must do it before we add something to ImageNamesList,
     this is required by CreateMainMenu. }
-  RecentMenu := TGLRecentFiles.Create(nil);
+  RecentMenu := TCastleRecentFiles.Create(nil);
   RecentMenu.LoadFromConfig(ConfigFile, 'recent_files');
   RecentMenu.OnOpenRecent := @THelper(nil).FileOpen;
   Window.MainMenu := CreateMainMenu;
