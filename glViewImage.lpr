@@ -28,7 +28,7 @@ uses CastleWindow, GL, CastleGLUtils, SysUtils, CastleUtils, Images,
   Math, Classes, CastleClassUtils,
   CastleMessages, ImageLoading, CastleParameters, GVIImages, EnumerateFiles,
   VectorMath, CastleStringUtils, CastleWarnings, GLImages,
-  CastleRecentFiles, GVIConfig, DDS, CastleFilesUtils;
+  CastleRecentFiles, GVIConfig, DDS, CastleFilesUtils, CastleColors;
 
 var
   Window: TCastleWindowDemo;
