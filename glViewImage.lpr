@@ -954,7 +954,6 @@ begin
   Window.OnClose := @CloseGL;
   Window.OnResize := @Resize2D;
 
-  Window.Fps.Active := true;
   Window.DepthBufferBits := 0; { depth buffer not needed here }
   Window.OpenAndRun;
 
