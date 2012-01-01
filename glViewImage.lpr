@@ -963,10 +963,3 @@ begin
   FreeAndNil(RecentMenu);
  end;
 end.
-
-{
-  Local Variables:
-  kam-compile-release-command-unix:    "./compile.sh && mv -fv glViewImage      ~/bin/"
-  kam-compile-release-command-windows: "./compile.sh && mv -fv glViewImage.exe c:\\\\bin\\\\"
-  End:
-}
