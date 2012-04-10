@@ -76,7 +76,7 @@ begin
  if ImageNamesList.Objects[ImageNamesListPos] = nil then
    CreateImage(Window, ImageNamesList[ImageNamesListPos]) else
    CreateImage(Window,
-     TImage(ImageNamesList.Objects[ImageNamesListPos]).MakeCopy,
+     TCastleImage(ImageNamesList.Objects[ImageNamesListPos]).MakeCopy,
      ImageNamesList[ImageNamesListPos]);
 
  Window.PostRedisplay;
@@ -914,7 +914,7 @@ begin
     if ImageNamesList.Objects[ImageNamesListPos] = nil then
       CreateNonGLImage(Window, ImageNamesList[ImageNamesListPos]) else
       CreateNonGLImage(Window,
-        TImage(ImageNamesList.Objects[ImageNamesListPos]).MakeCopy,
+        TCastleImage(ImageNamesList.Objects[ImageNamesListPos]).MakeCopy,
         ImageNamesList[ImageNamesListPos]);
   except
    on E: Exception do

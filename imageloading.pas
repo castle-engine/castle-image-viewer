@@ -47,7 +47,7 @@ uses GL, CastleGLUtils, SysUtils, CastleUtils, Images, Classes,
      and you can freely switch from one gl context to another without
      having to change these things. }
 var
-  Image: TImage;
+  Image: TCastleImage;
 
   { ImageExpand to ten sam image co Image ale rozszerzony o jedna kolumne wiecej
     i jeden wiersz wiecej (ostatnia kolumna i ostatni wiersz sa powielone na koncu).
@@ -67,7 +67,7 @@ var
     o ostatnia kolumne. Jezeli rysy by tam nie bylo to ta ostatnia kolumna
     zostanie przykrywa przez poczatek rysunku obok, wpp. ostatnia kolumna
     zamaluje nam miejsce gdzie bylaby rysa. }
-  ImageExpand: TImage;
+  ImageExpand: TCastleImage;
 
   { This is not valid when not IsImageValid }
   ImageFileName: string;
@@ -89,7 +89,7 @@ procedure CreateNonGLImage(Window: TCastleWindowBase; const fname: string); over
 { About this version of CreateNonGLImage: you can give already loaded
   image. After calling this CreateNonGLImage you must STOP managing
   this NewImage - it will be managed (and freed) by this unit. }
-procedure CreateNonGLImage(Window: TCastleWindowBase; const NewImage: TImage;
+procedure CreateNonGLImage(Window: TCastleWindowBase; const NewImage: TCastleImage;
   const NewImageFileName: string); overload;
 
 { ErrorFileName is used for Window.Caption suffix,
@@ -144,7 +144,7 @@ procedure CreateImage(Window: TCastleWindowBase; const fname: string);
   only it doesn't load image from file, but takes ready
   Image instance (you should leave further freeing of this Image
   to this unit, don't mess with it yourself). }
-procedure CreateImage(Window: TCastleWindowBase; Image: TImage; const Name: string);
+procedure CreateImage(Window: TCastleWindowBase; Image: TCastleImage; const Name: string);
 
 { Change DDSImageIndex.
 
@@ -167,10 +167,10 @@ uses GVIImages;
 { zwraca Image ktory ma ostatnia (prawa) kolumne powtorzona i
   powtorzony ostatni (gorny) wiersz. Wiec wynik ma o jeden wieksze
   Width i Height. (prawy-gorny pixel tez jest powtorzony, konsekwentnie). }
-function ImageDuplicatedLastRowCol(const Image: TImage): TImage;
+function ImageDuplicatedLastRowCol(const Image: TCastleImage): TCastleImage;
 var y: integer;
 begin
- Result := TImageClass(Image.ClassType).Create(Image.Width+1, Image.Height+1);
+ Result := TCastleImageClass(Image.ClassType).Create(Image.Width+1, Image.Height+1);
  try
   for y := 0 to Image.Height-1 do
   begin
@@ -223,8 +223,8 @@ begin
   DestroyNonGLImage;
   DDSImage := NewImage;
   DDSImageIndex := 0;
-  if DDSImage.Images[0] is TImage then
-    Image := TImage(DDSImage.Images[0]) else
+  if DDSImage.Images[0] is TCastleImage then
+    Image := TCastleImage(DDSImage.Images[0]) else
     raise Exception.Create('glViewImage cannot display S3TC compressed textures from DDS');
   ImageExpand := ImageDuplicatedLastRowCol(Image);
   ImageFileName := NewImageFileName;
@@ -232,7 +232,7 @@ begin
   UpdateCaption(Window);
 end;
 
-procedure InternalCreateNonGLImage(Window: TCastleWindowBase; const NewImage: TImage;
+procedure InternalCreateNonGLImage(Window: TCastleWindowBase; const NewImage: TCastleImage;
   const NewImageFileName: string; NewIsImageValid: boolean);
 begin
   DestroyNonGLImage;
@@ -272,7 +272,7 @@ begin
   RecentMenu.Add(FName);
 end;
 
-procedure CreateNonGLImage(Window: TCastleWindowBase; const NewImage: TImage;
+procedure CreateNonGLImage(Window: TCastleWindowBase; const NewImage: TCastleImage;
   const NewImageFileName: string);
 begin
  InternalCreateNonGLImage(Window, NewImage, NewImageFileName, true);
@@ -335,7 +335,7 @@ begin
   CreateGLImage;
 end;
 
-procedure CreateImage(Window: TCastleWindowBase; Image: TImage; const Name: string);
+procedure CreateImage(Window: TCastleWindowBase; Image: TCastleImage; const Name: string);
 begin
   DestroyGLImage;
   DestroyNonGLImage;
@@ -352,7 +352,7 @@ begin
   DestroyGLImage;
 
   DDSImageIndex := NewIndex;
-  Image := DDSImage.Images[NewIndex] as TImage;
+  Image := DDSImage.Images[NewIndex] as TCastleImage;
 
   RemakeImageExpand;
 
