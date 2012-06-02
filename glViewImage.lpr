@@ -954,7 +954,7 @@ begin
   Window.OnClose := @CloseGL;
   Window.OnResize := @Resize2D;
 
-  Window.DepthBufferBits := 0; { depth buffer not needed here }
+  Window.DepthBits := 0; { depth buffer not needed here }
   Window.OpenAndRun;
 
   RecentMenu.SaveToConfig(ConfigFile, 'recent_files');
