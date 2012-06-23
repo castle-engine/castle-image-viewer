@@ -28,7 +28,7 @@ uses CastleWindow, GL, CastleGLUtils, SysUtils, CastleUtils, Images,
   Math, Classes, CastleClassUtils,
   CastleMessages, ImageLoading, CastleParameters, GVIImages, EnumerateFiles,
   VectorMath, CastleStringUtils, CastleWarnings, GLImages,
-  CastleRecentFiles, GVIConfig, DDS, CastleFilesUtils, CastleColors;
+  CastleRecentFiles, DDS, CastleFilesUtils, CastleColors, CastleConfig;
 
 var
   Window: TCastleWindowDemo;
@@ -870,10 +870,11 @@ begin
   { init menu things. We must do it before we add something to ImageNamesList,
     this is required by CreateMainMenu. }
   RecentMenu := TCastleRecentFiles.Create(nil);
-  RecentMenu.LoadFromConfig(ConfigFile, 'recent_files');
   RecentMenu.OnOpenRecent := @THelper(nil).FileOpen;
   Window.MainMenu := CreateMainMenu;
   Window.OnMenuCommand := @MenuCommand;
+
+  Config.Load;
 
   { parse glw options }
   Window.ParseParameters(StandardParseOptions, SpecifiedOptions);
@@ -957,7 +958,7 @@ begin
   Window.DepthBits := 0; { depth buffer not needed here }
   Window.OpenAndRun;
 
-  RecentMenu.SaveToConfig(ConfigFile, 'recent_files');
+  Config.Save;
  finally
   FreeAndNil(ImageNamesList);
   FreeAndNil(RecentMenu);
