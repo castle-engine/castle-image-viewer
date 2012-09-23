@@ -6,7 +6,7 @@ unit GVIImages;
 
 interface
 
-uses Images;
+uses CastleImages;
 
 var
   Invalid: TRGBImage;

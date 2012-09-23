@@ -24,7 +24,7 @@ program glViewImage;
 
 {$apptype GUI}
 
-uses CastleWindow, GL, CastleGLUtils, SysUtils, CastleUtils, Images,
+uses CastleWindow, GL, CastleGLUtils, SysUtils, CastleUtils, CastleImages,
   Math, Classes, CastleClassUtils,
   CastleMessages, ImageLoading, CastleParameters, GVIImages, EnumerateFiles,
   VectorMath, CastleStringUtils, CastleWarnings, GLImages,
