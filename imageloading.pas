@@ -115,8 +115,8 @@ procedure RemakeImageExpand;
      created BEFORE creating things in point 1 and MUST be freed BEFORE
      freeing things in point 1.  }
 var
-  dlDrawImage: TGLuint = 0;
-  dlDrawImageExpand: TGLuint = 0;
+  GLImage: TGLImage;
+  GLImageExpand: TGLImage;
 
 { Note: CreateGLImage first automatically calls DestroyGLImage }
 procedure CreateGLImage;
@@ -303,16 +303,16 @@ end;
 procedure CreateGLImage;
 begin
  DestroyGLImage;
- dlDrawImage := ImageDrawToDisplayList(Image);
- dlDrawImageExpand := ImageDrawToDisplayList(ImageExpand);
+ GLImage := TGLImage.Create(Image);
+ GLImageExpand := TGLImage.Create(ImageExpand);
 end;
 
 { Zwolnij rzeczy inicjowane przez CreateGLImage.
   To zwalnianie moze wymagac kontekstu OpenGLa. }
 procedure DestroyGLImage;
 begin
- glFreeDisplayList(dlDrawImage);
- glFreeDisplayList(dlDrawImageExpand);
+ FreeAndNil(GLImage);
+ FreeAndNil(GLImageExpand);
 end;
 
 procedure CreateImage(Window: TCastleWindowBase; const fname: string);

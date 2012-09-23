@@ -233,12 +233,12 @@ procedure DrawGL(Window: TCastleWindowBase);
    if DrawTiled then
    begin
     if (cutx = 0) and (cuty = 0) then
-     glCallList(dlDrawImageExpand) else
+     GLImageExpand.Draw else
      ImageDrawPart(ImageExpand, cutX, cutY);
    end else
    begin
     if (cutx = 0) and (cuty = 0) then
-     glCallList(dlDrawImage) else
+     GLImage.Draw else
      ImageDrawPart(Image, cutX, cutY);
    end;
 
