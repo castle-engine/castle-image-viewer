@@ -265,7 +265,7 @@ begin
   end else
   begin
     InternalCreateNonGLImage(Window,
-      LoadImage(fname, PixelsImageClasses, []), fname, true);
+      LoadImage(fname, PixelsImageClasses), fname, true);
   end;
   { If InternalCreateNonGLImage went without exceptions,
     add to RecentMenu. }
