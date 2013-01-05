@@ -35,7 +35,7 @@ unit ImageLoading;
 interface
 
 uses GL, CastleGLUtils, SysUtils, CastleUtils, CastleImages, Classes,
-  CastleClassUtils, CastleMessages, CastleWindow, GLImages, DDS,
+  CastleClassUtils, CastleMessages, CastleWindow, CastleGLImages, CastleDDS,
   CastleWindowRecentFiles;
 
 { Below is "image state". The idea is that for the whole time of a program

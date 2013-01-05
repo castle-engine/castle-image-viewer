@@ -26,9 +26,9 @@ program glViewImage;
 
 uses CastleWindow, GL, CastleGLUtils, SysUtils, CastleUtils, CastleImages,
   Math, Classes, CastleClassUtils,
-  CastleMessages, ImageLoading, CastleParameters, GVIImages, EnumerateFiles,
-  CastleVectors, CastleStringUtils, CastleWarnings, GLImages,
-  CastleWindowRecentFiles, DDS, CastleFilesUtils, CastleColors, CastleConfig,
+  CastleMessages, ImageLoading, CastleParameters, GVIImages, CastleEnumerateFiles,
+  CastleVectors, CastleStringUtils, CastleWarnings, CastleGLImages,
+  CastleWindowRecentFiles, CastleDDS, CastleFilesUtils, CastleColors, CastleConfig,
   CastleKeysMouse;
 
 var
