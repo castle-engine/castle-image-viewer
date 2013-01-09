@@ -615,6 +615,24 @@ procedure MenuCommand(Window: TCastleWindowBase; Item: TMenuItem);
       MessageOk(Window, 'Available only for DDS images.');
   end;
 
+  procedure DoResize(const Interpolation: TResizeInterpolation);
+  var
+    ResizeToX, ResizeToY: Cardinal;
+  begin
+    ResizeToX := 0;
+    ResizeToY := 0;
+    if MessageInputQueryCardinal(Window,
+      'Resize to given Width (leave 0 to keep current)', ResizeToX, taLeft) then
+    if MessageInputQueryCardinal(Window,
+      'Resize to given Height (leave 0 to keep current)', ResizeToY, taLeft) then
+    begin
+      DestroyGLImage;
+      Image.Resize(ResizeToX, ResizeToY, Interpolation);
+      RemakeImageExpand;
+      CreateGLImage;
+    end;
+  end;
+
 var change: TGLfloat;
 begin
  case Item.IntData of
@@ -710,6 +728,8 @@ begin
   460: ImageClear;
   510: ShowImageInfo;
   520: ShowAbout;
+  600: DoResize(riNearest);
+  610: DoResize(riBilinear);
   else
    SetImageNamesListPos(Item.IntData - 10000);
  end;
@@ -752,6 +772,9 @@ begin
      Window.FullScreen, true));
    Result.Append(M);
  M := TMenu.Create('_Edit');
+   M.Append(TMenuItem.Create('Resize (Nearest) ...',                600));
+   M.Append(TMenuItem.Create('Resize (Bilinear) ...',               610));
+   M.Append(TMenuSeparator.Create);
    M.Append(TMenuItem.Create('_Grayscale',                          410));
    M.Append(TMenuSeparator.Create);
    M.Append(TMenuItem.Create('Convert to _red channel',             420));
