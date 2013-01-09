@@ -195,7 +195,7 @@ procedure DrawGL(Window: TCastleWindowBase);
    glRotatef(Angle, 0, 0, 1);
    glColorv(Yellow3Single);
    glScalef(50, 50, 0);
-   drawArrow;
+   GLDrawArrow;
   end;
 
   procedure drawImage(MoveX, MoveY: Single);
