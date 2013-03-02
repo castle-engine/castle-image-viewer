@@ -202,24 +202,15 @@ procedure DrawGL(Window: TCastleWindowBase);
   {rysuje obrazek Image zgodnie z (zoomx, zomy) i zadanym (MoveX, MoveY).
    (a wiec mozesz zadac move inne niz globalne).
    Zaklada ze glPixelZoom(zoomx, zoomy) zostalo juz wykonane !}
-  var rx, ry: Single;
-      cutx, cuty: Cardinal;
+  var rx, ry: Integer;
   begin
    { na potrzeby przesuwania sie pod ekranie MoveX i MoveY powinny byc float.
      Ale gdy przychodzi do wyswietlania - wygodnie jest jesli move jest integerem.
      Poza tym i tak mnozymy move razy zoom. }
-   rx := MoveX*zoomX;
-   ry := MoveY*zoomY;
+   rx := Round(MoveX * zoomX);
+   ry := Round(MoveY * zoomY);
 
-   { jezeli rX jest ujemne nie mozemy go przekazac glRasterPos bo wtedy sprawimy
-     ze raster position bedzie invalid i glDrawPixels nic nie zrobi. Zamiast
-     tego jesli rX bedzie < 0 to po prostu pomijamy pierwsze -MoveX kolumn
-     z obrazka i ustawiamy rx na 0.
-     Podobnie robimy z MoveY. }
-   if rx < 0 then begin cutx := -Round(MoveX); rx := 0 end else cutx := 0;
-   if ry < 0 then begin cuty := -Round(MoveY); ry := 0 end else cuty := 0;
-
-   glRasterPos2f(rx, ry);
+   SetWindowPos(rx, ry);
 
    if Image.HasAlpha and UseImageAlpha then
    begin
@@ -232,16 +223,8 @@ procedure DrawGL(Window: TCastleWindowBase);
      obrazkow w okienku (zdecydowana wiekszosc z nich bedzie mogla byc rysowana
      display-lista).}
    if DrawTiled then
-   begin
-    if (cutx = 0) and (cuty = 0) then
      GLImageExpand.Draw else
-     ImageDrawPart(ImageExpand, cutX, cutY);
-   end else
-   begin
-    if (cutx = 0) and (cuty = 0) then
-     GLImage.Draw else
-     ImageDrawPart(Image, cutX, cutY);
-   end;
+     GLImage.Draw;
 
    if Image.HasAlpha and UseImageAlpha then
      glDisable(GL_BLEND);
