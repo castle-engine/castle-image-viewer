@@ -463,7 +463,7 @@ begin
     SQuoteMenuEntryCaption(ImageNamesList[i]), 10000 + i));
 end;
 
-procedure MenuCommand(Window: TCastleWindowBase; Item: TMenuItem);
+procedure MenuClick(Window: TCastleWindowBase; Item: TMenuItem);
 
   procedure ImageSave;
   var FileName: string;
@@ -879,7 +879,7 @@ begin
   RecentMenu := TWindowRecentFiles.Create(nil);
   RecentMenu.OnOpenRecent := @THelper(nil).FileOpen;
   Window.MainMenu := CreateMainMenu;
-  Window.OnMenuCommand := @MenuCommand;
+  Window.OnMenuClick := @MenuClick;
 
   Config.Load;
 
