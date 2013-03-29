@@ -450,8 +450,8 @@ var
 procedure ImageNamesListChanged;
 var i: Integer;
 begin
- while ImageListMenu.EntriesCount > 6 do
-  ImageListMenu.EntryDelete(6);
+ while ImageListMenu.Count > 6 do
+  ImageListMenu.Delete(6);
 
  { Do not load all ImageNamesList.Count to the menu,
    as this makes menu very large, making updating it (e.g. when user
