@@ -372,11 +372,11 @@ begin
  end;
 end;
 
-procedure IdleGL(Window: TCastleWindowBase);
+procedure UpdateGL(Window: TCastleWindowBase);
 
   procedure MoveGL(var value: TGLfloat; change: TGLfloat);
   begin
-   change *= 8*Window.Fps.IdleSpeed * 50;
+   change *= 8*Window.Fps.UpdateSecondsPassed * 50;
    if Window.Pressed[k_Ctrl] then change *= 10;
    value += change;
    Window.PostRedisplay;
@@ -391,7 +391,7 @@ begin
   if Pressed[K_Right] then moveGL(MoveX, -1 / zoomX);
   if Pressed[K_Left] then moveGL(MoveX, 1 / zoomX);
 
-  scale_up := 1 + SCALE_FACTOR * Window.Fps.IdleSpeed * 50;
+  scale_up := 1 + SCALE_FACTOR * Window.Fps.UpdateSecondsPassed * 50;
   scale_down := 1 / scale_up;
 
   if Pressed[K_Numpad_Plus ] or Pressed[K_Plus ] or Pressed.Characters['+'] then
@@ -956,7 +956,7 @@ begin
   end;
 
   {go for it}
-  Window.OnIdle := @idleGL;
+  Window.OnUpdate := @UpdateGL;
   Window.OnDraw := @DrawGL;
   Window.OnOpen := @OpenGL;
   Window.OnClose := @CloseGL;
