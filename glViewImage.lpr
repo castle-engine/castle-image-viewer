@@ -472,7 +472,7 @@ procedure MenuClick(Window: TCastleWindowBase; Item: TMenuItem);
    if IsImageValid then
    begin
     URL := ImageURL;
-    if Window.URLDialog('Save image to file', URL, false, SaveImage_FileFilters) then
+    if Window.FileDialog('Save image to file', URL, false, SaveImage_FileFilters) then
     try
       if DDSImage <> nil then
       begin
@@ -501,7 +501,7 @@ procedure MenuClick(Window: TCastleWindowBase; Item: TMenuItem);
    if IsImageValid then
     URL := ExtractURIPath(ImageURL) else
     URL := '';
-   if Window.URLDialog('Load image from file', URL, true, LoadImage_FileFilters) then
+   if Window.FileDialog('Load image from file', URL, true, LoadImage_FileFilters) then
    begin
      THelper.FileOpen(URL);
    end;
