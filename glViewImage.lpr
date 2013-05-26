@@ -29,7 +29,7 @@ uses CastleWindow, GL, CastleGLUtils, SysUtils, CastleUtils, CastleImages,
   CastleMessages, ImageLoading, CastleParameters, GVIImages, CastleEnumerateFiles,
   CastleVectors, CastleStringUtils, CastleWarnings, CastleGLImages,
   CastleWindowRecentFiles, CastleDDS, CastleFilesUtils, CastleColors, CastleConfig,
-  CastleKeysMouse;
+  CastleKeysMouse, CastleURIUtils;
 
 var
   Window: TCastleWindowDemo;
@@ -466,43 +466,44 @@ end;
 procedure MenuClick(Window: TCastleWindowBase; Item: TMenuItem);
 
   procedure ImageSave;
-  var FileName: string;
+  var
+    URL: string;
   begin
    if IsImageValid then
    begin
-    FileName := ImageFileName;
-    if Window.FileDialog('Save image to file', FileName, false, SaveImage_FileFilters) then
+    URL := ImageURL;
+    if Window.URLDialog('Save image to file', URL, false, SaveImage_FileFilters) then
     try
       if DDSImage <> nil then
       begin
-        if FileExtToImageFormatDef(ExtractFileExt(FileName), false, false,
-          ifBMP) = ifDDS then
+        if TDDSImage.MatchesURL(URL) then
         begin
-          DDSImage.SaveToFile(FileName);
+          DDSImage.SaveToFile(URL);
         end else
         begin
           if MessageYesNo(Window, 'DDS image is composed from many single (normal, simple, 2D) images. Saving from DDS image to other file format will only save the current single image layer. Continue?', taLeft) then
-            SaveImage(Image, FileName);
+            SaveImage(Image, URL);
         end;
       end else
-        SaveImage(Image, FileName);
+        SaveImage(Image, URL);
     except
       on E: EImageSaveError do
-        MessageOk(Window, Format('Saving image "%s" failed: %s', [FileName, E.Message]), taLeft);
+        MessageOk(Window, Format('Saving image "%s" failed: %s', [URL, E.Message]), taLeft);
     end;
    end else
     MessageOK(Window, 'No valid image loaded', taMiddle);
   end;
 
   procedure ImageOpen;
-  var FileName: string;
+  var
+    URL: string;
   begin
    if IsImageValid then
-    FileName := ExtractFilePath(ImageFileName) else
-    FileName := '';
-   if Window.FileDialog('Load image from file', FileName, true, LoadImage_FileFilters) then
+    URL := ExtractURIPath(ImageURL) else
+    URL := '';
+   if Window.URLDialog('Load image from file', URL, true, LoadImage_FileFilters) then
    begin
-     THelper.FileOpen(FileName);
+     THelper.FileOpen(URL);
    end;
   end;
 
@@ -527,10 +528,10 @@ procedure MenuClick(Window: TCastleWindowBase; Item: TMenuItem);
   begin
     if IsImageValid then
       S := Format(
-        'File name: %s' + NL +
+        'Image URL: %s' + NL +
         'Class: %s' +NL +
         'Width x height: %d x %d',
-        [ImageFileName, Image.ClassName, Image.Width, Image.Height]) else
+        [ImageURL, Image.ClassName, Image.Width, Image.Height]) else
       S := '<invalid image file>';
     if DDSImage <> nil then
       S += NL + Format('DDS subimage: %d', [DDSImageIndex]) + NL +

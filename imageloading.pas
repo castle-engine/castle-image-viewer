@@ -70,12 +70,12 @@ var
   ImageExpand: TCastleImage;
 
   { This is not valid when not IsImageValid }
-  ImageFileName: string;
+  ImageURL: string;
 
   { Even when this is false, if we are after some successful
     CreateNonGLImage* and before DestroyNonGLImage,
     Image and ImageExpand are initialized (to copies of ImageInvalid).
-    When this is false, ImageFileName should not be read (it has undefined value) }
+    When this is false, ImageURL should not be read (it has undefined value) }
   IsImageValid: boolean = false;
 
   { If you loaded DDS image, then DDSImage <> nil and
@@ -90,12 +90,12 @@ procedure CreateNonGLImage(Window: TCastleWindowBase; const fname: string); over
   image. After calling this CreateNonGLImage you must STOP managing
   this NewImage - it will be managed (and freed) by this unit. }
 procedure CreateNonGLImage(Window: TCastleWindowBase; const NewImage: TCastleImage;
-  const NewImageFileName: string); overload;
+  const NewImageURL: string); overload;
 
-{ ErrorFileName is used for Window.Caption suffix,
+{ ErrorURL is used for Window.Caption suffix,
   give here image name that can't be loaded. }
 procedure CreateNonGLImageInvalid(Window: TCastleWindowBase;
-  const ErrorFileName: string);
+  const ErrorURL: string);
 
 { It is valid NOP to call DestroyNonGLImage on already destroyed image.
   Note: DestroyNonGLImage is automatically called in finalization of this unit. }
@@ -140,7 +140,7 @@ procedure CreateImage(Window: TCastleWindowBase; const fname: string);
 
 { Takes the already created Image instance, and makes it loaded.
 
-  Just like regular CreateImage(Window, filename),
+  Just like regular CreateImage(Window, URL),
   only it doesn't load image from file, but takes ready
   Image instance (you should leave further freeing of this Image
   to this unit, don't mess with it yourself). }
@@ -162,7 +162,7 @@ var
 
 implementation
 
-uses GVIImages;
+uses GVIImages, CastleURIUtils;
 
 { zwraca Image ktory ma ostatnia (prawa) kolumne powtorzona i
   powtorzony ostatni (gorny) wiersz. Wiec wynik ma o jeden wieksze
@@ -206,11 +206,11 @@ var
 begin
   if IsImageValid then
   begin
-    S := ExtractFileName(ImageFileName);
+    S := ExtractURIName(ImageURL);
     if DDSImage <> nil then
       S += Format(' (DDS subimage: %d)', [DDSImageIndex]);
   end else
-    S := '<error: ' + ExtractFileName(ImageFileName) + '>';
+    S := '<error: ' + ExtractURIName(ImageURL) + '>';
 
   S += ' - glViewImage';
 
@@ -218,7 +218,7 @@ begin
 end;
 
 procedure InternalCreateNonGLImageDDS(Window: TCastleWindowBase; const NewImage: TDDSImage;
-  const NewImageFileName: string);
+  const NewImageURL: string);
 begin
   DestroyNonGLImage;
   DDSImage := NewImage;
@@ -227,20 +227,20 @@ begin
     Image := TCastleImage(DDSImage.Images[0]) else
     raise Exception.Create('glViewImage cannot display S3TC compressed textures from DDS');
   ImageExpand := ImageDuplicatedLastRowCol(Image);
-  ImageFileName := NewImageFileName;
+  ImageURL := NewImageURL;
   IsImageValid := true;
   UpdateCaption(Window);
 end;
 
 procedure InternalCreateNonGLImage(Window: TCastleWindowBase; const NewImage: TCastleImage;
-  const NewImageFileName: string; NewIsImageValid: boolean);
+  const NewImageURL: string; NewIsImageValid: boolean);
 begin
   DestroyNonGLImage;
   DDSImage := nil;
   DDSImageIndex := -1;
   Image := NewImage;
   ImageExpand := ImageDuplicatedLastRowCol(Image);
-  ImageFileName := NewImageFileName;
+  ImageURL := NewImageURL;
   IsImageValid := NewIsImageValid;
   UpdateCaption(Window);
 end;
@@ -249,8 +249,7 @@ procedure CreateNonGLImage(Window: TCastleWindowBase; const fname: string);
 var
   NewDDS: TDDSImage;
 begin
-  if FileExtToImageFormatDef(ExtractFileExt(FName),
-    false, false, ifBMP) = ifDDS then
+  if TDDSImage.MatchesURL(FName) then
   begin
     NewDDS := TDDSImage.Create;
     try
@@ -273,15 +272,15 @@ begin
 end;
 
 procedure CreateNonGLImage(Window: TCastleWindowBase; const NewImage: TCastleImage;
-  const NewImageFileName: string);
+  const NewImageURL: string);
 begin
- InternalCreateNonGLImage(Window, NewImage, NewImageFileName, true);
+ InternalCreateNonGLImage(Window, NewImage, NewImageURL, true);
 end;
 
 procedure CreateNonGLImageInvalid(Window: TCastleWindowBase;
-  const ErrorFileName: string);
+  const ErrorURL: string);
 begin
- InternalCreateNonGLImage(Window, Invalid.MakeCopy, ErrorFileName, false);
+ InternalCreateNonGLImage(Window, Invalid.MakeCopy, ErrorURL, false);
 end;
 
 { Zwolnij rzeczy obrazka ktore nie zaleza od kontekstu OpenGLa.
