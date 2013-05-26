@@ -102,13 +102,13 @@ begin
  end;
 end;
 
-procedure AddImageNamesFromFile(const fname: string);
+procedure AddImageNamesFromFile(const URL: string);
 var f: TTextReader;
 begin
- if fname = '-' then
+ if URL = '-' then
   AddImageNamesFromTextReader(StdinReader) else
  begin
-  f := TTextReader.CreateFromFileStream(fname);
+  f := TTextReader.Create(URL);
   try
    AddImageNamesFromTextReader(f);
   finally f.Free end;
