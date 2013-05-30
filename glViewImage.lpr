@@ -439,7 +439,7 @@ end;
 
 const
   Version = '1.4.1';
-  DisplayProgramName = 'glViewImage';
+  DisplayApplicationName = 'glViewImage';
 
 var
   { initialized in CreateMainMenu, then updated in each ImagesNamesListChanged. }
@@ -553,7 +553,7 @@ procedure MenuClick(Window: TCastleWindowBase; Item: TMenuItem);
       'y / Y: scale only vertically.',
       ''], SList);
     Strings_AddCastleEngineProgramHelpSuffix(SList,
-      DisplayProgramName, Version, false);
+      DisplayApplicationName, Version, false);
 
     { Don't show this, long and useless for normal user:
     AddStrArrayToStrings([
@@ -851,7 +851,7 @@ begin
         nl+
         'By default, window size will be the same as of the first loaded image.'+nl+
         nl+
-        SCastleEngineProgramHelpSuffix(DisplayProgramName, Version, true)]);
+        SCastleEngineProgramHelpSuffix(DisplayApplicationName, Version, true)]);
 
       ProgramBreak;
      end;
