@@ -42,7 +42,7 @@ var
 
 { Lista nazw obrazkow --------------------------------------------------------
 
-  Items on ImageNamesList may be relative filenames, so current dir of this
+  Items on ImageNamesList may be relative URLs, so current dir of this
   program must stay constant for all time.
 
   A special case is an item with Object[] property <> @nil:
@@ -56,10 +56,10 @@ var
   indeks 0..ImageNamesList.Count-1. Lista ImageNamesList tym samym zawsze
   musi miec Count > 0.
 
-  Tym niemniej, nie jest gwarantowane ze aktualny ImageFileName to
+  Tym niemniej, nie jest gwarantowane ze aktualny ImageURL to
   ImageNamesList[ImageNamesListPos]. Byc moze np. kiedys zrobie
   ImageOpen w wersji "bez dodawania do listy obrazkow ?".
-  Poza tym ImageFileName jest undefined gdy not IsImageValid.
+  Poza tym ImageURL jest undefined gdy not IsImageValid.
 
   After changing this call ImageNamesListChanged; }
 var
@@ -143,17 +143,17 @@ procedure ImageNamesListChanged; forward;
 
 type
   THelper = class
-    class procedure FileOpen(const FileName: string);
+    class procedure FileOpen(const URL: string);
   end;
 
-class procedure THelper.FileOpen(const FileName: string);
+class procedure THelper.FileOpen(const URL: string);
 begin
-  ImageNamesList.Insert(ImageNamesListPos+1, FileName);
+  ImageNamesList.Insert(ImageNamesListPos+1, URL);
   ImageNamesListChanged;
   ChangeImageNamesListPos(+1);
 
   { temporary unused code: this is how to open an image without adding it to
-    ImageNamesList: CreateImage(Window, FileName); }
+    ImageNamesList: CreateImage(Window, URL); }
 end;
 
 { operacje na zoom --------------------------------------------------------- }
