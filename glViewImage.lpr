@@ -116,6 +116,62 @@ begin
 end;
 
 procedure AddToList(const FileInfo: TEnumeratedFileInfo; Data: Pointer);
+
+  { Makes FileName relative or absolute, whichever is nicer to show the user.
+
+    Given FileName may be absolute or relative (with respect to CurrentDir).
+    This function maybe will convert FileName to absolute filename and
+    maybe will convert it to relative filename -- whichever will be
+    nicer to show the user.
+
+    It's not guaranteed what exactly this function considers as "nicer for
+    the user". Current implementation simply assumes that if FileName
+    is under current directory, then relative name is nicer,
+    otherwise absolute name is nicer. In other words, it tries to
+    make a relative name but without any leading "..".
+
+    Examples:
+
+  @preformatted(
+    If CurrentDir = '/usr/share/' and
+       FileName = '/usr/share/some_file'
+       Result will be a relative filename 'some_file'
+    If CurrentDir = '/usr/share/' and
+       FileName = '/lib/bla/bla'
+       Result will be equal to FileName '/lib/bla/bla'
+    If CurrentDir = '/usr/share/' and
+       FileName = '../../lib/bla/bla'
+       Result will be absolute filename '/lib/bla/bla'
+  ) }
+  function NiceFileName(const FileName: string): string;
+
+    { Forces FileName to be relative (relative from CurrentDir).
+
+      Given FileName may be absolute (then it's directory part will be modified
+      accordingly) or already relative (then it will simply be returned
+      without any changes). }
+    function RelativeFilename(const FileName: string): string;
+    begin
+      if IsPathAbsolute(FileName) then
+        Result := ExtractRelativePath( InclPathDelim(GetCurrentDir) + 'dummy_file',
+          FileName) else
+        { TODO: MSWINDOWS - chyba nie trzeba uwzgledniac tu
+          IsPathAbsoluteOnDrive(FileName) ? }
+        Result := FileName;
+    end;
+
+  var
+    AbsoluteFileName: string;
+  begin
+    AbsoluteFileName := ExpandFileName(FileName);
+    { It's important that we end InclPathDelim(GetCurrentDir) and
+      ExtractFilePath(AbsoluteFileName) always with PathDelim, it makes sure that
+      IsPrefix actually checks is one file in subdirectory of another. }
+    if IsPrefix( InclPathDelim(GetCurrentDir), ExtractFilePath(AbsoluteFileName) ) then
+      Result := RelativeFilename(FileName) else
+      Result := AbsoluteFileName;
+  end;
+
 begin
  { add NiceFileName(fullname) instead of FullName, because that's
    more useful (shorter text) for user. }
