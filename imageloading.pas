@@ -206,11 +206,11 @@ var
 begin
   if IsImageValid then
   begin
-    S := ExtractURIName(ImageURL);
+    S := URICaption(ImageURL);
     if DDSImage <> nil then
       S += Format(' (DDS subimage: %d)', [DDSImageIndex]);
   end else
-    S := '<error: ' + ExtractURIName(ImageURL) + '>';
+    S := '<error: ' + URIDisplay(ImageURL) + '>';
 
   S += ' - glViewImage';
 
