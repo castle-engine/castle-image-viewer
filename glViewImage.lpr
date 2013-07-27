@@ -66,6 +66,29 @@ var
   ImageNamesList: TStringList;
   ImageNamesListPos: Integer = 0; { change this only with SetImageNameListPos }
 
+{ Create non-GL image part, based on list index ListPos. }
+procedure CreateNonGLImageList(const ListPos: Integer;
+  const InvalidImage: boolean);
+begin
+  if InvalidImage then
+    CreateNonGLImageInvalid(Window, ImageNamesList[ListPos]) else
+  if ImageNamesList.Objects[ListPos] = nil then
+    CreateNonGLImage(Window, ImageNamesList[ListPos]) else
+    CreateNonGLImage(Window,
+      TCastleImage(ImageNamesList.Objects[ListPos]).MakeCopy,
+      ImageNamesList[ListPos]);
+end;
+
+{ Create both non-GL and GL image parts, based on list index ListPos. }
+procedure CreateImageList(const ListPos: Integer);
+begin
+  if ImageNamesList.Objects[ListPos] = nil then
+    CreateImage(Window, ImageNamesList[ListPos]) else
+    CreateImage(Window,
+      TCastleImage(ImageNamesList.Objects[ListPos]).MakeCopy,
+      ImageNamesList[ListPos]);
+end;
+
 { This changes ImageNamesListPos and tries to load newly choosen image.
   Uses CreateImage(Window, ImageNamesList[ImageNamesListPos]) if it's a normal
   (not internal) image, or something else as appropriate.
@@ -73,13 +96,7 @@ var
 procedure SetImageNamesListPos(NewValue: Integer);
 begin
  ImageNamesListPos := NewValue;
-
- if ImageNamesList.Objects[ImageNamesListPos] = nil then
-   CreateImage(Window, ImageNamesList[ImageNamesListPos]) else
-   CreateImage(Window,
-     TCastleImage(ImageNamesList.Objects[ImageNamesListPos]).MakeCopy,
-     ImageNamesList[ImageNamesListPos]);
-
+ CreateImageList(ImageNamesListPos);
  Window.PostRedisplay;
 end;
 
@@ -480,7 +497,11 @@ begin
 
   DecompressS3TC := @GLDecompressS3TC;
 
-  CreateGLImage;
+  if Image <> nil then
+    CreateGLImage else
+    { Image failed to initialize before (because S3TC could
+      not be decompressed), initialize it fully now. }
+    CreateImageList(ImageNamesListPos);
 
   if SavedErrorMessage <> '' then
   begin
@@ -990,24 +1011,27 @@ begin
   { initialize Image. This must be done before window is created,
     as we want to use Image size for initial window size. }
   try
-    if ImageNamesList.Objects[ImageNamesListPos] = nil then
-      CreateNonGLImage(Window, ImageNamesList[ImageNamesListPos]) else
-      CreateNonGLImage(Window,
-        TCastleImage(ImageNamesList.Objects[ImageNamesListPos]).MakeCopy,
-        ImageNamesList[ImageNamesListPos]);
+    CreateNonGLImageList(ImageNamesListPos, false);
   except
-   on E: Exception do
-   begin
-    SavedErrorMessage := ExceptMessage(E, nil);
-    CreateNonGLImageInvalid(Window, ImageNamesList[ImageNamesListPos]);
-   end;
+    on E: ECannotDecompressS3TC do
+    begin
+      { Silence warning in this case, image size cannot be known
+        before we initialize OpenGL context.
+        Leave Image = nil, Open callback will initialize it. }
+    end;
+    on E: Exception do
+    begin
+      SavedErrorMessage := ExceptMessage(E, nil);
+      CreateNonGLImageList(ImageNamesListPos, true);
+    end;
   end;
 
   {inicjuj CastleMessages}
   MessagesTheme.TextCol := Green3Single;
 
-  {set size, unless already requested some size}
-  if not (poGeometry in SpecifiedOptions) then
+  { set window size, if we managed to load image before Open callback,
+    and user did not already request some size }
+  if (Image <> nil) and not (poGeometry in SpecifiedOptions) then
   begin
    { Clamp to:
      - not make window too large (some window managers accept it
