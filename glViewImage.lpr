@@ -862,61 +862,60 @@ const
 
 procedure OptionProc(OptionNum: Integer; HasArgument: boolean;
   const Argument: string; const SeparateArgs: TSeparateArgs; Data: Pointer);
-var RecognizedExts: string;
-    iff: TImageformat;
-    i: integer;
+var
+  RecognizedExts: string;
+  iff: TImageformat;
+  i: integer;
 begin
- case OptionNum of
-  0: begin
-      RecognizedExts := '';
-      for iff := Low(iff) to High(iff) do
-       for i := 1 to ImageformatInfos[iff].extsCount do
-        RecognizedExts += ' *.'+ImageFormatInfos[iff].exts[i];
-
-      InfoWriteParts('glViewImage help - part %d / %d',
-       ['glViewImage: simple image viewer. Allows browsing images list,' +nl+
-        '  allows to scale and move viewed image, allows to test visually' +nl+
-        '  is image "tileable".' +nl+
-        nl+
-        'Usage:' +nl+
-        '  glViewImage [OPTIONS]... [IMAGES]...' +nl+
-        nl+
-        'You can give as many image names on the command line as you like' +nl+
-        '(you will be able to switch between them using n/p (next/previous)' +nl+
-        'keys). Each image name will be treated as a mask with special chars' +nl+
-        '* (any number of any chars) and ? (any char), e.g.' +nl+
-        '  glViewImage *.png' +nl+
-        'will open any png images (i.e., even if the shell itself will not expand' +nl+
-        '*.png). Non-existing image names (so, also filename masks not matching any'+nl+
-        'existing filename) will be ignored.' +nl+
-        nl+
-        'Instead of image name, you can give parameter starting with "@" :' +nl+
-        'parameter "@file_list.txt" means "read image names to load' +nl+
-        'from the file file_list.txt - one image name per line".' +nl,
-
-        'Not giving any image names for glViewImage to load will have the same' +nl+
-        'effect as calling' +nl+
-        '  glViewImage' +RecognizedExts +nl+
-        'so all images in known format (in the current directory) will be loaded.' +nl+
-        nl+
-        'Accepted command-line options:' +nl+
-        HelpOptionHelp+ nl+
-        VersionOptionHelp +nl+
-        nl+
-        TCastleWindowBase.ParseParametersHelp(StandardParseOptions, true) +nl+
-        nl+
-        'By default, window size will be the same as of the first loaded image.'+nl+
-        nl+
-        SCastleEngineProgramHelpSuffix(DisplayApplicationName, Version, true)]);
-
-      ProgramBreak;
-     end;
-  1: begin
-      WritelnStr(Version);
-      ProgramBreak;
-     end;
-  else raise EInternalError.Create('OptionProc');
- end;
+  case OptionNum of
+    0:begin
+        RecognizedExts := '';
+        for iff := Low(iff) to High(iff) do
+          for i := 1 to ImageformatInfos[iff].extsCount do
+            RecognizedExts += ' *.'+ImageFormatInfos[iff].exts[i];
+        InfoWrite(
+          'glViewImage: simple image viewer. Allows browsing images list,' +nl+
+          '  allows to scale and move viewed image, allows to test visually' +nl+
+          '  is image "tileable".' +nl+
+          nl+
+          'Usage:' +nl+
+          '  glViewImage [OPTIONS]... [IMAGES]...' +nl+
+          nl+
+          'You can give as many image names on the command line as you like' +nl+
+          '(you will be able to switch between them using n/p (next/previous)' +nl+
+          'keys). Each image name will be treated as a mask with special chars' +nl+
+          '* (any number of any chars) and ? (any char), e.g.' +nl+
+          '  glViewImage *.png' +nl+
+          'will open any png images (i.e., even if the shell itself will not expand' +nl+
+          '*.png). Non-existing image names (so, also filename masks not matching any'+nl+
+          'existing filename) will be ignored.' +nl+
+          nl+
+          'Instead of image name, you can give parameter starting with "@" :' +nl+
+          'parameter "@file_list.txt" means "read image names to load' +nl+
+          'from the file file_list.txt - one image name per line".' +nl+
+          nl+
+          'Not giving any image names for glViewImage to load will have the same' +nl+
+          'effect as calling' +nl+
+          '  glViewImage' +RecognizedExts +nl+
+          'so all images in known format (in the current directory) will be loaded.' +nl+
+          nl+
+          'Accepted command-line options:' +nl+
+          HelpOptionHelp+ nl+
+          VersionOptionHelp +nl+
+          nl+
+          TCastleWindowBase.ParseParametersHelp(StandardParseOptions, true) +nl+
+          nl+
+          'By default, window size will be the same as of the first loaded image.'+nl+
+          nl+
+          SCastleEngineProgramHelpSuffix(DisplayApplicationName, Version, true));
+        ProgramBreak;
+      end;
+    1:begin
+        WritelnStr(Version);
+        ProgramBreak;
+      end;
+    else raise EInternalError.Create('OptionProc');
+  end;
 end;
 
 { main part ----------------------------------------------------------------- }
