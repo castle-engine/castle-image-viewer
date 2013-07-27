@@ -519,6 +519,18 @@ begin
     SQuoteMenuEntryCaption(ImageNamesList[i]), 10000 + i));
 end;
 
+procedure DropFiles(Window: TCastleWindowBase; const FileNames: array of string);
+var
+  URL: string;
+begin
+  if High(FileNames) >= 0 then
+  begin
+    URL := FilenameToURISafe(FileNames[0]);
+    if URL <> '' then
+      THelper.FileOpen(URL);
+  end;
+end;
+
 procedure MenuClick(Window: TCastleWindowBase; Item: TMenuItem);
 
   procedure ImageSave;
@@ -1011,12 +1023,12 @@ begin
    Window.height := Clamped(Image.Height, 400, Application.ScreenHeight-50);
   end;
 
-  {go for it}
   Window.OnUpdate := @UpdateGL;
   Window.OnDraw := @DrawGL;
   Window.OnOpen := @OpenGL;
   Window.OnClose := @CloseGL;
   Window.OnResize := @Resize2D;
+  Window.OnDropFiles := @DropFiles;
 
   Window.DepthBits := 0; { depth buffer not needed here }
   Window.OpenAndRun;
