@@ -36,7 +36,7 @@ var
   MoveX: TGLfloat = 0;
   MoveY: TGLfloat = 0;
   DrawTiled: boolean = false;
-  BackgroundColor: TVector3Single;
+  BackgroundColor: TVector3Single = (0, 0, 0);
   SavedErrorMessage: string = '';
   UseImageAlpha: boolean = true;
 
@@ -243,7 +243,7 @@ end;
 
 { glw callbacks ---------------------------------------------------------- }
 
-procedure DrawGL(Window: TCastleWindowBase);
+procedure Draw(Window: TCastleWindowBase);
 
   procedure Arrow(const Angle: TGLfloat);
   begin
@@ -289,9 +289,10 @@ procedure DrawGL(Window: TCastleWindowBase);
 var visibleXStart, visibleXEnd,
     visibleYStart, visibleYEnd,
     Width, Height, i, j, i0, i1, j0, j1: integer;
-    horizPrzewijak, vertPrzewijak: boolean;
-const przewThick = 10; { na ile pixeli gruby jest przewijak (tzn. cale obramowanie przewijaka) }
-      przewMarg = 2; { margines miedzy obramowaniem przewijaka a paskiem we wnetrzu }
+    horizScrollbar, vertScrollbar: boolean;
+const
+  ScrollbarSize = 10; {< scrollbar thickness (with frames around) }
+  ScrollbarMargin = 2; {< margin between scrollbar inside and frame }
 begin
  glLoadIdentity;
 
@@ -362,22 +363,22 @@ begin
    Clamp(visibleYStart, 0, Height);
    Clamp(visibleYEnd  , 0, Height);
 
-   horizPrzewijak := (visibleXStart > 0) or (visibleXEnd < Width);
-   vertPrzewijak := (visibleYStart > 0) or (visibleYEnd < Height);
+   horizScrollbar := (visibleXStart > 0) or (visibleXEnd < Width);
+   vertScrollbar := (visibleYStart > 0) or (visibleYEnd < Height);
 
-   if horizPrzewijak and vertPrzewijak then
+   if horizScrollbar and vertScrollbar then
    begin
-    glScissor(przewThick+1, przewThick+1, Window.width, Window.height);
+    glScissor(ScrollbarSize+1, ScrollbarSize+1, Window.width, Window.height);
     glEnable(GL_SCISSOR_TEST);
    end else
-   if horizPrzewijak then
+   if horizScrollbar then
    begin
-    glScissor(0, przewThick+1, Window.width, Window.height);
+    glScissor(0, ScrollbarSize+1, Window.width, Window.height);
     glEnable(GL_SCISSOR_TEST);
    end else
-   if vertPrzewijak then
+   if vertScrollbar then
    begin
-    glScissor(przewThick+1, 0, Window.width, Window.height);
+    glScissor(ScrollbarSize+1, 0, Window.width, Window.height);
     glEnable(GL_SCISSOR_TEST);
    end else
    begin
@@ -393,44 +394,44 @@ begin
 
    glDisable(GL_SCISSOR_TEST);
 
-   if horizPrzewijak then
+   if horizScrollbar then
    begin
     glColorv(Yellow3Single);
     glBegin(GL_LINES);
-     glVertex2f(przewThick, przewThick);
-     glVertex2f(Window.width, przewThick);
-     glVertex2f(przewThick, 0);
-     glVertex2f(przewThick, przewThick);
+     glVertex2f(ScrollbarSize, ScrollbarSize);
+     glVertex2f(Window.width, ScrollbarSize);
+     glVertex2f(ScrollbarSize, 0);
+     glVertex2f(ScrollbarSize, ScrollbarSize);
     glEnd;
 
-    visibleXStart := Round(MapRange(visibleXStart, 0, Width, przewThick+przewMarg, Window.width-przewMarg));
-    visibleXEnd   := Round(MapRange(visibleXEnd,   0, Width, przewThick+przewMarg, Window.width-przewMarg));
+    visibleXStart := Round(MapRange(visibleXStart, 0, Width, ScrollbarSize+ScrollbarMargin, Window.width-ScrollbarMargin));
+    visibleXEnd   := Round(MapRange(visibleXEnd,   0, Width, ScrollbarSize+ScrollbarMargin, Window.width-ScrollbarMargin));
     glColorv(Gray3Single);
-    glRecti(visibleXStart, przewMarg, visibleXEnd, przewThick-przewMarg);
+    glRecti(visibleXStart, ScrollbarMargin, visibleXEnd, ScrollbarSize-ScrollbarMargin);
    end;
 
-   if vertPrzewijak then
+   if vertScrollbar then
    begin
     glColorv(Yellow3Single);
     glBegin(GL_LINES);
-     glVertex2f(przewThick, przewThick);
-     glVertex2f(przewThick, Window.height);
-     glVertex2f(0, przewThick);
-     glVertex2f(przewThick, przewThick);
+     glVertex2f(ScrollbarSize, ScrollbarSize);
+     glVertex2f(ScrollbarSize, Window.height);
+     glVertex2f(0, ScrollbarSize);
+     glVertex2f(ScrollbarSize, ScrollbarSize);
     glEnd;
 
-    visibleYStart := Round(MapRange(visibleYStart, 0, Height, przewThick+przewMarg, Window.height-przewMarg));
-    visibleYEnd  :=Round(MapRange(visibleYEnd,   0, Height, przewThick+przewMarg, Window.height-przewMarg));
+    visibleYStart := Round(MapRange(visibleYStart, 0, Height, ScrollbarSize+ScrollbarMargin, Window.height-ScrollbarMargin));
+    visibleYEnd    :=Round(MapRange(visibleYEnd,   0, Height, ScrollbarSize+ScrollbarMargin, Window.height-ScrollbarMargin));
     glColorv(Gray3Single);
-    glRecti(przewMarg, visibleYStart, przewThick-przewMarg, visibleYEnd);
+    glRecti(ScrollbarMargin, visibleYStart, ScrollbarSize-ScrollbarMargin, visibleYEnd);
    end;
   end;
  end;
 end;
 
-procedure UpdateGL(Window: TCastleWindowBase);
+procedure Update(Window: TCastleWindowBase);
 
-  procedure MoveGL(var value: TGLfloat; change: TGLfloat);
+  procedure Move(var value: TGLfloat; change: TGLfloat);
   begin
    change *= 8*Window.Fps.UpdateSecondsPassed * 50;
    if Window.Pressed[k_Ctrl] then change *= 10;
@@ -442,10 +443,10 @@ const SCALE_FACTOR = 0.1;
 var scale_up, scale_down: Single;
 begin
  with Window do begin
-  if Pressed[K_Up] then moveGL(MoveY, -1 / zoomY);
-  if Pressed[K_Down] then moveGL(MoveY, 1 / zoomY);
-  if Pressed[K_Right] then moveGL(MoveX, -1 / zoomX);
-  if Pressed[K_Left] then moveGL(MoveX, 1 / zoomX);
+  if Pressed[K_Up] then Move(MoveY, -1 / zoomY);
+  if Pressed[K_Down] then Move(MoveY, 1 / zoomY);
+  if Pressed[K_Right] then Move(MoveX, -1 / zoomX);
+  if Pressed[K_Left] then Move(MoveX, 1 / zoomX);
 
   scale_up := 1 + SCALE_FACTOR * Window.Fps.UpdateSecondsPassed * 50;
   scale_down := 1 / scale_up;
@@ -473,22 +474,24 @@ begin
  end;
 end;
 
-procedure OpenGL(Window: TCastleWindowBase);
+procedure Open(Window: TCastleWindowBase);
 begin
- DecompressS3TC := @GLDecompressS3TC;
+  glClearColor(BackgroundColor[0], BackgroundColor[1], BackgroundColor[2], 1);
 
- CreateGLImage;
+  DecompressS3TC := @GLDecompressS3TC;
 
- if SavedErrorMessage <> '' then
- begin
-   MessageOk(Window, SavedErrorMessage, taLeft);
-   SavedErrorMessage := '';
- end;
+  CreateGLImage;
+
+  if SavedErrorMessage <> '' then
+  begin
+    MessageOk(Window, SavedErrorMessage, taLeft);
+    SavedErrorMessage := '';
+  end;
 end;
 
-procedure CloseGL(Window: TCastleWindowBase);
+procedure Close(Window: TCastleWindowBase);
 begin
- DestroyGLImage;
+  DestroyGLImage;
 end;
 
 { menu ------------------------------------------------------------ }
@@ -1023,10 +1026,10 @@ begin
    Window.height := Clamped(Image.Height, 400, Application.ScreenHeight-50);
   end;
 
-  Window.OnUpdate := @UpdateGL;
-  Window.OnDraw := @DrawGL;
-  Window.OnOpen := @OpenGL;
-  Window.OnClose := @CloseGL;
+  Window.OnUpdate := @Update;
+  Window.OnDraw := @Draw;
+  Window.OnOpen := @Open;
+  Window.OnClose := @Close;
   Window.OnResize := @Resize2D;
   Window.OnDropFiles := @DropFiles;
 
