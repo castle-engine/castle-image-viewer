@@ -735,7 +735,6 @@ begin
         MoveX := 0;
         MoveY := 0;
        end;
-  250: Window.FullScreen := not Window.FullScreen;
 
   260: if Window.ColorDialog(BackgroundColor) then
          glClearColor(BackgroundColor[0], BackgroundColor[1], BackgroundColor[2], 1);
@@ -844,8 +843,7 @@ begin
    M.Append(TMenuItemChecked.Create('Use Image Alpha Channel', 270,  UseImageAlpha, true));
    M.Append(TMenuItem.Create('Background color ...',                260));
    M.Append(TMenuSeparator.Create);
-   M.Append(TMenuItemChecked.Create('_FullScreen on/off',           250, K_F11,
-     Window.FullScreen, true));
+   M.Append(TMenuItemToggleFullScreen.Create(Window.FullScreen));
    Result.Append(M);
  M := TMenu.Create('_Edit');
    M.Append(TMenuItem.Create('Resize (Nearest) ...',                600));
