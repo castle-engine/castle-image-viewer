@@ -591,7 +591,7 @@ procedure MenuClick(Window: TCastleWindowBase; Item: TMenuItem);
     URL: string;
   begin
    if IsImageValid then
-    URL := ExtractURIPath(ImageURL) else
+    URL := ImageURL else
     URL := '';
    if Window.FileDialog('Load image from file', URL, true, LoadImage_FileFilters) then
    begin
