@@ -555,7 +555,7 @@ begin
   end;
 end;
 
-procedure MenuClick(Window: TCastleWindowBase; Item: TMenuItem);
+procedure MenuClick(Sender: TCastleWindowBase; Item: TMenuItem);
 
   procedure ImageSave;
   var
@@ -735,7 +735,7 @@ begin
         MoveX := 0;
         MoveY := 0;
        end;
-  250: (Window as TCastleWindowDemo).SwapFullScreen;
+  250: Window.FullScreen := not Window.FullScreen;
 
   260: if Window.ColorDialog(BackgroundColor) then
          glClearColor(BackgroundColor[0], BackgroundColor[1], BackgroundColor[2], 1);
