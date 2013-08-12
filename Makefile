@@ -6,4 +6,4 @@ compile:
 .PHONY: clean
 clean:
 	rm -f glViewImage glViewImage.exe
-	rm -Rf glViewImage.app
+	rm -Rf glViewImage.app macosx/glViewImage.app
