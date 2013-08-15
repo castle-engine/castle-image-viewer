@@ -275,7 +275,9 @@ procedure Draw(Window: TCastleWindowBase);
   {rysuje obrazek Image zgodnie z (zoomx, zomy) i zadanym (MoveX, MoveY).
    (a wiec mozesz zadac move inne niz globalne).
    Zaklada ze glPixelZoom(zoomx, zoomy) zostalo juz wykonane !}
-  var rx, ry: Integer;
+  var
+    rx, ry: Integer;
+    GLImg: TGLImage;
   begin
    { na potrzeby przesuwania sie pod ekranie MoveX i MoveY powinny byc float.
      Ale gdy przychodzi do wyswietlania - wygodnie jest jesli move jest integerem.
@@ -285,22 +287,15 @@ procedure Draw(Window: TCastleWindowBase);
 
    SetWindowPos(rx, ry);
 
-   if Image.HasAlpha and UseImageAlpha then
-   begin
-     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-     glEnable(GL_BLEND);
-   end;
-
-   { uzywanie display listy kiedy tylko mozemy pozwala nam znacznie przyspieszyc
-     rysowanie image'ow (zwlaszcza gdy mamy male zoom i widac bardzo wiele
-     obrazkow w okienku (zdecydowana wiekszosc z nich bedzie mogla byc rysowana
-     display-lista).}
    if DrawTiled then
-     GLImageExpand.Draw else
-     GLImage.Draw;
+     GLImg := GLImageExpand else
+     GLImg := GLImage;
 
    if Image.HasAlpha and UseImageAlpha then
-     glDisable(GL_BLEND);
+     GLImg.Alpha := acFullRange else
+     GLImg.Alpha := acNone;
+
+   GLImg.Draw;
   end;
 
 var visibleXStart, visibleXEnd,
