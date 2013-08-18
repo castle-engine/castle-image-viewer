@@ -49,32 +49,12 @@ uses GL, CastleGLUtils, SysUtils, CastleUtils, CastleImages, Classes,
 var
   Image: TCastleImage;
 
-  { ImageExpand to ten sam image co Image ale rozszerzony o jedna kolumne wiecej
-    i jeden wiersz wiecej (ostatnia kolumna i ostatni wiersz sa powielone na koncu).
-    Przydaje sie gdy chcemy narysowac image tiled jeden obok drugiego.
-    Wtedy gdy rysujemy OpenGL'em Image o rozmiarze Width moze byc niekiedy
-    narysowany na Width-1 pixlach gdy mamy pixel zoom <> 1 -> wtedy
-    czasem
-    Round(image.size*zoomX) > Round((moveX+Width)*zoomX) - Round(moveX*zoomX)
-    (bez tych Roundow, matematycznie, powinna byc zawsze rownosc;
-    ale wlasnie tak nie zawsze jest na skutek tych Roundow). W rezultacie
-    obrazek zajmuje o kolumne/wiersz mniej i w rezultacie pojawia sie czarna
-    rysa na ekranie pomiedzy dwoma kolejnymi rysunkami.
-
-    Poniewaz rysa ma zawsze szerokosc 1 pixla (tylko taka roznica moze
-    wystapic w powyzszej nierownosci) wiec rozwiazaniem jakiego uzywamy
-    jest renderowac obrazek o jedna kolumne i wiersz szerszy - oczywiscie
-    o ostatnia kolumne. Jezeli rysy by tam nie bylo to ta ostatnia kolumna
-    zostanie przykrywa przez poczatek rysunku obok, wpp. ostatnia kolumna
-    zamaluje nam miejsce gdzie bylaby rysa. }
-  ImageExpand: TCastleImage;
-
   { This is not valid when not IsImageValid }
   ImageURL: string;
 
   { Even when this is false, if we are after some successful
     CreateNonGLImage* and before DestroyNonGLImage,
-    Image and ImageExpand are initialized (to copies of ImageInvalid).
+    Image is initialized (to copies of ImageInvalid).
     When this is false, ImageURL should not be read (it has undefined value) }
   IsImageValid: boolean = false;
 
@@ -101,8 +81,6 @@ procedure CreateNonGLImageInvalid(Window: TCastleWindowBase;
   Note: DestroyNonGLImage is automatically called in finalization of this unit. }
 procedure DestroyNonGLImage;
 
-procedure RemakeImageExpand;
-
 { ------------------------------------------------------------
   2. Things related to image connected with OpenGL context.
      You can manipulate them (create/destroy) only when you have a valid OpenGL
@@ -116,7 +94,6 @@ procedure RemakeImageExpand;
      freeing things in point 1.  }
 var
   GLImage: TGLImage;
-  GLImageExpand: TGLImage;
 
 { Note: CreateGLImage first automatically calls DestroyGLImage }
 procedure CreateGLImage;
@@ -164,42 +141,6 @@ implementation
 
 uses GVIImages, CastleURIUtils;
 
-{ zwraca Image ktory ma ostatnia (prawa) kolumne powtorzona i
-  powtorzony ostatni (gorny) wiersz. Wiec wynik ma o jeden wieksze
-  Width i Height. (prawy-gorny pixel tez jest powtorzony, konsekwentnie). }
-function ImageDuplicatedLastRowCol(const Image: TCastleImage): TCastleImage;
-var y: integer;
-begin
- Result := TCastleImageClass(Image.ClassType).Create(Image.Width+1, Image.Height+1);
- try
-  for y := 0 to Image.Height-1 do
-  begin
-   {kopiuj wiersz + duplikuj ostatni pixel w tym wierszu}
-   Move(Image.PixelPtr(0, y)^,
-        Result.PixelPtr( 0, y)^,
-        Result.PixelSize * Image.Width );
-   Move(Image.PixelPtr(Image.Width-1, y)^,
-        Result.PixelPtr( result.Width-1, y)^,
-        Result.PixelSize );
-  end;
-
-  {ostatni wiersz}
-  Move(Image.PixelPtr(0, Image.Height-1)^,
-       Result.PixelPtr( 0, result.Height-1)^,
-       Result.PixelSize * Image.Width );
-  Move(Image.PixelPtr(Image.Width-1, Image.Height-1)^,
-       Result.PixelPtr( result.Width-1, result.Height-1)^,
-       Result.PixelSize );
-
- except Result.Free; raise end;
-end;
-
-procedure RemakeImageExpand;
-begin
-  FreeAndNil(ImageExpand);
-  ImageExpand := ImageDuplicatedLastRowCol(Image);
-end;
-
 procedure UpdateCaption(Window: TCastleWindowBase);
 var
   S: string;
@@ -226,7 +167,6 @@ begin
   if DDSImage.Images[0] is TCastleImage then
     Image := TCastleImage(DDSImage.Images[0]) else
     raise Exception.Create('glViewImage cannot display S3TC compressed textures from DDS');
-  ImageExpand := ImageDuplicatedLastRowCol(Image);
   ImageURL := NewImageURL;
   IsImageValid := true;
   UpdateCaption(Window);
@@ -239,7 +179,6 @@ begin
   DDSImage := nil;
   DDSImageIndex := -1;
   Image := NewImage;
-  ImageExpand := ImageDuplicatedLastRowCol(Image);
   ImageURL := NewImageURL;
   IsImageValid := NewIsImageValid;
   UpdateCaption(Window);
@@ -294,7 +233,6 @@ begin
   end else
     FreeAndNil(Image);
 
-  FreeAndNil(ImageExpand);
   IsImageValid := false;
 end;
 
@@ -302,8 +240,7 @@ end;
 procedure CreateGLImage;
 begin
  DestroyGLImage;
- GLImage := TGLImage.Create(Image);
- GLImageExpand := TGLImage.Create(ImageExpand);
+ GLImage := TGLImage.Create(Image, true);
 end;
 
 { Zwolnij rzeczy inicjowane przez CreateGLImage.
@@ -311,7 +248,6 @@ end;
 procedure DestroyGLImage;
 begin
  FreeAndNil(GLImage);
- FreeAndNil(GLImageExpand);
 end;
 
 procedure CreateImage(Window: TCastleWindowBase; const fname: string);
@@ -352,8 +288,6 @@ begin
 
   DDSImageIndex := NewIndex;
   Image := DDSImage.Images[NewIndex] as TCastleImage;
-
-  RemakeImageExpand;
 
   CreateGLImage;
 

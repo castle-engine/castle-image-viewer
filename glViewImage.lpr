@@ -271,31 +271,17 @@ procedure Draw(Window: TCastleWindowBase);
    GLDrawArrow;
   end;
 
-  procedure drawImage(MoveX, MoveY: Single);
-  {rysuje obrazek Image zgodnie z (zoomx, zomy) i zadanym (MoveX, MoveY).
-   (a wiec mozesz zadac move inne niz globalne).
-   Zaklada ze glPixelZoom(zoomx, zoomy) zostalo juz wykonane !}
-  var
-    rx, ry: Integer;
-    GLImg: TGLImage;
+  { Draw image with current (ZoomX, ZoomY) and (MoveX, MoveY). }
+  procedure DrawImage(MoveX, MoveY: Integer);
   begin
-   { na potrzeby przesuwania sie pod ekranie MoveX i MoveY powinny byc float.
-     Ale gdy przychodzi do wyswietlania - wygodnie jest jesli move jest integerem.
-     Poza tym i tak mnozymy move razy zoom. }
-   rx := Round(MoveX * zoomX);
-   ry := Round(MoveY * zoomY);
+    if Image.HasAlpha and UseImageAlpha then
+      GLImage.Alpha := acFullRange else
+      GLImage.Alpha := acNone;
 
-   SetWindowPos(rx, ry);
-
-   if DrawTiled then
-     GLImg := GLImageExpand else
-     GLImg := GLImage;
-
-   if Image.HasAlpha and UseImageAlpha then
-     GLImg.Alpha := acFullRange else
-     GLImg.Alpha := acNone;
-
-   GLImg.Draw;
+    GLImage.Draw(
+      MoveX, MoveY,
+      Round(GLImage.Width * ZoomX), Round(GLImage.Height * ZoomX),
+      0, 0, GLImage.Width, GLImage.Height);
   end;
 
 var visibleXStart, visibleXEnd,
@@ -343,21 +329,14 @@ begin
   j0 := Floor(-MoveY/Height);
   j1 := Ceil((Window.Height/zoomY - MoveY)/Height - 1);
 
-  { As strange as it seems, some graphic cards (mine NVidia GForce2 MX 100/200
-    with drivers Linux-x86-1.0-6629) require that in case the image is large
-    and it's top-right corner is outside the window, I must explicitly
-    use scissor to cut it down, otherwise strange artifacts (black area
-    at the bottom of the window) appear. }
-  glScissor(0, 0, Window.width, Window.height);
-  glEnable(GL_SCISSOR_TEST);
-
-  glPixelZoom(zoomX, zoomY);
   for i := i0 to i1 do
-   for j := j0 to j1 do
-    drawImage(MoveX + i*Width, MoveY + j*Height);
-  glPixelZoom(1, 1);
-
-  glDisable(GL_SCISSOR_TEST);
+    for j := j0 to j1 do
+      DrawImage(
+        { We have to round this way, to make drawn rectangles fit perfectly
+          next to each other, without any 1-pixel border because of different
+          rounding. }
+        Round(MoveX * ZoomX) + i * Round(GLImage.Width  * ZoomX),
+        Round(MoveY * ZoomY) + j * Round(GLImage.Height * ZoomY));
  end else
  begin
   visibleXStart := -Round(MoveX);
@@ -392,17 +371,9 @@ begin
    begin
     glScissor(ScrollbarSize+1, 0, Window.width, Window.height);
     glEnable(GL_SCISSOR_TEST);
-   end else
-   begin
-    { This seems useless, but see comments for analogous code for the case
-      DrawTiled = true. }
-    glScissor(0, 0, Window.width, Window.height);
-    glEnable(GL_SCISSOR_TEST);
    end;
 
-   glPixelZoom(zoomX, zoomY);
-   drawImage(MoveX, MoveY);
-   glPixelZoom(1, 1);
+   DrawImage(Round(MoveX * ZoomX), Round(MoveY * ZoomY));
 
    glDisable(GL_SCISSOR_TEST);
 
@@ -672,7 +643,6 @@ procedure MenuClick(Sender: TCastleWindowBase; Item: TMenuItem);
         Color4[3] := 255;
         DestroyGLImage;
         Image.Clear(Color4);
-        ImageExpand.Clear(Color4);
         CreateGLImage;
       end;
     end;
@@ -699,7 +669,6 @@ procedure MenuClick(Sender: TCastleWindowBase; Item: TMenuItem);
     begin
       DestroyGLImage;
       Image.Resize(ResizeToX, ResizeToY, Interpolation);
-      RemakeImageExpand;
       CreateGLImage;
     end;
   end;
@@ -745,7 +714,6 @@ begin
        begin
         DestroyGLImage;
         Image.Grayscale;
-        ImageExpand.Grayscale;
         CreateGLImage;
        end;
   420..422:
@@ -753,7 +721,6 @@ begin
        begin
         DestroyGLImage;
         Image.ConvertToChannelRGB(Item.IntData - 420);
-        ImageExpand.ConvertToChannelRGB(Item.IntData - 420);
         CreateGLImage;
        end;
   430..432:
@@ -761,38 +728,32 @@ begin
        begin
         DestroyGLImage;
         Image.StripToChannelRGB(Item.IntData - 430);
-        ImageExpand.StripToChannelRGB(Item.IntData - 430);
         CreateGLImage;
        end;
   440: begin
          DestroyGLImage;
          Image.FlipHorizontal;
-         RemakeImageExpand;
          CreateGLImage;
        end;
 {  441: begin
          DestroyGLImage;
          Image.FlipVertical;
-         RemakeImageExpand;
          CreateGLImage;
        end;}
 
   450: begin
          DestroyGLImage;
          Image.Rotate(1);
-         RemakeImageExpand;
          CreateGLImage;
        end;
   451: begin
          DestroyGLImage;
          Image.Rotate(2);
-         RemakeImageExpand;
          CreateGLImage;
        end;
   452: begin
          DestroyGLImage;
          Image.Rotate(3);
-         RemakeImageExpand;
          CreateGLImage;
        end;
   460: ImageClear;
