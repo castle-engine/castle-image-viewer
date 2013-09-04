@@ -64,17 +64,17 @@ var
   DDSImageIndex: Integer;
 
 { Note: CreateNonGLImage first automatically calls DestroyNonGLImage }
-procedure CreateNonGLImage(Window: TCastleWindowBase; const fname: string); overload;
+procedure CreateNonGLImage(Window: TCastleWindowCustom; const fname: string); overload;
 
 { About this version of CreateNonGLImage: you can give already loaded
   image. After calling this CreateNonGLImage you must STOP managing
   this NewImage - it will be managed (and freed) by this unit. }
-procedure CreateNonGLImage(Window: TCastleWindowBase; const NewImage: TCastleImage;
+procedure CreateNonGLImage(Window: TCastleWindowCustom; const NewImage: TCastleImage;
   const NewImageURL: string); overload;
 
 { ErrorURL is used for Window.Caption suffix,
   give here image name that can't be loaded. }
-procedure CreateNonGLImageInvalid(Window: TCastleWindowBase;
+procedure CreateNonGLImageInvalid(Window: TCastleWindowCustom;
   const ErrorURL: string);
 
 { It is valid NOP to call DestroyNonGLImage on already destroyed image.
@@ -113,7 +113,7 @@ procedure DestroyGLImage;
   Message about failing to load an image will be shown using
   MessageOK(Window,...) and no exception will be raised outside of this
   procedure CreateImage. }
-procedure CreateImage(Window: TCastleWindowBase; const fname: string);
+procedure CreateImage(Window: TCastleWindowCustom; const fname: string);
 
 { Takes the already created Image instance, and makes it loaded.
 
@@ -121,7 +121,7 @@ procedure CreateImage(Window: TCastleWindowBase; const fname: string);
   only it doesn't load image from file, but takes ready
   Image instance (you should leave further freeing of this Image
   to this unit, don't mess with it yourself). }
-procedure CreateImage(Window: TCastleWindowBase; Image: TCastleImage; const Name: string);
+procedure CreateImage(Window: TCastleWindowCustom; Image: TCastleImage; const Name: string);
 
 { Change DDSImageIndex.
 
@@ -131,7 +131,7 @@ procedure CreateImage(Window: TCastleWindowBase; Image: TCastleImage; const Name
   When calling this, always make sure that NonGL image is already loaded,
   and it's a DDSImage (DDSImage <> nil) and NewIndex is allowed
   (NewIndex < DDSImages.ImagesCount). }
-procedure ChangeDDSImageIndex(Window: TCastleWindowBase; NewIndex: Cardinal);
+procedure ChangeDDSImageIndex(Window: TCastleWindowCustom; NewIndex: Cardinal);
 
 var
   { CreateImage will add to this. }
@@ -141,7 +141,7 @@ implementation
 
 uses GVIImages, CastleURIUtils;
 
-procedure UpdateCaption(Window: TCastleWindowBase);
+procedure UpdateCaption(Window: TCastleWindowCustom);
 var
   S: string;
 begin
@@ -158,7 +158,7 @@ begin
   Window.Caption := S;
 end;
 
-procedure InternalCreateNonGLImageDDS(Window: TCastleWindowBase; const NewImage: TDDSImage;
+procedure InternalCreateNonGLImageDDS(Window: TCastleWindowCustom; const NewImage: TDDSImage;
   const NewImageURL: string);
 begin
   DestroyNonGLImage;
@@ -172,7 +172,7 @@ begin
   UpdateCaption(Window);
 end;
 
-procedure InternalCreateNonGLImage(Window: TCastleWindowBase; const NewImage: TCastleImage;
+procedure InternalCreateNonGLImage(Window: TCastleWindowCustom; const NewImage: TCastleImage;
   const NewImageURL: string; NewIsImageValid: boolean);
 begin
   DestroyNonGLImage;
@@ -184,7 +184,7 @@ begin
   UpdateCaption(Window);
 end;
 
-procedure CreateNonGLImage(Window: TCastleWindowBase; const fname: string);
+procedure CreateNonGLImage(Window: TCastleWindowCustom; const fname: string);
 var
   NewDDS: TDDSImage;
 begin
@@ -210,13 +210,13 @@ begin
   RecentMenu.Add(FName);
 end;
 
-procedure CreateNonGLImage(Window: TCastleWindowBase; const NewImage: TCastleImage;
+procedure CreateNonGLImage(Window: TCastleWindowCustom; const NewImage: TCastleImage;
   const NewImageURL: string);
 begin
  InternalCreateNonGLImage(Window, NewImage, NewImageURL, true);
 end;
 
-procedure CreateNonGLImageInvalid(Window: TCastleWindowBase;
+procedure CreateNonGLImageInvalid(Window: TCastleWindowCustom;
   const ErrorURL: string);
 begin
  InternalCreateNonGLImage(Window, Invalid.MakeCopy, ErrorURL, false);
@@ -250,7 +250,7 @@ begin
  FreeAndNil(GLImage);
 end;
 
-procedure CreateImage(Window: TCastleWindowBase; const fname: string);
+procedure CreateImage(Window: TCastleWindowCustom; const fname: string);
 begin
   DestroyGLImage;
   DestroyNonGLImage;
@@ -270,7 +270,7 @@ begin
   CreateGLImage;
 end;
 
-procedure CreateImage(Window: TCastleWindowBase; Image: TCastleImage; const Name: string);
+procedure CreateImage(Window: TCastleWindowCustom; Image: TCastleImage; const Name: string);
 begin
   DestroyGLImage;
   DestroyNonGLImage;
@@ -278,7 +278,7 @@ begin
   CreateGLImage;
 end;
 
-procedure ChangeDDSImageIndex(Window: TCastleWindowBase; NewIndex: Cardinal);
+procedure ChangeDDSImageIndex(Window: TCastleWindowCustom; NewIndex: Cardinal);
 begin
   Assert(DDSImage <> nil);
   Assert(NewIndex < Cardinal(DDSImage.Images.Count));

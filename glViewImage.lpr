@@ -32,7 +32,7 @@ uses CastleWindow, GL, CastleGLUtils, SysUtils, CastleUtils, CastleImages,
   CastleKeysMouse, CastleURIUtils;
 
 var
-  Window: TCastleWindowDemo;
+  Window: TCastleWindowCustom;
   MoveX: TGLfloat = 0;
   MoveY: TGLfloat = 0;
   DrawTiled: boolean = false;
@@ -457,7 +457,7 @@ begin
  end;
 end;
 
-procedure Open(Window: TCastleWindowBase);
+procedure Open(Sender: TCastleWindowBase);
 begin
   glClearColor(BackgroundColor[0], BackgroundColor[1], BackgroundColor[2], 1);
 
@@ -914,7 +914,7 @@ var
   i: Integer;
   SpecifiedOptions: TWindowParseOptions;
 begin
- Window := TCastleWindowDemo.Create(Application);
+ Window := TCastleWindowCustom.Create(Application);
 
  OnWarning := @OnWarningWrite;
 
