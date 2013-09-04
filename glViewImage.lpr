@@ -980,9 +980,6 @@ begin
     end;
   end;
 
-  {inicjuj CastleMessages}
-  MessagesTheme.TextCol := Green3Single;
-
   { set window size, if we managed to load image before Open callback,
     and user did not already request some size }
   if (Image <> nil) and not (poGeometry in SpecifiedOptions) then
