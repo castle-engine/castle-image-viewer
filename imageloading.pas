@@ -262,7 +262,7 @@ begin
     begin
       CreateNonGLImageInvalid(Window, fname);
       CreateGLImage;
-      MessageOK(Window, ExceptMessage(E, nil), taLeft);
+      MessageOK(Window, ExceptMessage(E, nil));
       Exit;
     end;
   end;

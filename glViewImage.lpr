@@ -471,7 +471,7 @@ begin
 
   if SavedErrorMessage <> '' then
   begin
-    MessageOk(Window, SavedErrorMessage, taLeft);
+    MessageOk(Window, SavedErrorMessage);
     SavedErrorMessage := '';
   end;
 end;
@@ -539,17 +539,17 @@ procedure MenuClick(Sender: TCastleWindowBase; Item: TMenuItem);
           DDSImage.SaveToFile(URL);
         end else
         begin
-          if MessageYesNo(Window, 'DDS image is composed from many single (normal, simple, 2D) images. Saving from DDS image to other file format will only save the current single image layer. Continue?', taLeft) then
+          if MessageYesNo(Window, 'DDS image is composed from many single (normal, simple, 2D) images. Saving from DDS image to other file format will only save the current single image layer. Continue?') then
             SaveImage(Image, URL);
         end;
       end else
         SaveImage(Image, URL);
     except
       on E: EImageSaveError do
-        MessageOk(Window, Format('Saving image "%s" failed: %s', [URL, E.Message]), taLeft);
+        MessageOk(Window, Format('Saving image "%s" failed: %s', [URL, E.Message]));
     end;
    end else
-    MessageOK(Window, 'No valid image loaded', taMiddle);
+    MessageOK(Window, 'No valid image loaded');
   end;
 
   procedure ImageOpen;
@@ -594,7 +594,7 @@ procedure MenuClick(Sender: TCastleWindowBase; Item: TMenuItem);
     if DDSImage <> nil then
       S += NL + Format('DDS subimage: %d', [DDSImageIndex]) + NL +
         DDSImageInfo(DDSImage);
-    MessageOK(Window, S, taLeft);
+    MessageOK(Window, S);
    end;
 
   procedure ShowAbout;
@@ -619,7 +619,7 @@ procedure MenuClick(Sender: TCastleWindowBase; Item: TMenuItem);
       Format('Image list (%d images) :', [ImageNamesList.Count])], SList);
     SList.AddStrings(ImageNamesList); }
 
-    MessageOK(Window, SList, taLeft);
+    MessageOK(Window, SList);
    finally SList.Free end;
   end;
 
@@ -663,9 +663,9 @@ procedure MenuClick(Sender: TCastleWindowBase; Item: TMenuItem);
     ResizeToX := 0;
     ResizeToY := 0;
     if MessageInputQueryCardinal(Window,
-      'Resize to given Width (leave 0 to keep current)', ResizeToX, taLeft) then
+      'Resize to given Width (leave 0 to keep current)', ResizeToX) then
     if MessageInputQueryCardinal(Window,
-      'Resize to given Height (leave 0 to keep current)', ResizeToY, taLeft) then
+      'Resize to given Height (leave 0 to keep current)', ResizeToY) then
     begin
       DestroyGLImage;
       Image.Resize(ResizeToX, ResizeToY, Interpolation);
