@@ -36,7 +36,7 @@ var
   MoveX: TGLfloat = 0;
   MoveY: TGLfloat = 0;
   DrawTiled: boolean = false;
-  BackgroundColor: TVector3Single = (0, 0, 0);
+  BackgroundColor: TCastleColor = (0, 0, 0, 1);
   SavedErrorMessage: string = '';
   UseImageAlpha: boolean = true;
 
@@ -302,7 +302,7 @@ begin
 
  { Clear color buffer bit, even when DrawTiled --- because image may
    have alpha channel, and then background is visible. }
- glClear(GL_COLOR_BUFFER_BIT);
+ GLClear([cbColor], BackgroundColor);
 
  if DrawTiled then
  begin
@@ -459,8 +459,6 @@ end;
 
 procedure Open(Sender: TCastleWindowBase);
 begin
-  glClearColor(BackgroundColor[0], BackgroundColor[1], BackgroundColor[2], 1);
-
   DecompressS3TC := @GLDecompressS3TC;
 
   if Image <> nil then
@@ -698,8 +696,7 @@ begin
         MoveY := 0;
        end;
 
-  260: if Window.ColorDialog(BackgroundColor) then
-         glClearColor(BackgroundColor[0], BackgroundColor[1], BackgroundColor[2], 1);
+  260: Window.ColorDialog(BackgroundColor);
   270: UseImageAlpha := not UseImageAlpha;
 
   310: ChangeImageNamesListPos(-1);
