@@ -266,7 +266,7 @@ procedure Draw(Window: TCastleWindowBase);
   begin
    glTranslatef(Window.width div 2, Window.height div 2, 0);
    glRotatef(Angle, 0, 0, 1);
-   glColorv(Yellow3Single);
+   glColorv(Yellow);
    glScalef(50, 50, 0);
    GLDrawArrow;
   end;
@@ -379,7 +379,7 @@ begin
 
    if horizScrollbar then
    begin
-    glColorv(Yellow3Single);
+    glColorv(Yellow);
     glBegin(GL_LINES);
      glVertex2f(ScrollbarSize, ScrollbarSize);
      glVertex2f(Window.width, ScrollbarSize);
@@ -389,13 +389,13 @@ begin
 
     visibleXStart := Round(MapRange(visibleXStart, 0, Width, ScrollbarSize+ScrollbarMargin, Window.width-ScrollbarMargin));
     visibleXEnd   := Round(MapRange(visibleXEnd,   0, Width, ScrollbarSize+ScrollbarMargin, Window.width-ScrollbarMargin));
-    glColorv(Gray3Single);
+    glColorv(Gray);
     glRecti(visibleXStart, ScrollbarMargin, visibleXEnd, ScrollbarSize-ScrollbarMargin);
    end;
 
    if vertScrollbar then
    begin
-    glColorv(Yellow3Single);
+    glColorv(Yellow);
     glBegin(GL_LINES);
      glVertex2f(ScrollbarSize, ScrollbarSize);
      glVertex2f(ScrollbarSize, Window.height);
@@ -405,7 +405,7 @@ begin
 
     visibleYStart := Round(MapRange(visibleYStart, 0, Height, ScrollbarSize+ScrollbarMargin, Window.height-ScrollbarMargin));
     visibleYEnd    :=Round(MapRange(visibleYEnd,   0, Height, ScrollbarSize+ScrollbarMargin, Window.height-ScrollbarMargin));
-    glColorv(Gray3Single);
+    glColorv(Gray);
     glRecti(ScrollbarMargin, visibleYStart, ScrollbarSize-ScrollbarMargin, visibleYEnd);
    end;
   end;
@@ -632,17 +632,15 @@ procedure MenuClick(Sender: TCastleWindowBase; Item: TMenuItem);
 
   procedure ImageClear;
   var
-    Color4: TVector4Byte;
-    Color3: TVector3Byte absolute Color4;
+    Color: TCastleColor;
   begin
     if CheckNotGrayscale then
     begin
-      Color3 := Vector3Byte(255, 255, 255);
-      if Window.ColorDialog(Color3) then
+      Color := White;
+      if Window.ColorDialog(Color) then
       begin
-        Color4[3] := 255;
         DestroyGLImage;
-        Image.Clear(Color4);
+        Image.Clear(Color);
         CreateGLImage;
       end;
     end;
