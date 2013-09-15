@@ -359,23 +359,20 @@ begin
 
    if horizScrollbar and vertScrollbar then
    begin
-    glScissor(ScrollbarSize+1, ScrollbarSize+1, Window.width, Window.height);
-    glEnable(GL_SCISSOR_TEST);
+     ScissorEnable(Window.Rect.RemoveLeft(ScrollbarSize + 1).RemoveBottom(ScrollbarSize + 1));
    end else
    if horizScrollbar then
    begin
-    glScissor(0, ScrollbarSize+1, Window.width, Window.height);
-    glEnable(GL_SCISSOR_TEST);
+     ScissorEnable(Window.Rect.RemoveBottom(ScrollbarSize + 1));
    end else
    if vertScrollbar then
    begin
-    glScissor(ScrollbarSize+1, 0, Window.width, Window.height);
-    glEnable(GL_SCISSOR_TEST);
+     ScissorEnable(Window.Rect.RemoveLeft(ScrollbarSize + 1));
    end;
 
    DrawImage(Round(MoveX * ZoomX), Round(MoveY * ZoomY));
 
-   glDisable(GL_SCISSOR_TEST);
+   ScissorDisable;
 
    if horizScrollbar then
    begin
