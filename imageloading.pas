@@ -34,7 +34,7 @@ unit ImageLoading;
 
 interface
 
-uses GL, CastleGLUtils, SysUtils, CastleUtils, CastleImages, Classes,
+uses CastleGLUtils, SysUtils, CastleUtils, CastleImages, Classes,
   CastleClassUtils, CastleMessages, CastleWindow, CastleGLImages, CastleDDS,
   CastleWindowRecentFiles;
 
