@@ -30,7 +30,7 @@ uses CastleWindow, CastleGL, CastleGLUtils, SysUtils, CastleUtils, CastleImages,
   CastleMessages, ImageLoading, CastleParameters, GVIImages, CastleEnumerateFiles,
   CastleVectors, CastleStringUtils, CastleWarnings, CastleGLImages,
   CastleWindowRecentFiles, CastleDDS, CastleFilesUtils, CastleColors, CastleConfig,
-  CastleKeysMouse, CastleURIUtils;
+  CastleKeysMouse, CastleURIUtils, CastleRectangles;
 
 var
   Window: TCastleWindowCustom;
@@ -387,8 +387,8 @@ begin
 
     visibleXStart := Round(MapRange(visibleXStart, 0, Width, ScrollbarSize+ScrollbarMargin, Window.width-ScrollbarMargin));
     visibleXEnd   := Round(MapRange(visibleXEnd,   0, Width, ScrollbarSize+ScrollbarMargin, Window.width-ScrollbarMargin));
-    glColorv(Gray);
-    glRecti(visibleXStart, ScrollbarMargin, visibleXEnd, ScrollbarSize-ScrollbarMargin);
+    DrawRectangle(Rectangle(visibleXStart, ScrollbarMargin,
+      visibleXEnd - visibleXStart, ScrollbarSize - 2 * ScrollbarMargin), Gray);
    end;
 
    if vertScrollbar then
@@ -403,8 +403,8 @@ begin
 
     visibleYStart := Round(MapRange(visibleYStart, 0, Height, ScrollbarSize+ScrollbarMargin, Window.height-ScrollbarMargin));
     visibleYEnd    :=Round(MapRange(visibleYEnd,   0, Height, ScrollbarSize+ScrollbarMargin, Window.height-ScrollbarMargin));
-    glColorv(Gray);
-    glRecti(ScrollbarMargin, visibleYStart, ScrollbarSize-ScrollbarMargin, visibleYEnd);
+    DrawRectangle(Rectangle(ScrollbarMargin, visibleYStart,
+      ScrollbarSize - 2 * ScrollbarMargin, visibleYEnd - visibleYStart), Gray);
    end;
   end;
  end;
