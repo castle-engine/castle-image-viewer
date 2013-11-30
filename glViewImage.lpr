@@ -198,7 +198,7 @@ end;
 
 procedure AddImageNamesFromMask(const mask: string);
 begin
-  EnumFiles(Mask, false, @AddToList, nil, [eoSymlinks]);
+  EnumFiles(Mask, false, @AddToList, nil, []);
 end;
 
 { Path can be '' or must end with '/' }
