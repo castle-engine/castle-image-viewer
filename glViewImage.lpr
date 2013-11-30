@@ -26,11 +26,10 @@ program glViewImage;
 {$apptype GUI}
 
 uses CastleWindow, CastleGL, CastleGLUtils, SysUtils, CastleUtils, CastleImages,
-  Math, Classes, CastleClassUtils,
-  CastleMessages, ImageLoading, CastleParameters, GVIImages, CastleEnumerateFiles,
-  CastleVectors, CastleStringUtils, CastleWarnings, CastleGLImages,
-  CastleWindowRecentFiles, CastleDDS, CastleFilesUtils, CastleColors, CastleConfig,
-  CastleKeysMouse, CastleURIUtils, CastleRectangles;
+  Math, Classes, CastleClassUtils, CastleMessages, ImageLoading, CastleParameters,
+  GVIImages, CastleFindFiles, CastleVectors, CastleStringUtils, CastleWarnings,
+  CastleGLImages, CastleWindowRecentFiles, CastleDDS, CastleFilesUtils,
+  CastleColors, CastleConfig, CastleKeysMouse, CastleURIUtils, CastleRectangles;
 
 var
   Window: TCastleWindowCustom;
@@ -133,7 +132,7 @@ begin
  end;
 end;
 
-procedure AddToList(const FileInfo: TEnumeratedFileInfo; Data: Pointer);
+procedure AddToList(const FileInfo: TFileInfo; Data: Pointer);
 
   { Makes FileName relative or absolute, whichever is nicer to show the user.
 
@@ -198,7 +197,7 @@ end;
 
 procedure AddImageNamesFromMask(const mask: string);
 begin
-  EnumFiles(Mask, false, @AddToList, nil, []);
+  FindFiles(Mask, false, @AddToList, nil, []);
 end;
 
 { Path can be '' or must end with '/' }
