@@ -191,14 +191,14 @@ procedure AddToList(const FileInfo: TEnumeratedFileInfo; Data: Pointer);
   end;
 
 begin
- { add NiceFileName(fullname) instead of FullName, because that's
-   more useful (shorter text) for user. }
- ImageNamesList.Append(NiceFileName(FileInfo.FullFileName));
+  { add NiceFileName(fullname) instead of AbsoluteName, because that's
+    more useful (shorter text) for user. }
+  ImageNamesList.Append(NiceFileName(FileInfo.AbsoluteName));
 end;
 
 procedure AddImageNamesFromMask(const mask: string);
 begin
- EnumFiles(Mask, RegularFileAttr, @AddToList, nil, [eoSymlinks]);
+  EnumFiles(Mask, false, @AddToList, nil, [eoSymlinks]);
 end;
 
 { Path can be '' or must end with '/' }
