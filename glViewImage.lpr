@@ -260,7 +260,7 @@ end;
 
 { glw callbacks ---------------------------------------------------------- }
 
-procedure Draw(Window: TCastleWindowBase);
+procedure Render(Window: TCastleWindowBase);
 
   procedure Arrow(const Angle: TGLfloat);
   begin
@@ -994,7 +994,7 @@ begin
   end;
 
   Window.OnUpdate := @Update;
-  Window.OnDraw := @Draw;
+  Window.OnRender := @Render;
   Window.OnOpen := @Open;
   Window.OnClose := @Close;
   Window.OnResize := @Resize2D;
