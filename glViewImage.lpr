@@ -92,12 +92,12 @@ end;
 { This changes ImageNamesListPos and tries to load newly choosen image.
   Uses CreateImage(Window, ImageNamesList[ImageNamesListPos]) if it's a normal
   (not internal) image, or something else as appropriate.
-  Then PostRedisplay; }
+  Then Invalidate; }
 procedure SetImageNamesListPos(NewValue: Integer);
 begin
  ImageNamesListPos := NewValue;
  CreateImageList(ImageNamesListPos);
- Window.PostRedisplay;
+ Window.Invalidate;
 end;
 
 procedure ChangeImageNamesListPos(Change: Integer);
@@ -248,14 +248,14 @@ var
 procedure SetZoomGL(var Zoom: Single; const NewZoom: Single);
 begin
  Zoom := Clamped(NewZoom, MinZoom, MaxZoom);
- Window.PostRedisplay;
+ Window.Invalidate;
 end;
 
 procedure MultZoomGL(var Zoom: Single; const Multiplier: Single);
 begin
  Zoom *= Multiplier;
  Clamp(Zoom, MinZoom, MaxZoom);
- Window.PostRedisplay;
+ Window.Invalidate;
 end;
 
 { glw callbacks ---------------------------------------------------------- }
@@ -416,7 +416,7 @@ procedure Update(Container: TUIContainer);
    change *= 8*Window.Fps.UpdateSecondsPassed * 50;
    if Window.Pressed[k_Ctrl] then change *= 10;
    value += change;
-   Window.PostRedisplay;
+   Window.Invalidate;
   end;
 
 const SCALE_FACTOR = 0.1;
@@ -756,7 +756,7 @@ begin
   else
    SetImageNamesListPos(Item.IntData - 10000);
  end;
- Window.PostRedisplay;
+ Window.Invalidate;
 end;
 
 { This assumes that ImageNamesList is empty, so be sure to call this before
