@@ -260,7 +260,7 @@ end;
 
 { glw callbacks ---------------------------------------------------------- }
 
-procedure Render(Window: TCastleWindowBase);
+procedure Render(Container: TUIContainer);
 
   procedure Arrow(const Angle: TGLfloat);
   begin
@@ -409,7 +409,7 @@ begin
  end;
 end;
 
-procedure Update(Window: TCastleWindowBase);
+procedure Update(Container: TUIContainer);
 
   procedure Move(var value: TGLfloat; change: TGLfloat);
   begin
@@ -454,7 +454,7 @@ begin
  end;
 end;
 
-procedure Open(Sender: TCastleWindowBase);
+procedure Open(Container: TUIContainer);
 begin
   DecompressS3TC := @GLDecompressS3TC;
 
@@ -471,7 +471,7 @@ begin
   end;
 end;
 
-procedure Close(Window: TCastleWindowBase);
+procedure Close(Container: TUIContainer);
 begin
   DestroyGLImage;
 end;
@@ -504,7 +504,7 @@ begin
     SQuoteMenuEntryCaption(ImageNamesList[i]), 10000 + i));
 end;
 
-procedure DropFiles(Window: TCastleWindowBase; const FileNames: array of string);
+procedure DropFiles(Container: TUIContainer; const FileNames: array of string);
 var
   URL: string;
 begin
@@ -516,7 +516,7 @@ begin
   end;
 end;
 
-procedure MenuClick(Sender: TCastleWindowBase; Item: TMenuItem);
+procedure MenuClick(Container: TUIContainer; Item: TMenuItem);
 
   procedure ImageSave;
   var
@@ -885,7 +885,7 @@ begin
           HelpOptionHelp+ nl+
           VersionOptionHelp +nl+
           nl+
-          TCastleWindowBase.ParseParametersHelp(StandardParseOptions, true) +nl+
+          TCastleWindowCustom.ParseParametersHelp(StandardParseOptions, true) +nl+
           nl+
           'By default, window size will be the same as of the first loaded image.'+nl+
           nl+
