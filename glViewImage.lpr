@@ -727,11 +727,11 @@ begin
          Image.FlipHorizontal;
          CreateGLImage;
        end;
-{  441: begin
+  441: begin
          DestroyGLImage;
          Image.FlipVertical;
          CreateGLImage;
-       end;}
+       end;
 
   450: begin
          DestroyGLImage;
@@ -807,10 +807,8 @@ begin
    M.Append(TMenuItem.Create('Strip to green channel',              431));
    M.Append(TMenuItem.Create('Strip to blue channel',               432));
    M.Append(TMenuSeparator.Create);
-   M.Append(TMenuItem.Create('_Mirror horizontally',                 440));
-   { TODO: too lazy to implement it right now.
+   M.Append(TMenuItem.Create('_Mirror horizontally',                440));
    M.Append(TMenuItem.Create('Mirror vertically',                   441));
-   }
    M.Append(TMenuSeparator.Create);
    M.Append(TMenuItem.Create('Rotate 90 Degrees (Clockwise)', 450));
    M.Append(TMenuItem.Create('Rotate 180 Degrees', 451));
