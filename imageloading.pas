@@ -64,7 +64,7 @@ var
   DDSImageIndex: Integer;
 
 { Note: CreateNonGLImage first automatically calls DestroyNonGLImage }
-procedure CreateNonGLImage(Window: TCastleWindowCustom; const fname: string); overload;
+procedure CreateNonGLImage(Window: TCastleWindowCustom; const URL: string); overload;
 
 { About this version of CreateNonGLImage: you can give already loaded
   image. After calling this CreateNonGLImage you must STOP managing
@@ -108,12 +108,12 @@ procedure DestroyGLImage;
     CreateGLImage;
   so it replaces current image with given.
 
-  But if (for any reason) loading of image from fname fails, then
+  But if (for any reason) loading of image from URL fails, then
   it will replace current image with special InvalidImage.
   Message about failing to load an image will be shown using
   MessageOK(Window,...) and no exception will be raised outside of this
   procedure CreateImage. }
-procedure CreateImage(Window: TCastleWindowCustom; const fname: string);
+procedure CreateImage(Window: TCastleWindowCustom; const URL: string);
 
 { Takes the already created Image instance, and makes it loaded.
 
@@ -184,30 +184,30 @@ begin
   UpdateCaption(Window);
 end;
 
-procedure CreateNonGLImage(Window: TCastleWindowCustom; const fname: string);
+procedure CreateNonGLImage(Window: TCastleWindowCustom; const URL: string);
 var
   NewDDS: TDDSImage;
 begin
-  if TDDSImage.MatchesURL(FName) then
+  if TDDSImage.MatchesURL(URL) then
   begin
     NewDDS := TDDSImage.Create;
     try
-      NewDDS.LoadFromFile(FName);
+      NewDDS.LoadFromFile(URL);
       NewDDS.Flatten3d;
       NewDDS.DecompressS3TC;
     except
       FreeAndNil(NewDDS);
       raise;
     end;
-    InternalCreateNonGLImageDDS(Window, NewDDS, FName);
+    InternalCreateNonGLImageDDS(Window, NewDDS, URL);
   end else
   begin
     InternalCreateNonGLImage(Window,
-      LoadImage(fname, PixelsImageClasses), fname, true);
+      LoadImage(URL, PixelsImageClasses), URL, true);
   end;
   { If InternalCreateNonGLImage went without exceptions,
     add to RecentMenu. }
-  RecentMenu.Add(FName);
+  RecentMenu.Add(URL);
 end;
 
 procedure CreateNonGLImage(Window: TCastleWindowCustom; const NewImage: TCastleImage;
@@ -250,17 +250,17 @@ begin
  FreeAndNil(GLImage);
 end;
 
-procedure CreateImage(Window: TCastleWindowCustom; const fname: string);
+procedure CreateImage(Window: TCastleWindowCustom; const URL: string);
 begin
   DestroyGLImage;
   DestroyNonGLImage;
 
   try
-    CreateNonGLImage(Window, FName);
+    CreateNonGLImage(Window, URL);
   except
     on E: Exception do
     begin
-      CreateNonGLImageInvalid(Window, fname);
+      CreateNonGLImageInvalid(Window, URL);
       CreateGLImage;
       MessageOK(Window, ExceptMessage(E, nil));
       Exit;

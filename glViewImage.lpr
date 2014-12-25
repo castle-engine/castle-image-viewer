@@ -23,13 +23,20 @@
 program glViewImage;
 
 {$I castleconf.inc}
+
+{$ifdef MSWINDOWS}
+  {$R automatic-windows-resources.res}
+{$endif MSWINDOWS}
+
 {$apptype GUI}
 
-uses CastleWindow, CastleGL, CastleGLUtils, SysUtils, CastleUtils, CastleImages,
-  Math, Classes, CastleClassUtils, CastleMessages, ImageLoading, CastleParameters,
-  GVIImages, CastleFindFiles, CastleVectors, CastleStringUtils, CastleWarnings,
+uses SysUtils, Math, Classes, TypInfo,
+  CastleWindow, CastleGL, CastleGLUtils, CastleUtils, CastleImages,
+  CastleClassUtils, CastleMessages, CastleParameters,
+  CastleFindFiles, CastleVectors, CastleStringUtils, CastleWarnings,
   CastleGLImages, CastleWindowRecentFiles, CastleDDS, CastleFilesUtils,
-  CastleColors, CastleConfig, CastleKeysMouse, CastleURIUtils, CastleRectangles;
+  CastleColors, CastleConfig, CastleKeysMouse, CastleURIUtils, CastleRectangles,
+  ImageLoading, GVIImages;
 
 var
   Window: TCastleWindowCustom;
@@ -666,6 +673,32 @@ procedure MenuClick(Container: TUIContainer; Item: TMenuItem);
     end;
   end;
 
+  procedure DoResize(const Interpolation: TResizeNiceInterpolation);
+  var
+    ResizeToX, ResizeToY: Cardinal;
+    NewImage: TCastleImage;
+  begin
+    ResizeToX := 0;
+    ResizeToY := 0;
+    if MessageInputQueryCardinal(Window,
+      'Resize to given Width (leave 0 to keep current)', ResizeToX) then
+    if MessageInputQueryCardinal(Window,
+      'Resize to given Height (leave 0 to keep current)', ResizeToY) then
+    begin
+      try
+        NewImage := Image.MakeResized(ResizeToX, ResizeToY, Interpolation);
+      except
+        on E: Exception do
+        begin
+          MessageOK(Window, 'Resizing failed: ' + ExceptMessage(E));
+          Exit;
+        end;
+      end;
+
+      CreateImage(Window, NewImage, ImageURL);
+    end;
+  end;
+
 var change: TGLfloat;
 begin
  case Item.IntData of
@@ -753,6 +786,7 @@ begin
   520: ShowAbout;
   600: DoResize(riNearest);
   610: DoResize(riBilinear);
+  1600..1700: DoResize(TResizeNiceInterpolation(Item.IntData - 1600));
   else
    SetImageNamesListPos(Item.IntData - 10000);
  end;
@@ -764,8 +798,9 @@ end;
   call here ImageNamesListChanged. }
 function CreateMainMenu: TMenu;
 var
-  M: TMenu;
+  M, M2: TMenu;
   NextRecentMenuItem: TMenuEntry;
+  NiceInterpolation: TResizeNiceInterpolation;
 begin
  Result := TMenu.Create('Main menu');
  M := TMenu.Create('_File');
@@ -796,6 +831,12 @@ begin
  M := TMenu.Create('_Edit');
    M.Append(TMenuItem.Create('Resize (Nearest) ...',                600));
    M.Append(TMenuItem.Create('Resize (Bilinear) ...',               610));
+   M2 := TMenu.Create('Resize (Slower but Nicer Algorithms)');
+     for NiceInterpolation := Low(NiceInterpolation) to High(NiceInterpolation) do
+       M2.Append(TMenuItem.Create('Resize (' +
+         GetEnumName(TypeInfo(TResizeNiceInterpolation), Ord(NiceInterpolation)) +
+         ') ...',  1600 + Ord(NiceInterpolation)));
+     M.Append(M2);
    M.Append(TMenuSeparator.Create);
    M.Append(TMenuItem.Create('_Grayscale',                          410));
    M.Append(TMenuSeparator.Create);
