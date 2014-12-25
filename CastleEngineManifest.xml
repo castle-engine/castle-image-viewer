@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project name="glviewimage"
+  standalone_source="glViewImage.lpr"
+  author="Michalis Kamburelis">
+  <icons>
+    <icon path="desktop/glViewImage.svg" />
+    <icon path="desktop/glViewImage.png" />
+    <icon path="desktop/glViewImage.ico" />
+  </icons>
+  <version value="1.5.0" />
+  <package>
+    <include path="COPYING.GPL2.txt" />
+  </package>
+</project>
