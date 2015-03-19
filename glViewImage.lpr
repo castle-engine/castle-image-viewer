@@ -463,11 +463,11 @@ end;
 
 procedure Open(Container: TUIContainer);
 begin
-  DecompressS3TC := @GLDecompressS3TC;
+  DecompressTexture := @GLDecompressTexture;
 
   if Image <> nil then
     CreateGLImage else
-    { Image failed to initialize before (because S3TC could
+    { Image failed to initialize before (because texture could
       not be decompressed), initialize it fully now. }
     CreateImageList(ImageNamesListPos);
 
@@ -998,7 +998,7 @@ begin
   try
     CreateNonGLImageList(ImageNamesListPos, false);
   except
-    on E: ECannotDecompressS3TC do
+    on E: ECannotDecompressTexture do
     begin
       { Silence warning in this case, image size cannot be known
         before we initialize OpenGL context.

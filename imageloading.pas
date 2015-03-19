@@ -166,7 +166,7 @@ begin
   DDSImageIndex := 0;
   if DDSImage.Images[0] is TCastleImage then
     Image := TCastleImage(DDSImage.Images[0]) else
-    raise Exception.Create('glViewImage cannot display S3TC compressed textures from DDS');
+    raise Exception.Create('glViewImage cannot display compressed textures from DDS');
   ImageURL := NewImageURL;
   IsImageValid := true;
   UpdateCaption(Window);
@@ -194,7 +194,7 @@ begin
     try
       NewDDS.LoadFromFile(URL);
       NewDDS.Flatten3d;
-      NewDDS.DecompressS3TC;
+      NewDDS.DecompressTexture;
     except
       FreeAndNil(NewDDS);
       raise;
