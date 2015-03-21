@@ -202,9 +202,9 @@ begin
   ImageNamesList.Append(NiceFileName(FileInfo.AbsoluteName));
 end;
 
-procedure AddImageNamesFromMask(const mask: string);
+procedure AddImageNamesFromMask(const PathAndMask: string);
 begin
-  FindFiles(Mask, false, @AddToList, nil, []);
+  FindFiles(PathAndMask, false, @AddToList, nil, []);
 end;
 
 { Path can be '' or must end with '/' }
