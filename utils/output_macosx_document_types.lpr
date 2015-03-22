@@ -24,6 +24,10 @@
   suitable to use in an Mac OS X bundle info.
   Use this to associate glViewImage with all supported image types on Mac OS X. }
 
+{ THIS DOES NOT COMPILE FOR NOW.
+  It requires access to ImageFormatInfos, and we cut if off
+  to cleanup CastleImages API. }
+
 uses CastleUtils, CastleImages;
 var
   FormatInfo: TImageFormatInfo;

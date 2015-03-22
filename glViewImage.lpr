@@ -209,12 +209,16 @@ end;
 
 { Path can be '' or must end with '/' }
 procedure AddImageNamesAllLoadable(const Path: string);
-var iff: TImageformat;
-    i: integer;
+var
+  I, J: Integer;
+  Pattern: string;
 begin
- for iff := Low(iff) to High(iff) do
-  for i := 1 to ImageformatInfos[iff].extsCount do
-   AddImageNamesFromMask(Path + '*.' + ImageFormatInfos[iff].exts[i]);
+  for I := 2 to LoadImage_FileFilters.Count - 1 do
+    for J := 0 to LoadImage_FileFilters[I].Patterns.Count - 1 do
+    begin
+      Pattern := LoadImage_FileFilters[I].Patterns[J];
+      AddImageNamesFromMask(Path + Pattern);
+    end;
 end;
 
 { recent files --------------------------------------------------------------- }
@@ -884,16 +888,18 @@ const
 procedure OptionProc(OptionNum: Integer; HasArgument: boolean;
   const Argument: string; const SeparateArgs: TSeparateArgs; Data: Pointer);
 var
-  RecognizedExts: string;
-  iff: TImageformat;
-  i: integer;
+  Pattern, RecognizedPatterns: string;
+  I, J: integer;
 begin
   case OptionNum of
     0:begin
-        RecognizedExts := '';
-        for iff := Low(iff) to High(iff) do
-          for i := 1 to ImageformatInfos[iff].extsCount do
-            RecognizedExts += ' *.'+ImageFormatInfos[iff].exts[i];
+        RecognizedPatterns := '';
+        for I := 2 to LoadImage_FileFilters.Count - 1 do
+          for J := 0 to LoadImage_FileFilters[I].Patterns.Count - 1 do
+          begin
+            Pattern := LoadImage_FileFilters[I].Patterns[J];
+            RecognizedPatterns += ' ' + Pattern;
+          end;
         InfoWrite(
           'glViewImage: simple image viewer. Allows browsing images list,' +nl+
           '  allows to scale and move viewed image, allows to test visually' +nl+
@@ -917,7 +923,7 @@ begin
           nl+
           'Not giving any image names for glViewImage to load will have the same' +nl+
           'effect as calling' +nl+
-          '  glViewImage' +RecognizedExts +nl+
+          '  glViewImage' +RecognizedPatterns +nl+
           'so all images in known format (in the current directory) will be loaded.' +nl+
           nl+
           'Accepted command-line options:' +nl+
