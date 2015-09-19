@@ -935,11 +935,11 @@ begin
           'By default, window size will be the same as of the first loaded image.'+nl+
           nl+
           SCastleEngineProgramHelpSuffix(DisplayApplicationName, Version, true));
-        ProgramBreak;
+        Halt;
       end;
     1:begin
         WritelnStr(Version);
-        ProgramBreak;
+        Halt;
       end;
     else raise EInternalError.Create('OptionProc');
   end;
