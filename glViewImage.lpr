@@ -139,7 +139,7 @@ begin
  end;
 end;
 
-procedure AddToList(const FileInfo: TFileInfo; Data: Pointer);
+procedure AddToList(const FileInfo: TFileInfo; Data: Pointer; var StopSearch: boolean);
 
   { Makes FileName relative or absolute, whichever is nicer to show the user.
 
