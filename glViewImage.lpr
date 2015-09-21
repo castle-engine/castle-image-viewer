@@ -265,7 +265,7 @@ end;
 procedure MultZoomGL(var Zoom: Single; const Multiplier: Single);
 begin
  Zoom *= Multiplier;
- Clamp(Zoom, MinZoom, MaxZoom);
+ ClampVar(Zoom, MinZoom, MaxZoom);
  Window.Invalidate;
 end;
 
@@ -360,10 +360,10 @@ begin
   if visibleYStart > Height then Arrow(180) else
   if visibleYEnd < 0        then Arrow(0) else
   begin
-   Clamp(visibleXStart, 0, Width);
-   Clamp(visibleXEnd  , 0, Width);
-   Clamp(visibleYStart, 0, Height);
-   Clamp(visibleYEnd  , 0, Height);
+   ClampVar(visibleXStart, 0, Width);
+   ClampVar(visibleXEnd  , 0, Width);
+   ClampVar(visibleYStart, 0, Height);
+   ClampVar(visibleYEnd  , 0, Height);
 
    horizScrollbar := (visibleXStart > 0) or (visibleXEnd < Width);
    vertScrollbar := (visibleYStart > 0) or (visibleYEnd < Height);
