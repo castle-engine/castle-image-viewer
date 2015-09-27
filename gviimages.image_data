@@ -1,7 +1,8 @@
 const
   InvalidWidth = 60;
   InvalidHeight = 60;
-  InvalidPixels: array[0 .. InvalidWidth * InvalidHeight * 3 - 1] of Byte = (
+  InvalidDepth = 1;
+  InvalidPixels: array[0 .. InvalidWidth * InvalidHeight * InvalidDepth * 3 - 1] of Byte = (
        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
@@ -906,7 +907,8 @@ const
 const
   WelcomeWidth = 256;
   WelcomeHeight = 256;
-  WelcomePixels: array[0 .. WelcomeWidth * WelcomeHeight * 4 - 1] of Byte = (
+  WelcomeDepth = 1;
+  WelcomePixels: array[0 .. WelcomeWidth * WelcomeHeight * WelcomeDepth * 4 - 1] of Byte = (
        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
        0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,

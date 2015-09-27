@@ -8,4 +8,4 @@ clean:
 	rm -f $(ALL_UNITS)
 
 ../gviimages.pas: invalid.png welcome.png
-	image_to_pas --output .. GVIImages $^
+	image2pascal --output .. GVIImages $^
