@@ -964,7 +964,8 @@ begin
   Window.MainMenu := CreateMainMenu;
   Window.OnMenuClick := @MenuClick;
 
-  Config.Load;
+  UserConfig.Load;
+  RecentMenu.LoadFromConfig(UserConfig);
 
   { parse glw options }
   Window.ParseParameters(StandardParseOptions, SpecifiedOptions);
@@ -1048,7 +1049,8 @@ begin
   Window.DepthBits := 0; { depth buffer not needed here }
   Window.OpenAndRun;
 
-  Config.Save;
+  RecentMenu.SaveToConfig(UserConfig);
+  UserConfig.Save;
  finally
   FreeAndNil(ImageNamesList);
   FreeAndNil(RecentMenu);
