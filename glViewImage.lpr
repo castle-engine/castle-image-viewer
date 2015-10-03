@@ -44,162 +44,104 @@ var
   MoveY: TGLfloat = 0;
   DrawTiled: boolean = false;
   BackgroundColor: TCastleColor = (0, 0, 0, 1);
-  SavedErrorMessage: string = '';
+  { error messages gathered before Window was open }
+  SavedErrorMessages: string = '';
   UseImageAlpha: boolean = true;
 
-{ Lista nazw obrazkow --------------------------------------------------------
-
-  Items on ImageNamesList may be relative URLs, so current dir of this
-  program must stay constant for all time.
-
-  A special case is an item with Object[] property <> @nil:
-  this means that an internal image, which should be loaded from
-  TImage(Object[]), should be loaded. Display name for user
-  should be the value of given string.
-  For now, this is only used to load Welcome image, possibly will
-  be used for other purposes at some time.
-
-  ImageNamesListPos zawsze wskazuje na jakis istniejacy
-  indeks 0..ImageNamesList.Count-1. Lista ImageNamesList tym samym zawsze
-  musi miec Count > 0.
-
-  Tym niemniej, nie jest gwarantowane ze aktualny ImageURL to
-  ImageNamesList[ImageNamesListPos]. Byc moze np. kiedys zrobie
-  ImageOpen w wersji "bez dodawania do listy obrazkow ?".
-  Poza tym ImageURL jest undefined gdy not IsImageValid.
-
-  After changing this call ImageNamesListChanged; }
 var
-  ImageNamesList: TStringList;
-  ImageNamesListPos: Integer = 0; { change this only with SetImageNameListPos }
+  { A list of images to browse by previous/next keys/menu items.
+    May be relative URLs, so the current dir of this program must never
+    change during execution.
+
+    A special case is an item with Object[] property <> @nil:
+    this means that an internal image, which should be loaded from
+    TImage(Object[]), should be loaded. Display name for user
+    should be the value of given string.
+    For now, this is only used to load Welcome image, possibly will
+    be used for other purposes at some time.
+
+    CurrentImageIndex is always in [0..Images.Count - 1].
+    Images.Count is always > 0.
+
+    After changing this call ImagesChanged; }
+  Images: TStringList;
+  CurrentImageIndex: Integer = 0; { change this only with SetCurrentImageIndex }
 
 { Create non-GL image part, based on list index ListPos. }
-procedure CreateNonGLImageList(const ListPos: Integer;
+procedure CreateNonGLImageFromList(const ListPos: Integer;
   const InvalidImage: boolean);
 begin
   if InvalidImage then
-    CreateNonGLImageInvalid(Window, ImageNamesList[ListPos]) else
-  if ImageNamesList.Objects[ListPos] = nil then
-    CreateNonGLImage(Window, ImageNamesList[ListPos]) else
+    CreateNonGLImageInvalid(Window, Images[ListPos]) else
+  if Images.Objects[ListPos] = nil then
+    CreateNonGLImage(Window, Images[ListPos]) else
     CreateNonGLImage(Window,
-      TCastleImage(ImageNamesList.Objects[ListPos]).MakeCopy,
-      ImageNamesList[ListPos]);
+      TCastleImage(Images.Objects[ListPos]).MakeCopy,
+      Images[ListPos]);
 end;
 
 { Create both non-GL and GL image parts, based on list index ListPos. }
-procedure CreateImageList(const ListPos: Integer);
+procedure CreateImageFromList(const ListPos: Integer);
 begin
-  if ImageNamesList.Objects[ListPos] = nil then
-    CreateImage(Window, ImageNamesList[ListPos]) else
+  if Images.Objects[ListPos] = nil then
+    CreateImage(Window, Images[ListPos]) else
     CreateImage(Window,
-      TCastleImage(ImageNamesList.Objects[ListPos]).MakeCopy,
-      ImageNamesList[ListPos]);
+      TCastleImage(Images.Objects[ListPos]).MakeCopy,
+      Images[ListPos]);
 end;
 
-{ This changes ImageNamesListPos and tries to load newly choosen image.
-  Uses CreateImage(Window, ImageNamesList[ImageNamesListPos]) if it's a normal
-  (not internal) image, or something else as appropriate.
-  Then Invalidate; }
-procedure SetImageNamesListPos(NewValue: Integer);
+{ Change CurrentImageIndex and try to load newly choosen image.
+  Uses CreateImage(Window, Images[CurrentImageIndex]) if it's a normal
+  (not internal) image, or something else as appropriate. }
+procedure SetCurrentImageIndex(NewValue: Integer);
 begin
- ImageNamesListPos := NewValue;
- CreateImageList(ImageNamesListPos);
- Window.Invalidate;
+  CurrentImageIndex := NewValue;
+  CreateImageFromList(CurrentImageIndex);
+  Window.Invalidate;
 end;
 
-procedure ChangeImageNamesListPos(Change: Integer);
+procedure ChangeCurrentImageIndex(Change: Integer);
 begin
- SetImageNamesListPos(ChangeIntCycle(
-   ImageNamesListPos, Change, ImageNamesList.Count-1));
+  SetCurrentImageIndex(ChangeIntCycle(
+    CurrentImageIndex, Change, Images.Count - 1));
 end;
 
-{ operations on ImageNamesList ---------------------------------------------
-  They all do NOT call ImageNamesListChanged automatically. }
-
-procedure AddImageNamesFromTextReader(Reader: TTextReader);
-var s: string;
-begin
- while not Reader.Eof do
- begin
-  s := Trim( Reader.Readln );
-  if s <> '' then ImageNamesList.Append(s);
- end;
-end;
+{ operations on Images ---------------------------------------------
+  They all do NOT call ImagesChanged automatically. }
 
 procedure AddImageNamesFromFile(const URL: string);
-var f: TTextReader;
+
+  procedure AddImageNamesFromTextReader(Reader: TTextReader);
+  var
+    s: string;
+  begin
+    while not Reader.Eof do
+    begin
+      s := Trim(Reader.Readln);
+      if s <> '' then Images.Append(s);
+    end;
+  end;
+
+var
+  f: TTextReader;
 begin
- if URL = '-' then
-  AddImageNamesFromTextReader(StdinReader) else
- begin
-  f := TTextReader.Create(URL);
-  try
-   AddImageNamesFromTextReader(f);
-  finally f.Free end;
- end;
+  if URL = '-' then
+    AddImageNamesFromTextReader(StdinReader) else
+  begin
+    f := TTextReader.Create(URL);
+    try
+      AddImageNamesFromTextReader(f);
+    finally f.Free end;
+  end;
 end;
 
 procedure AddToList(const FileInfo: TFileInfo; Data: Pointer; var StopSearch: boolean);
-
-  { Makes FileName relative or absolute, whichever is nicer to show the user.
-
-    Given FileName may be absolute or relative (with respect to CurrentDir).
-    This function maybe will convert FileName to absolute filename and
-    maybe will convert it to relative filename -- whichever will be
-    nicer to show the user.
-
-    It's not guaranteed what exactly this function considers as "nicer for
-    the user". Current implementation simply assumes that if FileName
-    is under current directory, then relative name is nicer,
-    otherwise absolute name is nicer. In other words, it tries to
-    make a relative name but without any leading "..".
-
-    Examples:
-
-  @preformatted(
-    If CurrentDir = '/usr/share/' and
-       FileName = '/usr/share/some_file'
-       Result will be a relative filename 'some_file'
-    If CurrentDir = '/usr/share/' and
-       FileName = '/lib/bla/bla'
-       Result will be equal to FileName '/lib/bla/bla'
-    If CurrentDir = '/usr/share/' and
-       FileName = '../../lib/bla/bla'
-       Result will be absolute filename '/lib/bla/bla'
-  ) }
-  function NiceFileName(const FileName: string): string;
-
-    { Forces FileName to be relative (relative from CurrentDir).
-
-      Given FileName may be absolute (then it's directory part will be modified
-      accordingly) or already relative (then it will simply be returned
-      without any changes). }
-    function RelativeFilename(const FileName: string): string;
-    begin
-      if IsPathAbsolute(FileName) then
-        Result := ExtractRelativePath( InclPathDelim(GetCurrentDir) + 'dummy_file',
-          FileName) else
-        { TODO: MSWINDOWS - chyba nie trzeba uwzgledniac tu
-          IsPathAbsoluteOnDrive(FileName) ? }
-        Result := FileName;
-    end;
-
-  var
-    AbsoluteFileName: string;
-  begin
-    AbsoluteFileName := ExpandFileName(FileName);
-    { It's important that we end InclPathDelim(GetCurrentDir) and
-      ExtractFilePath(AbsoluteFileName) always with PathDelim, it makes sure that
-      IsPrefix actually checks is one file in subdirectory of another. }
-    if IsPrefix( InclPathDelim(GetCurrentDir), ExtractFilePath(AbsoluteFileName) ) then
-      Result := RelativeFilename(FileName) else
-      Result := AbsoluteFileName;
-  end;
-
 begin
-  { add NiceFileName(fullname) instead of AbsoluteName, because that's
-    more useful (shorter text) for user. }
-  ImageNamesList.Append(NiceFileName(FileInfo.AbsoluteName));
+  { avoid adding dups, otherwise AddImageNamesFromFileName always adds dups.
+    Note: we cannot use Images.Duplicates := dupIgnore,
+    because of http://bugs.freepascal.org/view.php?id=28774 }
+  if Images.IndexOf(FileInfo.AbsoluteName) = -1 then
+    Images.Append(FileInfo.AbsoluteName);
 end;
 
 procedure AddImageNamesFromMask(const PathAndMask: string);
@@ -221,9 +163,20 @@ begin
     end;
 end;
 
-{ recent files --------------------------------------------------------------- }
+procedure AddImageNamesFromFileName(const FileName: string);
+begin
+  // FileName will match exactly 1 file
+  AddImageNamesFromMask(ExpandFileName(FileName));
 
-procedure ImageNamesListChanged; forward;
+  { Add also other filenames within this directory.
+    This way if you open a file by double-clicking,
+    you can still browse other images in this dir. }
+  AddImageNamesAllLoadable(ExtractFilePath(FileName));
+end;
+
+{ open file --------------------------------------------------------------- }
+
+procedure ImagesChanged; forward;
 
 type
   THelper = class
@@ -232,12 +185,12 @@ type
 
 class procedure THelper.FileOpen(const URL: string);
 begin
-  ImageNamesList.Insert(ImageNamesListPos+1, URL);
-  ImageNamesListChanged;
-  ChangeImageNamesListPos(+1);
+  Images.Insert(CurrentImageIndex + 1, URL);
+  ImagesChanged;
+  ChangeCurrentImageIndex(+1);
 
-  { temporary unused code: this is how to open an image without adding it to
-    ImageNamesList: CreateImage(Window, URL); }
+  // unused: this is how to open an image without adding it to Images list:
+  //CreateImage(Window, URL);
 end;
 
 { operacje na zoom --------------------------------------------------------- }
@@ -473,12 +426,12 @@ begin
     CreateGLImage else
     { Image failed to initialize before (because texture could
       not be decompressed), initialize it fully now. }
-    CreateImageList(ImageNamesListPos);
+    CreateImageFromList(CurrentImageIndex);
 
-  if SavedErrorMessage <> '' then
+  if Trim(SavedErrorMessages) <> '' then
   begin
-    MessageOk(Window, SavedErrorMessage);
-    SavedErrorMessage := '';
+    MessageOk(Window, Trim(SavedErrorMessages));
+    SavedErrorMessages := '';
   end;
 end;
 
@@ -495,24 +448,26 @@ const
 
 var
   { initialized in CreateMainMenu, then updated in each ImagesNamesListChanged. }
-  ImageListMenu: TMenu;
+  ImagesMenu: TMenu;
 
-{ After changing ImageNamesList contents always call this.
-  This ensures that ImageListMenu is properly updated. }
-procedure ImageNamesListChanged;
+{ After changing Images contents always call this.
+  This ensures that ImagesMenu is properly updated. }
+procedure ImagesChanged;
+const
+  NormalImageMenuCount = 6;
 var i: Integer;
 begin
- while ImageListMenu.Count > 6 do
-  ImageListMenu.Delete(6);
+  while ImagesMenu.Count > NormalImageMenuCount do
+    ImagesMenu.Delete(NormalImageMenuCount);
 
- { Do not load all ImageNamesList.Count to the menu,
-   as this makes menu very large, making updating it (e.g. when user
-   loads new image) time-consuming, and it's not possible to navigate
-   it anyway. }
+  { Do not load all Images.Count to the menu,
+    as this makes menu very large, making updating it (e.g. when user
+    loads new image) time-consuming, and it's not possible to navigate
+    it anyway. }
 
- for i := 0 to Min(ImageNamesList.Count, 20) - 1 do
-  ImageListMenu.Append(TMenuItem.Create(
-    SQuoteMenuEntryCaption(ImageNamesList[i]), 10000 + i));
+  for i := 0 to Min(Images.Count, 20) - 1 do
+    ImagesMenu.Append(TMenuItem.Create(
+      SQuoteMenuEntryCaption(URICaption(Images[i])), 10000 + i));
 end;
 
 procedure DropFiles(Container: TUIContainer; const FileNames: array of string);
@@ -622,8 +577,8 @@ procedure MenuClick(Container: TUIContainer; Item: TMenuItem);
     { Don't show this, long and useless for normal user:
     AddStrArrayToStrings([
       '',
-      Format('Image list (%d images) :', [ImageNamesList.Count])], SList);
-    SList.AddStrings(ImageNamesList); }
+      Format('Image list (%d images) :', [Images.Count])], SList);
+    SList.AddStrings(Images); }
 
     MessageOK(Window, SList);
    finally SList.Free end;
@@ -733,8 +688,8 @@ begin
   260: Window.ColorDialog(BackgroundColor);
   270: UseImageAlpha := not UseImageAlpha;
 
-  310: ChangeImageNamesListPos(-1);
-  311: ChangeImageNamesListPos(+1);
+  310: ChangeCurrentImageIndex(-1);
+  311: ChangeCurrentImageIndex(+1);
 
   320: EasyChangeDDSImageIndex(-1);
   321: EasyChangeDDSImageIndex(+1);
@@ -791,15 +746,14 @@ begin
   600: DoResize(riNearest);
   610: DoResize(riBilinear);
   1600..1700: DoResize(TResizeNiceInterpolation(Item.IntData - 1600));
-  else
-   SetImageNamesListPos(Item.IntData - 10000);
+  else SetCurrentImageIndex(Item.IntData - 10000);
  end;
  Window.Invalidate;
 end;
 
-{ This assumes that ImageNamesList is empty, so be sure to call this before
-  adding something to ImageNamesList. For simplicity of "control flow" we do NOT
-  call here ImageNamesListChanged. }
+{ This assumes that Images is empty, so be sure to call this before
+  adding something to Images. For simplicity of "control flow" we do NOT
+  call here ImagesChanged. }
 function CreateMainMenu: TMenu;
 var
   M, M2: TMenu;
@@ -862,7 +816,7 @@ begin
    M.Append(TMenuItem.Create('Clear ...', 460));
    Result.Append(M);
  M := TMenu.Create('_Images');
- ImageListMenu := M;
+ ImagesMenu := M;
    M.Append(TMenuItem.Create('_Previous subimage in DDS', 320, CtrlP));
    M.Append(TMenuItem.Create('_Next subimage in DDS',     321, CtrlN));
    M.Append(TMenuSeparator.Create);
@@ -955,9 +909,9 @@ begin
 
  OnWarning := @OnWarningWrite;
 
- ImageNamesList := TStringList.Create;
+ Images := TStringList.Create;
  try
-  { init menu things. We must do it before we add something to ImageNamesList,
+  { init menu things. We must do it before we add something to Images,
     this is required by CreateMainMenu. }
   RecentMenu := TWindowRecentFiles.Create(nil);
   RecentMenu.OnOpenRecent := @THelper(nil).FileOpen;
@@ -972,38 +926,40 @@ begin
   { parse our options }
   Parameters.Parse(Options, @OptionProc, nil);
 
-  { evaluate ImageNamesList = parse the list of image files to open }
+  { calculate Images = parse the list of image files to open }
   if Parameters.High = 0 then
   begin
-   AddImageNamesAllLoadable('');
-   ImageNamesList.Sort;
+    AddImageNamesAllLoadable('');
+    Images.Sort;
   end else
   begin
-   for i := 1 to Parameters.High do
-   begin
-    if SCharIs(Parameters[i], 1, '@') then
-     AddImageNamesFromFile(SEnding(Parameters[i], 2)) else
-    if DirectoryExists(Parameters[i]) then
-     AddImageNamesAllLoadable(InclPathDelim(Parameters[i])) else
-     AddImageNamesFromMask(Parameters[i]);
-   end;
+    for i := 1 to Parameters.High do
+    begin
+      if SCharIs(Parameters[i], 1, '@') then
+        AddImageNamesFromFile(SEnding(Parameters[i], 2)) else
+      if DirectoryExists(Parameters[i]) then
+        AddImageNamesAllLoadable(InclPathDelim(Parameters[i])) else
+      if FileExists(Parameters[i]) then
+        AddImageNamesFromFileName(Parameters[i]) else
+        SavedErrorMessages += 'File "' + Parameters[i] + '" does not exist.' + NL;
+    end;
   end;
 
   { Always insert wecome image }
-  ImageNamesList.InsertObject(0, '<Welcome image>', Welcome);
-  Assert(ImageNamesList.Count > 0);
+  Images.InsertObject(0, '<Welcome image>', Welcome);
+  Assert(Images.Count > 0);
 
   { By default, view the first loaded image, or welcome image if nothing loaded. }
-  if ImageNamesList.Count > 1 then
-    ImageNamesListPos := 1 else
-    ImageNamesListPos := 0;
+  if Images.Count > 1 then
+    CurrentImageIndex := 1 else
+    CurrentImageIndex := 0;
 
-  ImageNamesListChanged;
+  ImagesChanged;
 
   { initialize Image. This must be done before window is created,
     as we want to use Image size for initial window size. }
   try
-    CreateNonGLImageList(ImageNamesListPos, false);
+    CreateNonGLImageFromList(CurrentImageIndex, false);
   except
     on E: ECannotDecompressTexture do
     begin
@@ -1013,8 +969,8 @@ begin
     end;
     on E: Exception do
     begin
-      SavedErrorMessage := ExceptMessage(E, nil);
-      CreateNonGLImageList(ImageNamesListPos, true);
+      SavedErrorMessages += ExceptMessage(E, nil) + NL;
+      CreateNonGLImageFromList(CurrentImageIndex, true);
     end;
   end;
 
@@ -1052,7 +1008,7 @@ begin
   RecentMenu.SaveToConfig(UserConfig);
   UserConfig.Save;
  finally
-  FreeAndNil(ImageNamesList);
+  FreeAndNil(Images);
   FreeAndNil(RecentMenu);
  end;
 end.

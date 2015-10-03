@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<project name="glviewimage"
+<project name="glViewImage"
   standalone_source="glViewImage.lpr"
   author="Michalis Kamburelis">
   <icons>
