@@ -3,7 +3,7 @@ set -eu
 
 cd ../castle_game_engine/
 # Force rebuilding CastleWindow unit with proper backend.
-make clean-window
+make --quiet clean-window
 
 # Compile binary using castle-engine,
 # this is good for Windows to include the icon/versioninfo/manfest in resources.
