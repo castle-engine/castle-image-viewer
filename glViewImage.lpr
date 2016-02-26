@@ -32,7 +32,7 @@ program glViewImage;
 
 uses SysUtils, Math, Classes, TypInfo,
   CastleWindow, CastleGL, CastleGLUtils, CastleUtils, CastleImages,
-  CastleClassUtils, CastleMessages, CastleParameters,
+  CastleClassUtils, CastleMessages, CastleParameters, CastleControls,
   CastleFindFiles, CastleVectors, CastleStringUtils, CastleWarnings,
   CastleGLImages, CastleWindowRecentFiles, CastleDDS, CastleFilesUtils,
   CastleColors, CastleConfig, CastleKeysMouse, CastleURIUtils, CastleRectangles,
@@ -211,15 +211,15 @@ var
 
 procedure SetZoomGL(var Zoom: Single; const NewZoom: Single);
 begin
- Zoom := Clamped(NewZoom, MinZoom, MaxZoom);
- Window.Invalidate;
+  Zoom := Clamped(NewZoom, MinZoom, MaxZoom);
+  Window.Invalidate;
 end;
 
 procedure MultZoomGL(var Zoom: Single; const Multiplier: Single);
 begin
- Zoom *= Multiplier;
- ClampVar(Zoom, MinZoom, MaxZoom);
- Window.Invalidate;
+  Zoom *= Multiplier;
+  ClampVar(Zoom, MinZoom, MaxZoom);
+  Window.Invalidate;
 end;
 
 { glw callbacks ---------------------------------------------------------- }
@@ -228,11 +228,11 @@ procedure Render(Container: TUIContainer);
 
   procedure Arrow(const Angle: TGLfloat);
   begin
-   glTranslatef(Window.width div 2, Window.height div 2, 0);
-   glRotatef(Angle, 0, 0, 1);
-   glColorv(Yellow);
-   glScalef(50, 50, 0);
-   GLDrawArrow;
+    glTranslatef(Window.width div 2, Window.height div 2, 0);
+    glRotatef(Angle, 0, 0, 1);
+    glColorv(Yellow);
+    glScalef(50, 50, 0);
+    GLDrawArrow;
   end;
 
   { Draw image with current (ZoomX, ZoomY) and (MoveX, MoveY). }
@@ -248,129 +248,130 @@ procedure Render(Container: TUIContainer);
       0, 0, GLImage.Width, GLImage.Height);
   end;
 
-var visibleXStart, visibleXEnd,
-    visibleYStart, visibleYEnd,
-    Width, Height, i, j, i0, i1, j0, j1: integer;
-    horizScrollbar, vertScrollbar: boolean;
+var
+  visibleXStart, visibleXEnd,
+  visibleYStart, visibleYEnd,
+  Width, Height, i, j, i0, i1, j0, j1: integer;
+  horizScrollbar, vertScrollbar: boolean;
 const
   ScrollbarSize = 10; {< scrollbar thickness (with frames around) }
   ScrollbarMargin = 2; {< margin between scrollbar inside and frame }
 begin
- glLoadIdentity;
+  glLoadIdentity;
 
- { fpc zle sobie radzi gdy przychodzi do porownywania integerow i cardinali :
-   wybiera wspolny typ jako cardinal - tragiczny blad. Przydadza nam sie tutaj
-   Width i Height jako int. }
- Width := Image.Width;
- Height := Image.Height;
+  { fpc zle sobie radzi gdy przychodzi do porownywania integerow i cardinali :
+    wybiera wspolny typ jako cardinal - tragiczny blad. Przydadza nam sie tutaj
+    Width i Height jako int. }
+  Width := Image.Width;
+  Height := Image.Height;
 
- { Clear color buffer bit, even when DrawTiled --- because image may
-   have alpha channel, and then background is visible. }
- GLClear([cbColor], BackgroundColor);
+  { Clear color buffer bit, even when DrawTiled --- because image may
+    have alpha channel, and then background is visible. }
+  GLClear([cbColor], BackgroundColor);
 
- if DrawTiled then
- begin
-  { MoveX to wspolrzedna X zasadniczego obrazka (tego ktory bylby
-    wyswietlany z not DrawTiled). Znajdujemy i0 takie ze jest to najwieksze
-    i dla ktorego (MoveX + i*Width)*zoomX <= 0 a wiec jest to
-    i dla lewej kolumny kafelkow. Podobnie, i1 dla prawej kolumny
-    kafelkow to najmniejsze i t.ze (MoveX + (i+1)*Width)*zoomx >= Window.width.
-    Podobnie znajdujemy j0, j1.
-
-    (operujemy przesuwajac MoveX o Width ale pamietamy ze
-    faktyczna pozycja obrazka w pixelach to pozycja*zoom).
-
-    (MoveX + i0*Width)*zoomX <= 0 wiec
-      i0 <= -MoveX/Width wiec
-      i0 = Floor(-MoveX/Width)
-    (MoveX + (i1 + 1)*Width)*zoomx >= Window.Width wiec
-      i1 >= (Window.Width/zoomx - MoveX)/Width - 1 wiec
-      i1 = Ceil((Window.width/zoomx - MoveX)/Width - 1)
-  }
-
-  i0 := Floor(-MoveX/Width);
-  i1 := Ceil((Window.Width/zoomX - MoveX)/Width - 1);
-  j0 := Floor(-MoveY/Height);
-  j1 := Ceil((Window.Height/zoomY - MoveY)/Height - 1);
-
-  for i := i0 to i1 do
-    for j := j0 to j1 do
-      DrawImage(
-        { We have to round this way, to make drawn rectangles fit perfectly
-          next to each other, without any 1-pixel border because of different
-          rounding. }
-        Round(MoveX * ZoomX) + i * Round(GLImage.Width  * ZoomX),
-        Round(MoveY * ZoomY) + j * Round(GLImage.Height * ZoomY));
- end else
- begin
-  visibleXStart := -Round(MoveX);
-  visibleXEnd   := Round(Window.width/zoomX - MoveX);
-  visibleYStart := -Round(MoveY);
-  visibleYEnd   := Round(Window.height/zoomY - MoveY);
-
-  if visibleXStart > Width  then Arrow(90) else
-  if visibleXEnd < 0        then Arrow(-90) else
-  if visibleYStart > Height then Arrow(180) else
-  if visibleYEnd < 0        then Arrow(0) else
+  if DrawTiled then
   begin
-   ClampVar(visibleXStart, 0, Width);
-   ClampVar(visibleXEnd  , 0, Width);
-   ClampVar(visibleYStart, 0, Height);
-   ClampVar(visibleYEnd  , 0, Height);
+    { MoveX to wspolrzedna X zasadniczego obrazka (tego ktory bylby
+      wyswietlany z not DrawTiled). Znajdujemy i0 takie ze jest to najwieksze
+      i dla ktorego (MoveX + i*Width)*zoomX <= 0 a wiec jest to
+      i dla lewej kolumny kafelkow. Podobnie, i1 dla prawej kolumny
+      kafelkow to najmniejsze i t.ze (MoveX + (i+1)*Width)*zoomx >= Window.width.
+      Podobnie znajdujemy j0, j1.
 
-   horizScrollbar := (visibleXStart > 0) or (visibleXEnd < Width);
-   vertScrollbar := (visibleYStart > 0) or (visibleYEnd < Height);
+      (operujemy przesuwajac MoveX o Width ale pamietamy ze
+      faktyczna pozycja obrazka w pixelach to pozycja*zoom).
 
-   if horizScrollbar and vertScrollbar then
-   begin
-     ScissorEnable(Window.Rect.RemoveLeft(ScrollbarSize + 1).RemoveBottom(ScrollbarSize + 1));
-   end else
-   if horizScrollbar then
-   begin
-     ScissorEnable(Window.Rect.RemoveBottom(ScrollbarSize + 1));
-   end else
-   if vertScrollbar then
-   begin
-     ScissorEnable(Window.Rect.RemoveLeft(ScrollbarSize + 1));
-   end;
+      (MoveX + i0*Width)*zoomX <= 0 wiec
+        i0 <= -MoveX/Width wiec
+        i0 = Floor(-MoveX/Width)
+      (MoveX + (i1 + 1)*Width)*zoomx >= Window.Width wiec
+        i1 >= (Window.Width/zoomx - MoveX)/Width - 1 wiec
+        i1 = Ceil((Window.width/zoomx - MoveX)/Width - 1)
+    }
 
-   DrawImage(Round(MoveX * ZoomX), Round(MoveY * ZoomY));
+    i0 := Floor(-MoveX/Width);
+    i1 := Ceil((Window.Width/zoomX - MoveX)/Width - 1);
+    j0 := Floor(-MoveY/Height);
+    j1 := Ceil((Window.Height/zoomY - MoveY)/Height - 1);
 
-   ScissorDisable;
+    for i := i0 to i1 do
+      for j := j0 to j1 do
+        DrawImage(
+          { We have to round this way, to make drawn rectangles fit perfectly
+            next to each other, without any 1-pixel border because of different
+            rounding. }
+          Round(MoveX * ZoomX) + i * Round(GLImage.Width  * ZoomX),
+          Round(MoveY * ZoomY) + j * Round(GLImage.Height * ZoomY));
+  end else
+  begin
+    visibleXStart := -Round(MoveX);
+    visibleXEnd   := Round(Window.width/zoomX - MoveX);
+    visibleYStart := -Round(MoveY);
+    visibleYEnd   := Round(Window.height/zoomY - MoveY);
 
-   if horizScrollbar then
-   begin
-    glColorv(Yellow);
-    glBegin(GL_LINES);
-     glVertex2f(ScrollbarSize, ScrollbarSize);
-     glVertex2f(Window.width, ScrollbarSize);
-     glVertex2f(ScrollbarSize, 0);
-     glVertex2f(ScrollbarSize, ScrollbarSize);
-    glEnd;
+    if visibleXStart > Width  then Arrow(90) else
+    if visibleXEnd < 0        then Arrow(-90) else
+    if visibleYStart > Height then Arrow(180) else
+    if visibleYEnd < 0        then Arrow(0) else
+    begin
+      ClampVar(visibleXStart, 0, Width);
+      ClampVar(visibleXEnd  , 0, Width);
+      ClampVar(visibleYStart, 0, Height);
+      ClampVar(visibleYEnd  , 0, Height);
 
-    visibleXStart := Round(MapRange(visibleXStart, 0, Width, ScrollbarSize+ScrollbarMargin, Window.width-ScrollbarMargin));
-    visibleXEnd   := Round(MapRange(visibleXEnd,   0, Width, ScrollbarSize+ScrollbarMargin, Window.width-ScrollbarMargin));
-    DrawRectangle(Rectangle(visibleXStart, ScrollbarMargin,
-      visibleXEnd - visibleXStart, ScrollbarSize - 2 * ScrollbarMargin), Gray);
-   end;
+      horizScrollbar := (visibleXStart > 0) or (visibleXEnd < Width);
+      vertScrollbar := (visibleYStart > 0) or (visibleYEnd < Height);
 
-   if vertScrollbar then
-   begin
-    glColorv(Yellow);
-    glBegin(GL_LINES);
-     glVertex2f(ScrollbarSize, ScrollbarSize);
-     glVertex2f(ScrollbarSize, Window.height);
-     glVertex2f(0, ScrollbarSize);
-     glVertex2f(ScrollbarSize, ScrollbarSize);
-    glEnd;
+      if horizScrollbar and vertScrollbar then
+      begin
+        ScissorEnable(Window.Rect.RemoveLeft(ScrollbarSize + 1).RemoveBottom(ScrollbarSize + 1));
+      end else
+      if horizScrollbar then
+      begin
+        ScissorEnable(Window.Rect.RemoveBottom(ScrollbarSize + 1));
+      end else
+      if vertScrollbar then
+      begin
+        ScissorEnable(Window.Rect.RemoveLeft(ScrollbarSize + 1));
+      end;
 
-    visibleYStart := Round(MapRange(visibleYStart, 0, Height, ScrollbarSize+ScrollbarMargin, Window.height-ScrollbarMargin));
-    visibleYEnd    :=Round(MapRange(visibleYEnd,   0, Height, ScrollbarSize+ScrollbarMargin, Window.height-ScrollbarMargin));
-    DrawRectangle(Rectangle(ScrollbarMargin, visibleYStart,
-      ScrollbarSize - 2 * ScrollbarMargin, visibleYEnd - visibleYStart), Gray);
-   end;
+      DrawImage(Round(MoveX * ZoomX), Round(MoveY * ZoomY));
+
+      ScissorDisable;
+
+      if horizScrollbar then
+      begin
+        glColorv(Yellow);
+        glBegin(GL_LINES);
+          glVertex2f(ScrollbarSize, ScrollbarSize);
+          glVertex2f(Window.width, ScrollbarSize);
+          glVertex2f(ScrollbarSize, 0);
+          glVertex2f(ScrollbarSize, ScrollbarSize);
+        glEnd;
+
+        visibleXStart := Round(MapRange(visibleXStart, 0, Width, ScrollbarSize+ScrollbarMargin, Window.width-ScrollbarMargin));
+        visibleXEnd   := Round(MapRange(visibleXEnd,   0, Width, ScrollbarSize+ScrollbarMargin, Window.width-ScrollbarMargin));
+        DrawRectangle(Rectangle(visibleXStart, ScrollbarMargin,
+          visibleXEnd - visibleXStart, ScrollbarSize - 2 * ScrollbarMargin), Gray);
+      end;
+
+      if vertScrollbar then
+      begin
+        glColorv(Yellow);
+        glBegin(GL_LINES);
+          glVertex2f(ScrollbarSize, ScrollbarSize);
+          glVertex2f(ScrollbarSize, Window.height);
+          glVertex2f(0, ScrollbarSize);
+          glVertex2f(ScrollbarSize, ScrollbarSize);
+        glEnd;
+
+        visibleYStart := Round(MapRange(visibleYStart, 0, Height, ScrollbarSize+ScrollbarMargin, Window.height-ScrollbarMargin));
+        visibleYEnd    :=Round(MapRange(visibleYEnd,   0, Height, ScrollbarSize+ScrollbarMargin, Window.height-ScrollbarMargin));
+        DrawRectangle(Rectangle(ScrollbarMargin, visibleYStart,
+          ScrollbarSize - 2 * ScrollbarMargin, visibleYEnd - visibleYStart), Gray);
+      end;
+    end;
   end;
- end;
 end;
 
 procedure Update(Container: TUIContainer);
@@ -455,7 +456,8 @@ var
 procedure ImagesChanged;
 const
   NormalImageMenuCount = 6;
-var i: Integer;
+var
+  i: Integer;
 begin
   while ImagesMenu.Count > NormalImageMenuCount do
     ImagesMenu.Delete(NormalImageMenuCount);
@@ -559,29 +561,30 @@ procedure MenuClick(Container: TUIContainer; Item: TMenuItem);
    end;
 
   procedure ShowAbout;
-  var SList: TStringList;
+  var
+    SList: TStringList;
   begin
-   SList := TStringList.Create;
-   try
-    AddStrArrayToStrings([
-      'Keys (the ones not documented already in the menu):',
-      'Arrows: move image,',
-      'Arrows + Ctrl: move image 10 x faster,',
-      '- / +: scale image,',
-      'x / X: scale only horizontally,',
-      'y / Y: scale only vertically.',
-      ''], SList);
-    Strings_AddCastleEngineProgramHelpSuffix(SList,
-      DisplayApplicationName, Version, false);
+    SList := TStringList.Create;
+    try
+      AddStrArrayToStrings([
+        'Keys (the ones not documented already in the menu):',
+        'Arrows: move image,',
+        'Arrows + Ctrl: move image 10 x faster,',
+        '- / +: scale image,',
+        'x / X: scale only horizontally,',
+        'y / Y: scale only vertically.',
+        ''], SList);
+      Strings_AddCastleEngineProgramHelpSuffix(SList,
+        DisplayApplicationName, Version, false);
 
-    { Don't show this, long and useless for normal user:
-    AddStrArrayToStrings([
-      '',
-      Format('Image list (%d images) :', [Images.Count])], SList);
-    SList.AddStrings(Images); }
+      { Don't show this, long and useless for normal user:
+      AddStrArrayToStrings([
+        '',
+        Format('Image list (%d images) :', [Images.Count])], SList);
+      SList.AddStrings(Images); }
 
-    MessageOK(Window, SList);
-   finally SList.Free end;
+      MessageOK(Window, SList);
+    finally SList.Free end;
   end;
 
   function CheckNotGrayscale: boolean;
@@ -658,97 +661,98 @@ procedure MenuClick(Container: TUIContainer; Item: TMenuItem);
     end;
   end;
 
-var change: TGLfloat;
+var
+  change: TGLfloat;
 begin
- case Item.IntData of
-  110: ImageOpen;
-  120: ImageSave;
-  140: Window.Close;
+  case Item.IntData of
+    110: ImageOpen;
+    120: ImageSave;
+    140: Window.Close;
 
-  210: begin
-        change:=(Window.Width / Image.Width) / zoomx;
-        MultZoomGL(ZoomX, change);
-        MultZoomGL(ZoomY, change);
-       end;
-  211: begin
-        change:=(Window.Height / Image.Height) / zoomy;
-        MultZoomGL(ZoomX, change);
-        MultZoomGL(ZoomY, change);
-       end;
-  220: SetZoomGL(ZoomX, Window.Width / Image.Width);
-  221: SetZoomGL(ZoomY, Window.Height / Image.Height);
-  230: DrawTiled := not DrawTiled;
-  240: begin
-        SetZoomGL(ZoomX, 1.0);
-        SetZoomGL(ZoomY, 1.0);
-        MoveX := 0;
-        MoveY := 0;
-       end;
+    210: begin
+          change:=(Window.Width / Image.Width) / zoomx;
+          MultZoomGL(ZoomX, change);
+          MultZoomGL(ZoomY, change);
+         end;
+    211: begin
+          change:=(Window.Height / Image.Height) / zoomy;
+          MultZoomGL(ZoomX, change);
+          MultZoomGL(ZoomY, change);
+         end;
+    220: SetZoomGL(ZoomX, Window.Width / Image.Width);
+    221: SetZoomGL(ZoomY, Window.Height / Image.Height);
+    230: DrawTiled := not DrawTiled;
+    240: begin
+          SetZoomGL(ZoomX, 1.0);
+          SetZoomGL(ZoomY, 1.0);
+          MoveX := 0;
+          MoveY := 0;
+         end;
 
-  260: Window.ColorDialog(BackgroundColor);
-  270: UseImageAlpha := not UseImageAlpha;
+    260: Window.ColorDialog(BackgroundColor);
+    270: UseImageAlpha := not UseImageAlpha;
 
-  310: ChangeCurrentImageIndex(-1);
-  311: ChangeCurrentImageIndex(+1);
+    310: ChangeCurrentImageIndex(-1);
+    311: ChangeCurrentImageIndex(+1);
 
-  320: EasyChangeDDSImageIndex(-1);
-  321: EasyChangeDDSImageIndex(+1);
+    320: EasyChangeDDSImageIndex(-1);
+    321: EasyChangeDDSImageIndex(+1);
 
-  410: if CheckNotGrayscale then
-       begin
-        DestroyGLImage;
-        Image.Grayscale;
-        CreateGLImage;
-       end;
-  420..422:
-       if CheckNotGrayscale then
-       begin
-        DestroyGLImage;
-        Image.ConvertToChannelRGB(Item.IntData - 420);
-        CreateGLImage;
-       end;
-  430..432:
-       if CheckNotGrayscale then
-       begin
-        DestroyGLImage;
-        Image.StripToChannelRGB(Item.IntData - 430);
-        CreateGLImage;
-       end;
-  440: begin
-         DestroyGLImage;
-         Image.FlipHorizontal;
-         CreateGLImage;
-       end;
-  441: begin
-         DestroyGLImage;
-         Image.FlipVertical;
-         CreateGLImage;
-       end;
+    410: if CheckNotGrayscale then
+         begin
+          DestroyGLImage;
+          Image.Grayscale;
+          CreateGLImage;
+         end;
+    420..422:
+         if CheckNotGrayscale then
+         begin
+          DestroyGLImage;
+          Image.ConvertToChannelRGB(Item.IntData - 420);
+          CreateGLImage;
+         end;
+    430..432:
+         if CheckNotGrayscale then
+         begin
+          DestroyGLImage;
+          Image.StripToChannelRGB(Item.IntData - 430);
+          CreateGLImage;
+         end;
+    440: begin
+           DestroyGLImage;
+           Image.FlipHorizontal;
+           CreateGLImage;
+         end;
+    441: begin
+           DestroyGLImage;
+           Image.FlipVertical;
+           CreateGLImage;
+         end;
 
-  450: begin
-         DestroyGLImage;
-         Image.Rotate(1);
-         CreateGLImage;
-       end;
-  451: begin
-         DestroyGLImage;
-         Image.Rotate(2);
-         CreateGLImage;
-       end;
-  452: begin
-         DestroyGLImage;
-         Image.Rotate(3);
-         CreateGLImage;
-       end;
-  460: ImageClear;
-  510: ShowImageInfo;
-  520: ShowAbout;
-  600: DoResize(riNearest);
-  610: DoResize(riBilinear);
-  1600..1700: DoResize(TResizeNiceInterpolation(Item.IntData - 1600));
-  else SetCurrentImageIndex(Item.IntData - 10000);
- end;
- Window.Invalidate;
+    450: begin
+           DestroyGLImage;
+           Image.Rotate(1);
+           CreateGLImage;
+         end;
+    451: begin
+           DestroyGLImage;
+           Image.Rotate(2);
+           CreateGLImage;
+         end;
+    452: begin
+           DestroyGLImage;
+           Image.Rotate(3);
+           CreateGLImage;
+         end;
+    460: ImageClear;
+    510: ShowImageInfo;
+    520: ShowAbout;
+    600: DoResize(riNearest);
+    610: DoResize(riBilinear);
+    1600..1700: DoResize(TResizeNiceInterpolation(Item.IntData - 1600));
+    else SetCurrentImageIndex(Item.IntData - 10000);
+  end;
+  Window.Invalidate;
 end;
 
 { This assumes that Images is empty, so be sure to call this before
@@ -760,75 +764,75 @@ var
   NextRecentMenuItem: TMenuEntry;
   NiceInterpolation: TResizeNiceInterpolation;
 begin
- Result := TMenu.Create('Main menu');
- M := TMenu.Create('_File');
-   M.Append(TMenuItem.Create('_Open ...',                 110, CtrlO));
-   M.Append(TMenuItem.Create('_Save ...',                 120, CtrlS));
-   NextRecentMenuItem := TMenuSeparator.Create;
-   M.Append(NextRecentMenuItem);
-   RecentMenu.NextMenuItem := NextRecentMenuItem;
-   M.Append(TMenuItem.Create('_Exit',                     140, CharEscape));
-   Result.Append(M);
- M := TMenu.Create('_View');
-   M.Append(TMenuItem.Create('Fit image to window _width',          210, 'w'));
-   M.Append(TMenuItem.Create('Fit image to window _height',         211, 'h'));
-   M.Append(TMenuItem.Create('Fit image width to window width',    220, 'W'));
-   M.Append(TMenuItem.Create('Fit image height to window height',  221, 'H'));
-   M.Append(TMenuSeparator.Create);
-   M.Append(TMenuItemChecked.Create(
-     'Testing is image "_tileable" on/off',                         230, 't',
-     DrawTiled, true));
-   M.Append(TMenuSeparator.Create);
-   M.Append(TMenuItem.Create('No _zoom and no translation',         240, K_Home));
-   M.Append(TMenuSeparator.Create);
-   M.Append(TMenuItemChecked.Create('Use Image Alpha Channel', 270,  UseImageAlpha, true));
-   M.Append(TMenuItem.Create('Background color ...',                260));
-   M.Append(TMenuSeparator.Create);
-   M.Append(TMenuItemToggleFullScreen.Create(Window.FullScreen));
-   Result.Append(M);
- M := TMenu.Create('_Edit');
-   M.Append(TMenuItem.Create('Resize (Nearest) ...',                600));
-   M.Append(TMenuItem.Create('Resize (Bilinear) ...',               610));
-   M2 := TMenu.Create('Resize (Slower but Nicer Algorithms)');
-     for NiceInterpolation := Low(NiceInterpolation) to High(NiceInterpolation) do
-       M2.Append(TMenuItem.Create('Resize (' +
-         GetEnumName(TypeInfo(TResizeNiceInterpolation), Ord(NiceInterpolation)) +
-         ') ...',  1600 + Ord(NiceInterpolation)));
-     M.Append(M2);
-   M.Append(TMenuSeparator.Create);
-   M.Append(TMenuItem.Create('_Grayscale',                          410));
-   M.Append(TMenuSeparator.Create);
-   M.Append(TMenuItem.Create('Convert to _red channel',             420));
-   M.Append(TMenuItem.Create('Convert to gr_een channel',           421));
-   M.Append(TMenuItem.Create('Convert to _blue channel',            422));
-   M.Append(TMenuSeparator.Create);
-   M.Append(TMenuItem.Create('Strip to red channel',                430));
-   M.Append(TMenuItem.Create('Strip to green channel',              431));
-   M.Append(TMenuItem.Create('Strip to blue channel',               432));
-   M.Append(TMenuSeparator.Create);
-   M.Append(TMenuItem.Create('_Mirror horizontally',                440));
-   M.Append(TMenuItem.Create('Mirror vertically',                   441));
-   M.Append(TMenuSeparator.Create);
-   M.Append(TMenuItem.Create('Rotate 90 Degrees (Clockwise)', 450));
-   M.Append(TMenuItem.Create('Rotate 180 Degrees', 451));
-   M.Append(TMenuItem.Create('Rotate 90 Degrees (Counter-Clockwise)', 452));
-   M.Append(TMenuSeparator.Create);
-   M.Append(TMenuItem.Create('Clear ...', 460));
-   Result.Append(M);
- M := TMenu.Create('_Images');
- ImagesMenu := M;
-   M.Append(TMenuItem.Create('_Previous subimage in DDS', 320, CtrlP));
-   M.Append(TMenuItem.Create('_Next subimage in DDS',     321, CtrlN));
-   M.Append(TMenuSeparator.Create);
-   M.Append(TMenuItem.Create('_Previous image', 310, 'p'));
-   M.Append(TMenuItem.Create('_Next image',     311, 'n'));
-   M.Append(TMenuSeparator.Create);
-   Result.Append(M);
- M := TMenu.Create('_Help');
-   M.Append(TMenuItem.Create('Image Information', 510, CtrlI));
-   M.Append(TMenuSeparator.Create);
-   M.Append(TMenuItem.Create('About glViewImage', 520));
-   Result.Append(M);
+  Result := TMenu.Create('Main menu');
+  M := TMenu.Create('_File');
+    M.Append(TMenuItem.Create('_Open ...',                 110, CtrlO));
+    M.Append(TMenuItem.Create('_Save ...',                 120, CtrlS));
+    NextRecentMenuItem := TMenuSeparator.Create;
+    M.Append(NextRecentMenuItem);
+    RecentMenu.NextMenuItem := NextRecentMenuItem;
+    M.Append(TMenuItem.Create('_Exit',                     140, CharEscape));
+    Result.Append(M);
+  M := TMenu.Create('_View');
+    M.Append(TMenuItem.Create('Fit image to window _width',          210, 'w'));
+    M.Append(TMenuItem.Create('Fit image to window _height',         211, 'h'));
+    M.Append(TMenuItem.Create('Fit image width to window width',    220, 'W'));
+    M.Append(TMenuItem.Create('Fit image height to window height',  221, 'H'));
+    M.Append(TMenuSeparator.Create);
+    M.Append(TMenuItemChecked.Create(
+      'Testing is image "_tileable" on/off',                         230, 't',
+      DrawTiled, true));
+    M.Append(TMenuSeparator.Create);
+    M.Append(TMenuItem.Create('No _zoom and no translation',         240, K_Home));
+    M.Append(TMenuSeparator.Create);
+    M.Append(TMenuItemChecked.Create('Use Image Alpha Channel', 270,  UseImageAlpha, true));
+    M.Append(TMenuItem.Create('Background color ...',                260));
+    M.Append(TMenuSeparator.Create);
+    M.Append(TMenuItemToggleFullScreen.Create(Window.FullScreen));
+    Result.Append(M);
+  M := TMenu.Create('_Edit');
+    M.Append(TMenuItem.Create('Resize (Nearest) ...',                600));
+    M.Append(TMenuItem.Create('Resize (Bilinear) ...',               610));
+    M2 := TMenu.Create('Resize (Slower but Nicer Algorithms)');
+      for NiceInterpolation := Low(NiceInterpolation) to High(NiceInterpolation) do
+        M2.Append(TMenuItem.Create('Resize (' +
+          GetEnumName(TypeInfo(TResizeNiceInterpolation), Ord(NiceInterpolation)) +
+          ') ...',  1600 + Ord(NiceInterpolation)));
+      M.Append(M2);
+    M.Append(TMenuSeparator.Create);
+    M.Append(TMenuItem.Create('_Grayscale',                          410));
+    M.Append(TMenuSeparator.Create);
+    M.Append(TMenuItem.Create('Convert to _red channel',             420));
+    M.Append(TMenuItem.Create('Convert to gr_een channel',           421));
+    M.Append(TMenuItem.Create('Convert to _blue channel',            422));
+    M.Append(TMenuSeparator.Create);
+    M.Append(TMenuItem.Create('Strip to red channel',                430));
+    M.Append(TMenuItem.Create('Strip to green channel',              431));
+    M.Append(TMenuItem.Create('Strip to blue channel',               432));
+    M.Append(TMenuSeparator.Create);
+    M.Append(TMenuItem.Create('_Mirror horizontally',                440));
+    M.Append(TMenuItem.Create('Mirror vertically',                   441));
+    M.Append(TMenuSeparator.Create);
+    M.Append(TMenuItem.Create('Rotate 90 Degrees (Clockwise)', 450));
+    M.Append(TMenuItem.Create('Rotate 180 Degrees', 451));
+    M.Append(TMenuItem.Create('Rotate 90 Degrees (Counter-Clockwise)', 452));
+    M.Append(TMenuSeparator.Create);
+    M.Append(TMenuItem.Create('Clear ...', 460));
+    Result.Append(M);
+  M := TMenu.Create('_Images');
+  ImagesMenu := M;
+    M.Append(TMenuItem.Create('_Previous subimage in DDS', 320, CtrlP));
+    M.Append(TMenuItem.Create('_Next subimage in DDS',     321, CtrlN));
+    M.Append(TMenuSeparator.Create);
+    M.Append(TMenuItem.Create('_Previous image', 310, 'p'));
+    M.Append(TMenuItem.Create('_Next image',     311, 'n'));
+    M.Append(TMenuSeparator.Create);
+    Result.Append(M);
+  M := TMenu.Create('_Help');
+    M.Append(TMenuItem.Create('Image Information', 510, CtrlI));
+    M.Append(TMenuSeparator.Create);
+    M.Append(TMenuItem.Create('About glViewImage', 520));
+    Result.Append(M);
 end;
 
 { params ------------------------------------------------------------------- }
@@ -905,110 +909,111 @@ var
   i: Integer;
   SpecifiedOptions: TWindowParseOptions;
 begin
- Window := TCastleWindowCustom.Create(Application);
+  Window := TCastleWindowCustom.Create(Application);
+  Theme.DialogsLight;
 
- OnWarning := @OnWarningWrite;
+  OnWarning := @OnWarningWrite;
 
- Images := TStringList.Create;
- try
-  { init menu things. We must do it before we add something to Images,
-    this is required by CreateMainMenu. }
-  RecentMenu := TWindowRecentFiles.Create(nil);
-  RecentMenu.OnOpenRecent := @THelper(nil).FileOpen;
-  Window.MainMenu := CreateMainMenu;
-  Window.OnMenuClick := @MenuClick;
-
-  UserConfig.Load;
-  RecentMenu.LoadFromConfig(UserConfig);
-
-  { parse glw options }
-  Window.ParseParameters(StandardParseOptions, SpecifiedOptions);
-  { parse our options }
-  Parameters.Parse(Options, @OptionProc, nil);
-
-  { calculate Images = parse the list of image files to open }
-  if Parameters.High = 0 then
-  begin
-    AddImageNamesAllLoadable('');
-    Images.Sort;
-  end else
-  begin
-    for i := 1 to Parameters.High do
-    begin
-      if SCharIs(Parameters[i], 1, '@') then
-        AddImageNamesFromFile(SEnding(Parameters[i], 2)) else
-      if DirectoryExists(Parameters[i]) then
-        AddImageNamesAllLoadable(InclPathDelim(Parameters[i])) else
-      if FileExists(Parameters[i]) then
-        AddImageNamesFromFileName(Parameters[i]) else
-        SavedErrorMessages += 'File "' + Parameters[i] + '" does not exist.' + NL;
-    end;
-  end;
-
-  { Always insert wecome image }
-  Images.InsertObject(0, '<Welcome image>', Welcome);
-  Assert(Images.Count > 0);
-
-  { By default, view the first loaded image, or welcome image if nothing loaded. }
-  if Images.Count > 1 then
-    CurrentImageIndex := 1 else
-    CurrentImageIndex := 0;
-
-  ImagesChanged;
-
-  { initialize Image. This must be done before window is created,
-    as we want to use Image size for initial window size. }
+  Images := TStringList.Create;
   try
-    CreateNonGLImageFromList(CurrentImageIndex, false);
-  except
-    on E: ECannotDecompressTexture do
+    { init menu things. We must do it before we add something to Images,
+      this is required by CreateMainMenu. }
+    RecentMenu := TWindowRecentFiles.Create(nil);
+    RecentMenu.OnOpenRecent := @THelper(nil).FileOpen;
+    Window.MainMenu := CreateMainMenu;
+    Window.OnMenuClick := @MenuClick;
+
+    UserConfig.Load;
+    RecentMenu.LoadFromConfig(UserConfig);
+
+    { parse glw options }
+    Window.ParseParameters(StandardParseOptions, SpecifiedOptions);
+    { parse our options }
+    Parameters.Parse(Options, @OptionProc, nil);
+
+    { calculate Images = parse the list of image files to open }
+    if Parameters.High = 0 then
     begin
-      { Silence warning in this case, image size cannot be known
-        before we initialize OpenGL context.
-        Leave Image = nil, Open callback will initialize it. }
-    end;
-    on E: Exception do
+      AddImageNamesAllLoadable('');
+      Images.Sort;
+    end else
     begin
-      SavedErrorMessages += ExceptMessage(E, nil) + NL;
-      CreateNonGLImageFromList(CurrentImageIndex, true);
+      for i := 1 to Parameters.High do
+      begin
+        if SCharIs(Parameters[i], 1, '@') then
+          AddImageNamesFromFile(SEnding(Parameters[i], 2)) else
+        if DirectoryExists(Parameters[i]) then
+          AddImageNamesAllLoadable(InclPathDelim(Parameters[i])) else
+        if FileExists(Parameters[i]) then
+          AddImageNamesFromFileName(Parameters[i]) else
+          SavedErrorMessages += 'File "' + Parameters[i] + '" does not exist.' + NL;
+      end;
     end;
+
+    { Always insert wecome image }
+    Images.InsertObject(0, '<Welcome image>', Welcome);
+    Assert(Images.Count > 0);
+
+    { By default, view the first loaded image, or welcome image if nothing loaded. }
+    if Images.Count > 1 then
+      CurrentImageIndex := 1 else
+      CurrentImageIndex := 0;
+
+    ImagesChanged;
+
+    { initialize Image. This must be done before window is created,
+      as we want to use Image size for initial window size. }
+    try
+      CreateNonGLImageFromList(CurrentImageIndex, false);
+    except
+      on E: ECannotDecompressTexture do
+      begin
+        { Silence warning in this case, image size cannot be known
+          before we initialize OpenGL context.
+          Leave Image = nil, Open callback will initialize it. }
+      end;
+      on E: Exception do
+      begin
+        SavedErrorMessages += ExceptMessage(E, nil) + NL;
+        CreateNonGLImageFromList(CurrentImageIndex, true);
+      end;
+    end;
+
+    { set window size, if we managed to load image before Open callback,
+      and user did not already request some size }
+    if (Image <> nil) and not (poGeometry in SpecifiedOptions) then
+    begin
+      { Clamp to:
+        - not make window too large (some window managers accept it
+          and show window that's uncomfortable for user, covers top/bottom
+          panels and such),
+        - not make window too small (as then messages ("about", "image info",
+          errors when reading images etc.) and other things are uncomfortable.
+          Remember that Image.Width/Height may come from ImageInvalid
+          if command-line image is invalid.)
+          Under Windows, this also should avoid menu bar wrapping (at least with
+          typical themes), which avoids accidentaly creating too small OpenGL area
+          and having to display scrollbars. (see CastleWindow WinAPI comments about
+          AdjustWindowRectEx, this is documented WinAPI bug without any sensible
+          workaround.) }
+      Window.width  := Clamped(Image.Width , 400, Application.ScreenWidth -50);
+      Window.height := Clamped(Image.Height, 400, Application.ScreenHeight-50);
+    end;
+
+    Window.OnUpdate := @Update;
+    Window.OnRender := @Render;
+    Window.OnOpen := @Open;
+    Window.OnClose := @Close;
+    Window.OnResize := @Resize2D;
+    Window.OnDropFiles := @DropFiles;
+
+    Window.DepthBits := 0; { depth buffer not needed here }
+    Window.OpenAndRun;
+
+    RecentMenu.SaveToConfig(UserConfig);
+    UserConfig.Save;
+  finally
+    FreeAndNil(Images);
+    FreeAndNil(RecentMenu);
   end;
-
-  { set window size, if we managed to load image before Open callback,
-    and user did not already request some size }
-  if (Image <> nil) and not (poGeometry in SpecifiedOptions) then
-  begin
-   { Clamp to:
-     - not make window too large (some window managers accept it
-       and show window that's uncomfortable for user, covers top/bottom
-       panels and such),
-     - not make window too small (as then messages ("about", "image info",
-       errors when reading images etc.) and other things are uncomfortable.
-       Remember that Image.Width/Height may come from ImageInvalid
-       if command-line image is invalid.)
-       Under Windows, this also should avoid menu bar wrapping (at least with
-       typical themes), which avoids accidentaly creating too small OpenGL area
-       and having to display scrollbars. (see CastleWindow WinAPI comments about
-       AdjustWindowRectEx, this is documented WinAPI bug without any sensible
-       workaround.) }
-   Window.width  := Clamped(Image.Width , 400, Application.ScreenWidth -50);
-   Window.height := Clamped(Image.Height, 400, Application.ScreenHeight-50);
-  end;
-
-  Window.OnUpdate := @Update;
-  Window.OnRender := @Render;
-  Window.OnOpen := @Open;
-  Window.OnClose := @Close;
-  Window.OnResize := @Resize2D;
-  Window.OnDropFiles := @DropFiles;
-
-  Window.DepthBits := 0; { depth buffer not needed here }
-  Window.OpenAndRun;
-
-  RecentMenu.SaveToConfig(UserConfig);
-  UserConfig.Save;
- finally
-  FreeAndNil(Images);
-  FreeAndNil(RecentMenu);
- end;
 end.
