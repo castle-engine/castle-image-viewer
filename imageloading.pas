@@ -35,7 +35,7 @@ unit ImageLoading;
 interface
 
 uses CastleGLUtils, SysUtils, CastleUtils, CastleImages, Classes,
-  CastleClassUtils, CastleMessages, CastleWindow, CastleGLImages, CastleDDS,
+  CastleClassUtils, CastleMessages, CastleWindow, CastleGLImages, CastleCompositeImage,
   CastleWindowRecentFiles;
 
 { Below is "image state". The idea is that for the whole time of a program
@@ -58,10 +58,10 @@ var
     When this is false, ImageURL should not be read (it has undefined value) }
   IsImageValid: boolean = false;
 
-  { If you loaded DDS image, then DDSImage <> nil and
-    DDSImageIndex is > 0 and Image is just = DDSImage.Images[DDSImageIndex]. }
-  DDSImage: TDDSImage;
-  DDSImageIndex: Integer;
+  { If you loaded Composite image, then CompositeImage <> nil and
+    CompositeImageIndex is > 0 and Image is just = CompositeImage.Images[CompositeImageIndex]. }
+  CompositeImage: TCompositeImage;
+  CompositeImageIndex: Integer;
 
 { Note: CreateNonGLImage first automatically calls DestroyNonGLImage }
 procedure CreateNonGLImage(Window: TCastleWindowCustom; const URL: string); overload;
@@ -123,15 +123,15 @@ procedure CreateImage(Window: TCastleWindowCustom; const URL: string);
   to this unit, don't mess with it yourself). }
 procedure CreateImage(Window: TCastleWindowCustom; Image: TCastleImage; const Name: string);
 
-{ Change DDSImageIndex.
+{ Change CompositeImageIndex.
 
   This frees GL image, then changes NonGL image portions to point
-  to new DDSImageIndex, then loads again GL image.
+  to new CompositeImageIndex, then loads again GL image.
 
   When calling this, always make sure that NonGL image is already loaded,
-  and it's a DDSImage (DDSImage <> nil) and NewIndex is allowed
-  (NewIndex < DDSImages.ImagesCount). }
-procedure ChangeDDSImageIndex(Window: TCastleWindowCustom; NewIndex: Cardinal);
+  and it's a CompositeImage (CompositeImage <> nil) and NewIndex is allowed
+  (NewIndex < CompositeImages.ImagesCount). }
+procedure ChangeCompositeImageIndex(Window: TCastleWindowCustom; NewIndex: Cardinal);
 
 var
   { CreateImage will add to this. }
@@ -148,8 +148,8 @@ begin
   if IsImageValid then
   begin
     S := URICaption(ImageURL);
-    if DDSImage <> nil then
-      S += Format(' (DDS subimage: %d)', [DDSImageIndex]);
+    if CompositeImage <> nil then
+      S += Format(' (Composite subimage: %d)', [CompositeImageIndex]);
   end else
     S := '<error: ' + URIDisplay(ImageURL) + '>';
 
@@ -158,15 +158,15 @@ begin
   Window.Caption := S;
 end;
 
-procedure InternalCreateNonGLImageDDS(Window: TCastleWindowCustom; const NewImage: TDDSImage;
+procedure InternalCreateNonGLImageComposite(Window: TCastleWindowCustom; const NewImage: TCompositeImage;
   const NewImageURL: string);
 begin
   DestroyNonGLImage;
-  DDSImage := NewImage;
-  DDSImageIndex := 0;
-  if DDSImage.Images[0] is TCastleImage then
-    Image := TCastleImage(DDSImage.Images[0]) else
-    raise Exception.Create('glViewImage cannot display compressed textures from DDS');
+  CompositeImage := NewImage;
+  CompositeImageIndex := 0;
+  if CompositeImage.Images[0] is TCastleImage then
+    Image := TCastleImage(CompositeImage.Images[0]) else
+    raise Exception.Create('glViewImage cannot display compressed textures from composite (DDS, KTX..) image');
   ImageURL := NewImageURL;
   IsImageValid := true;
   UpdateCaption(Window);
@@ -176,8 +176,8 @@ procedure InternalCreateNonGLImage(Window: TCastleWindowCustom; const NewImage: 
   const NewImageURL: string; NewIsImageValid: boolean);
 begin
   DestroyNonGLImage;
-  DDSImage := nil;
-  DDSImageIndex := -1;
+  CompositeImage := nil;
+  CompositeImageIndex := -1;
   Image := NewImage;
   ImageURL := NewImageURL;
   IsImageValid := NewIsImageValid;
@@ -186,20 +186,20 @@ end;
 
 procedure CreateNonGLImage(Window: TCastleWindowCustom; const URL: string);
 var
-  NewDDS: TDDSImage;
+  NewComposite: TCompositeImage;
 begin
-  if TDDSImage.MatchesURL(URL) then
+  if TCompositeImage.MatchesURL(URL) then
   begin
-    NewDDS := TDDSImage.Create;
+    NewComposite := TCompositeImage.Create;
     try
-      NewDDS.LoadFromFile(URL);
-      NewDDS.Flatten3d;
-      NewDDS.DecompressTexture;
+      NewComposite.LoadFromFile(URL);
+      NewComposite.Flatten3d;
+      NewComposite.DecompressTexture;
     except
-      FreeAndNil(NewDDS);
+      FreeAndNil(NewComposite);
       raise;
     end;
-    InternalCreateNonGLImageDDS(Window, NewDDS, URL);
+    InternalCreateNonGLImageComposite(Window, NewComposite, URL);
   end else
   begin
     InternalCreateNonGLImage(Window,
@@ -226,10 +226,10 @@ end;
   Czyli zwolnij rzeczy inicjowane przez InternalCreateNonGLImage*. }
 procedure DestroyNonGLImage;
 begin
-  if DDSImage <> nil then
+  if CompositeImage <> nil then
   begin
-    Image := nil; { it will be freed as part of DDSImage }
-    FreeAndNil(DDSImage);
+    Image := nil; { it will be freed as part of CompositeImage }
+    FreeAndNil(CompositeImage);
   end else
     FreeAndNil(Image);
 
@@ -278,16 +278,16 @@ begin
   CreateGLImage;
 end;
 
-procedure ChangeDDSImageIndex(Window: TCastleWindowCustom; NewIndex: Cardinal);
+procedure ChangeCompositeImageIndex(Window: TCastleWindowCustom; NewIndex: Cardinal);
 begin
-  Assert(DDSImage <> nil);
-  Assert(NewIndex < Cardinal(DDSImage.Images.Count));
-  Assert(IsImageValid); { IsImageValid = always true when DDSImage <> nil }
+  Assert(CompositeImage <> nil);
+  Assert(NewIndex < Cardinal(CompositeImage.Images.Count));
+  Assert(IsImageValid); { IsImageValid = always true when CompositeImage <> nil }
 
   DestroyGLImage;
 
-  DDSImageIndex := NewIndex;
-  Image := DDSImage.Images[NewIndex] as TCastleImage;
+  CompositeImageIndex := NewIndex;
+  Image := CompositeImage.Images[NewIndex] as TCastleImage;
 
   CreateGLImage;
 

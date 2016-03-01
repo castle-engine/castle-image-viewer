@@ -34,7 +34,7 @@ uses SysUtils, Math, Classes, TypInfo,
   CastleWindow, CastleGL, CastleGLUtils, CastleUtils, CastleImages,
   CastleClassUtils, CastleMessages, CastleParameters, CastleControls,
   CastleFindFiles, CastleVectors, CastleStringUtils, CastleWarnings,
-  CastleGLImages, CastleWindowRecentFiles, CastleDDS, CastleFilesUtils,
+  CastleGLImages, CastleWindowRecentFiles, CastleCompositeImage, CastleFilesUtils,
   CastleColors, CastleConfig, CastleKeysMouse, CastleURIUtils, CastleRectangles,
   ImageLoading, GVIImages;
 
@@ -495,14 +495,14 @@ procedure MenuClick(Container: TUIContainer; Item: TMenuItem);
     URL := ImageURL;
     if Window.FileDialog('Save image to file', URL, false, SaveImage_FileFilters) then
     try
-      if DDSImage <> nil then
+      if CompositeImage <> nil then
       begin
-        if TDDSImage.MatchesURL(URL) then
+        if TCompositeImage.MatchesURL(URL) then
         begin
-          DDSImage.SaveToFile(URL);
+          CompositeImage.SaveToFile(URL);
         end else
         begin
-          if MessageYesNo(Window, 'DDS image is composed from many single (normal, simple, 2D) images. Saving from DDS image to other file format will only save the current single image layer. Continue?') then
+          if MessageYesNo(Window, 'Composite (DDS, KTX...) image is composed from many single (normal, simple, 2D) images. Saving from composite image to other file format will only save the current single image layer. Continue?') then
             SaveImage(Image, URL);
         end;
       end else
@@ -530,16 +530,16 @@ procedure MenuClick(Container: TUIContainer; Item: TMenuItem);
 
   procedure ShowImageInfo;
 
-    function DDSImageInfo(DImg: TDDSImage): string;
+    function CompositeImageInfo(DImg: TCompositeImage): string;
     begin
       Result := Format(
-        'Containing DDS image info:' +NL+
+        'Containing Composite image info:' +NL+
         '  Width x Height x Depth: %d x %d %d'  +NL+
         '  Type: %s' +NL+
         '  Mipmaps: %s' +NL+
         '  Simple 2D images inside: %d',
         [ DImg.Width, DImg.Height, DImg.Depth,
-          DDSTypeToString[DImg.DDSType],
+          CompositeTypeToString[DImg.CompositeType],
           BoolToStr[DImg.Mipmaps],
           DImg.Images.Count ]);
     end;
@@ -554,9 +554,9 @@ procedure MenuClick(Container: TUIContainer; Item: TMenuItem);
         'Width x height: %d x %d',
         [ImageURL, Image.ClassName, Image.Width, Image.Height]) else
       S := '<invalid image file>';
-    if DDSImage <> nil then
-      S += NL + Format('DDS subimage: %d', [DDSImageIndex]) + NL +
-        DDSImageInfo(DDSImage);
+    if CompositeImage <> nil then
+      S += NL + Format('Composite subimage: %d', [CompositeImageIndex]) + NL +
+        CompositeImageInfo(CompositeImage);
     MessageOK(Window, S);
    end;
 
@@ -610,12 +610,12 @@ procedure MenuClick(Container: TUIContainer; Item: TMenuItem);
     end;
   end;
 
-  procedure EasyChangeDDSImageIndex(Change: Integer);
+  procedure EasyChangeCompositeImageIndex(Change: Integer);
   begin
-    if DDSImage <> nil then
-      ChangeDDSImageIndex(Window, ChangeIntCycle(
-        DDSImageIndex, Change, DDSImage.Images.Count - 1)) else
-      MessageOk(Window, 'Available only for DDS images.');
+    if CompositeImage <> nil then
+      ChangeCompositeImageIndex(Window, ChangeIntCycle(
+        CompositeImageIndex, Change, CompositeImage.Images.Count - 1)) else
+      MessageOk(Window, 'Available only for Composite images.');
   end;
 
   procedure DoResize(const Interpolation: TResizeInterpolation);
@@ -695,8 +695,8 @@ begin
     310: ChangeCurrentImageIndex(-1);
     311: ChangeCurrentImageIndex(+1);
 
-    320: EasyChangeDDSImageIndex(-1);
-    321: EasyChangeDDSImageIndex(+1);
+    320: EasyChangeCompositeImageIndex(-1);
+    321: EasyChangeCompositeImageIndex(+1);
 
     410: if CheckNotGrayscale then
          begin
@@ -821,8 +821,8 @@ begin
     Result.Append(M);
   M := TMenu.Create('_Images');
   ImagesMenu := M;
-    M.Append(TMenuItem.Create('_Previous subimage in DDS', 320, CtrlP));
-    M.Append(TMenuItem.Create('_Next subimage in DDS',     321, CtrlN));
+    M.Append(TMenuItem.Create('_Previous subimage in Composite (DDS, KTX)', 320, CtrlP));
+    M.Append(TMenuItem.Create('_Next subimage in Composite (DDS, KTX)',     321, CtrlN));
     M.Append(TMenuSeparator.Create);
     M.Append(TMenuItem.Create('_Previous image', 310, 'p'));
     M.Append(TMenuItem.Create('_Next image',     311, 'n'));
