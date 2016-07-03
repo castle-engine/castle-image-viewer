@@ -635,32 +635,6 @@ procedure MenuClick(Container: TUIContainer; Item: TMenuItem);
     end;
   end;
 
-  procedure DoResize(const Interpolation: TResizeNiceInterpolation);
-  var
-    ResizeToX, ResizeToY: Cardinal;
-    NewImage: TCastleImage;
-  begin
-    ResizeToX := 0;
-    ResizeToY := 0;
-    if MessageInputQueryCardinal(Window,
-      'Resize to given Width (leave 0 to keep current)', ResizeToX) then
-    if MessageInputQueryCardinal(Window,
-      'Resize to given Height (leave 0 to keep current)', ResizeToY) then
-    begin
-      try
-        NewImage := Image.MakeResized(ResizeToX, ResizeToY, Interpolation);
-      except
-        on E: Exception do
-        begin
-          MessageOK(Window, 'Resizing failed: ' + ExceptMessage(E));
-          Exit;
-        end;
-      end;
-
-      CreateImage(Window, NewImage, ImageURL);
-    end;
-  end;
-
 var
   change: TGLfloat;
 begin
@@ -747,12 +721,15 @@ begin
     460: ImageClear;
     510: ShowImageInfo;
     520: ShowAbout;
-    600: DoResize(riNearest);
-    610: DoResize(riBilinear);
-    1600..1700: DoResize(TResizeNiceInterpolation(Item.IntData - 1600));
+    1600..1700: DoResize(TResizeInterpolation(Item.IntData - 1600));
     else SetCurrentImageIndex(Item.IntData - 10000);
   end;
   Window.Invalidate;
+end;
+
+function InterpolationToStr(const Interpolation: TResizeInterpolation): string;
+begin
+  Result := SEnding(GetEnumName(TypeInfo(TResizeInterpolation), Ord(Interpolation)), 3);
 end;
 
 { This assumes that Images is empty, so be sure to call this before
@@ -760,9 +737,9 @@ end;
   call here ImagesChanged. }
 function CreateMainMenu: TMenu;
 var
-  M, M2: TMenu;
+  M: TMenu;
   NextRecentMenuItem: TMenuEntry;
-  NiceInterpolation: TResizeNiceInterpolation;
+  Interpolation: TResizeInterpolation;
 begin
   Result := TMenu.Create('Main menu');
   M := TMenu.Create('_File');
@@ -790,16 +767,11 @@ begin
     M.Append(TMenuSeparator.Create);
     M.Append(TMenuItemToggleFullScreen.Create(Window.FullScreen));
     Result.Append(M);
+  M := TMenu.Create('_Resize');
+    for Interpolation := Low(Interpolation) to High(Interpolation) do
+      M.Append(TMenuItem.Create('Resize (' + InterpolationToStr(Interpolation) + ') ...', 1600 + Ord(Interpolation)));
+    Result.Append(M);
   M := TMenu.Create('_Edit');
-    M.Append(TMenuItem.Create('Resize (Nearest) ...',                600));
-    M.Append(TMenuItem.Create('Resize (Bilinear) ...',               610));
-    M2 := TMenu.Create('Resize (Slower but Nicer Algorithms)');
-      for NiceInterpolation := Low(NiceInterpolation) to High(NiceInterpolation) do
-        M2.Append(TMenuItem.Create('Resize (' +
-          GetEnumName(TypeInfo(TResizeNiceInterpolation), Ord(NiceInterpolation)) +
-          ') ...',  1600 + Ord(NiceInterpolation)));
-      M.Append(M2);
-    M.Append(TMenuSeparator.Create);
     M.Append(TMenuItem.Create('_Grayscale',                          410));
     M.Append(TMenuSeparator.Create);
     M.Append(TMenuItem.Create('Convert to _red channel',             420));
