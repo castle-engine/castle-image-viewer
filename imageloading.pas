@@ -1,5 +1,5 @@
 {
-  Copyright 2003-2014 Michalis Kamburelis.
+  Copyright 2003-2016 Michalis Kamburelis.
 
   This file is part of "glViewImage".
 
@@ -20,17 +20,8 @@
   ----------------------------------------------------------------------------
 }
 
+{ Manage the loaded image of glViewImage. }
 unit ImageLoading;
-
-{ Basic image loading funcs for glViewImage.
-
-  Every variable below is read-only from outside of this module.
-
-  Cala komplikacja podzialu na NonGL i GL powstala dlatego ze na poczatku
-  programu glViewImage potrzebujemy jednak zaladowac Image przed utworzeniem
-  sobie kontekstu OpenGL'a (bo chcemy rozmiar okienka uzaleznic od
-  zaladowanego Image).
-}
 
 interface
 
@@ -38,24 +29,22 @@ uses CastleGLUtils, SysUtils, CastleUtils, CastleImages, Classes,
   CastleClassUtils, CastleMessages, CastleWindow, CastleGLImages, CastleCompositeImage,
   CastleWindowRecentFiles;
 
-{ Below is "image state". The idea is that for the whole time of a program
-  this module manages one image. An image is:
-
-  ------------------------------------------------------------
-  1. Things related to image not connected with the OpenGL context.
-     This means that such things can be created/destroyed without OpenGL context
-     and you can freely switch from one gl context to another without
-     having to change these things. }
 var
-  Image: TCastleImage;
+  { The currently loaded image, as TCastleImage and TGLImage.
+    The TGLImage is always connected with the current TCastleImage through
+    @link(TGLImage.Image).
 
-  { This is not valid when not IsImageValid }
+    This is always initialized (even when not @link(IsImageValid)),
+    because we show ImageInvalid in case loading failed.
+     }
+  Image: TCastleImage;
+  GLImage: TGLImage;
+
+  { Currently loaded image URL. This is not valid when not IsImageValid. }
   ImageURL: string;
 
-  { Even when this is false, if we are after some successful
-    CreateNonGLImage* and before DestroyNonGLImage,
-    Image is initialized (to copies of ImageInvalid).
-    When this is false, ImageURL should not be read (it has undefined value) }
+  { Whether we have successfully loaded the image.
+    When this is false, ImageURL should not be read (it has undefined value). }
   IsImageValid: boolean = false;
 
   { If you loaded Composite image, then CompositeImage <> nil and
@@ -63,75 +52,31 @@ var
   CompositeImage: TCompositeImage;
   CompositeImageIndex: Integer;
 
-{ Note: CreateNonGLImage first automatically calls DestroyNonGLImage }
-procedure CreateNonGLImage(Window: TCastleWindowCustom; const URL: string); overload;
+{ Load image from URL. The image may be composite, in which case CompositeImage
+  will be loaded too, otherwise CompositeImage is left @nil.
 
-{ About this version of CreateNonGLImage: you can give already loaded
-  image. After calling this CreateNonGLImage you must STOP managing
-  this NewImage - it will be managed (and freed) by this unit. }
-procedure CreateNonGLImage(Window: TCastleWindowCustom; const NewImage: TCastleImage;
-  const NewImageURL: string); overload;
-
-{ ErrorURL is used for Window.Caption suffix,
-  give here image name that can't be loaded. }
-procedure CreateNonGLImageInvalid(Window: TCastleWindowCustom;
-  const ErrorURL: string);
-
-{ It is valid NOP to call DestroyNonGLImage on already destroyed image.
-  Note: DestroyNonGLImage is automatically called in finalization of this unit. }
-procedure DestroyNonGLImage;
-
-{ ------------------------------------------------------------
-  2. Things related to image connected with OpenGL context.
-     You can manipulate them (create/destroy) only when you have a valid OpenGL
-     context. Moreover, between creating and destroying you MUST stay
-     in the SAME OpenGL context.
-
-     Moreover, these things may depend on other things related to image,
-     those not connected with OpenGL's context.
-     This means that these things MUST NOT be
-     created BEFORE creating things in point 1 and MUST be freed BEFORE
-     freeing things in point 1.  }
-var
-  GLImage: TGLImage;
-
-{ Note: CreateGLImage first automatically calls DestroyGLImage }
-procedure CreateGLImage;
-{ It is valid NOP to call DestroyGLImage on already destroyed image. }
-procedure DestroyGLImage;
-
-{ ------------------------------------------------------------ }
-{ Stating it shortly, CreateImage is something like calling
-    DestroyGLImage;
-    DestroyNonGLImage;
-    CreateNonGLImage(...);
-    CreateGLImage;
-  so it replaces current image with given.
-
-  But if (for any reason) loading of image from URL fails, then
-  it will replace current image with special InvalidImage.
+  If (for any reason) loading of image from URL fails, then
+  we will replace current image with special InvalidImage.
   Message about failing to load an image will be shown using
-  MessageOK(Window,...) and no exception will be raised outside of this
-  procedure CreateImage. }
+  MessageOK(Window,...) and no exception will be raised outside of this procedure. }
 procedure CreateImage(Window: TCastleWindowCustom; const URL: string);
 
-{ Takes the already created Image instance, and makes it loaded.
+{ Load a ready TCastleImage instance. It becomes owned by this unit
+  (will be freed by this unit automatically). }
+procedure CreateImage(Window: TCastleWindowCustom; const NewImage: TCastleImage;
+  const NewImageURL: string);
 
-  Just like regular CreateImage(Window, URL),
-  only it doesn't load image from file, but takes ready
-  Image instance (you should leave further freeing of this Image
-  to this unit, don't mess with it yourself). }
-procedure CreateImage(Window: TCastleWindowCustom; Image: TCastleImage; const Name: string);
+{ Load a special "invalid" image.
+  ErrorURL is used for Window.Caption suffix, so pass here an image URL that can't be loaded. }
+procedure CreateImageInvalid(Window: TCastleWindowCustom; const ErrorURL: string);
 
 { Change CompositeImageIndex.
-
-  This frees GL image, then changes NonGL image portions to point
-  to new CompositeImageIndex, then loads again GL image.
-
-  When calling this, always make sure that NonGL image is already loaded,
-  and it's a CompositeImage (CompositeImage <> nil) and NewIndex is allowed
-  (NewIndex < CompositeImages.ImagesCount). }
+  Call this only if current image is composite (CompositeImage <> nil) and NewIndex
+  is valid (NewIndex < CompositeImages.ImagesCount). }
 procedure ChangeCompositeImageIndex(Window: TCastleWindowCustom; NewIndex: Cardinal);
+
+{ Call after directly changing the Image contents. }
+procedure ImageChanged;
 
 var
   { CreateImage will add to this. }
@@ -141,6 +86,7 @@ implementation
 
 uses GVIImages, CastleURIUtils;
 
+{ Update Window.Caption, reflecting IsImageValid, ImageURL, CompositeImageIndex. }
 procedure UpdateCaption(Window: TCastleWindowCustom);
 var
   S: string;
@@ -158,74 +104,13 @@ begin
   Window.Caption := S;
 end;
 
-procedure InternalCreateNonGLImageComposite(Window: TCastleWindowCustom; const NewImage: TCompositeImage;
-  const NewImageURL: string);
+{ Destroy the loaded image.
+  It is valid, and silently ignored, to call DestroyImage when the image is already destroyed.
+  This is automatically called in finalization of this unit. }
+procedure DestroyImage;
 begin
-  DestroyNonGLImage;
-  CompositeImage := NewImage;
-  CompositeImageIndex := 0;
-  if CompositeImage.Images[0] is TCastleImage then
-    Image := TCastleImage(CompositeImage.Images[0]) else
-    raise Exception.Create('glViewImage cannot display compressed textures from composite (DDS, KTX..) image');
-  ImageURL := NewImageURL;
-  IsImageValid := true;
-  UpdateCaption(Window);
-end;
+  FreeAndNil(GLImage);
 
-procedure InternalCreateNonGLImage(Window: TCastleWindowCustom; const NewImage: TCastleImage;
-  const NewImageURL: string; NewIsImageValid: boolean);
-begin
-  DestroyNonGLImage;
-  CompositeImage := nil;
-  CompositeImageIndex := -1;
-  Image := NewImage;
-  ImageURL := NewImageURL;
-  IsImageValid := NewIsImageValid;
-  UpdateCaption(Window);
-end;
-
-procedure CreateNonGLImage(Window: TCastleWindowCustom; const URL: string);
-var
-  NewComposite: TCompositeImage;
-begin
-  if TCompositeImage.MatchesURL(URL) then
-  begin
-    NewComposite := TCompositeImage.Create;
-    try
-      NewComposite.LoadFromFile(URL);
-      NewComposite.Flatten3d;
-      NewComposite.DecompressTexture;
-    except
-      FreeAndNil(NewComposite);
-      raise;
-    end;
-    InternalCreateNonGLImageComposite(Window, NewComposite, URL);
-  end else
-  begin
-    InternalCreateNonGLImage(Window,
-      LoadImage(URL, PixelsImageClasses), URL, true);
-  end;
-  { If InternalCreateNonGLImage went without exceptions,
-    add to RecentMenu. }
-  RecentMenu.Add(URL);
-end;
-
-procedure CreateNonGLImage(Window: TCastleWindowCustom; const NewImage: TCastleImage;
-  const NewImageURL: string);
-begin
- InternalCreateNonGLImage(Window, NewImage, NewImageURL, true);
-end;
-
-procedure CreateNonGLImageInvalid(Window: TCastleWindowCustom;
-  const ErrorURL: string);
-begin
- InternalCreateNonGLImage(Window, Invalid.MakeCopy, ErrorURL, false);
-end;
-
-{ Zwolnij rzeczy obrazka ktore nie zaleza od kontekstu OpenGLa.
-  Czyli zwolnij rzeczy inicjowane przez InternalCreateNonGLImage*. }
-procedure DestroyNonGLImage;
-begin
   if CompositeImage <> nil then
   begin
     Image := nil; { it will be freed as part of CompositeImage }
@@ -236,46 +121,80 @@ begin
   IsImageValid := false;
 end;
 
-{ wywolaj to ZAWSZE po udanym (bez wyjatkow) InternalCreateNonGLImage*. }
-procedure CreateGLImage;
-begin
- DestroyGLImage;
- GLImage := TGLImage.Create(Image, true);
-end;
-
-{ Zwolnij rzeczy inicjowane przez CreateGLImage.
-  To zwalnianie moze wymagac kontekstu OpenGLa. }
-procedure DestroyGLImage;
-begin
- FreeAndNil(GLImage);
-end;
-
 procedure CreateImage(Window: TCastleWindowCustom; const URL: string);
+var
+  NewComposite: TCompositeImage;
 begin
-  DestroyGLImage;
-  DestroyNonGLImage;
+  DestroyImage;
 
   try
-    CreateNonGLImage(Window, URL);
+    if TCompositeImage.MatchesURL(URL) then
+    begin
+      NewComposite := TCompositeImage.Create;
+      try
+        NewComposite.LoadFromFile(URL);
+        NewComposite.Flatten3d;
+        NewComposite.DecompressTexture;
+      except
+        FreeAndNil(NewComposite);
+        raise;
+      end;
+
+      CompositeImage := NewComposite;
+      CompositeImageIndex := 0;
+      if CompositeImage.Images[0] is TCastleImage then
+        Image := TCastleImage(CompositeImage.Images[0]) else
+        raise Exception.Create('glViewImage cannot display compressed textures from composite (DDS, KTX..) image');
+    end else
+    begin
+      CompositeImage := nil;
+      CompositeImageIndex := -1;
+      Image := LoadImage(URL, PixelsImageClasses);
+    end;
+
+    { If above went without exceptions, finish loading and add to RecentMenu. }
+    ImageURL := URL;
+    IsImageValid := true;
+    UpdateCaption(Window);
+    RecentMenu.Add(URL);
   except
     on E: Exception do
     begin
-      CreateNonGLImageInvalid(Window, URL);
-      CreateGLImage;
+      CreateImageInvalid(Window, URL);
       MessageOK(Window, ExceptMessage(E, nil));
       Exit;
     end;
   end;
 
-  CreateGLImage;
+  GLImage := TGLImage.Create(Image, true, false);
 end;
 
-procedure CreateImage(Window: TCastleWindowCustom; Image: TCastleImage; const Name: string);
+procedure CreateImage(Window: TCastleWindowCustom; const NewImage: TCastleImage; const NewImageURL: string);
 begin
-  DestroyGLImage;
-  DestroyNonGLImage;
-  CreateNonGLImage(Window, Image, Name);
-  CreateGLImage;
+  DestroyImage;
+
+  CompositeImage := nil;
+  CompositeImageIndex := -1;
+  Image := NewImage;
+  ImageURL := NewImageURL;
+  IsImageValid := true;
+  UpdateCaption(Window);
+
+  GLImage := TGLImage.Create(Image, true, false);
+end;
+
+procedure CreateImageInvalid(Window: TCastleWindowCustom; const ErrorURL: string);
+begin
+  DestroyImage;
+
+  CompositeImage := nil;
+  CompositeImageIndex := -1;
+  Image := Invalid.MakeCopy;
+  ImageURL := ErrorURL;
+  IsImageValid := false;
+  UpdateCaption(Window);
+
+  GLImage := TGLImage.Create(Image, true, false);
 end;
 
 procedure ChangeCompositeImageIndex(Window: TCastleWindowCustom; NewIndex: Cardinal);
@@ -284,17 +203,26 @@ begin
   Assert(NewIndex < Cardinal(CompositeImage.Images.Count));
   Assert(IsImageValid); { IsImageValid = always true when CompositeImage <> nil }
 
-  DestroyGLImage;
-
   CompositeImageIndex := NewIndex;
   Image := CompositeImage.Images[NewIndex] as TCastleImage;
 
-  CreateGLImage;
+  { usually, one should destroy GLImage before changing Image reference,
+    because GLImage may exist only as long as Image reference is valid.
+    But in this case this is simpler and will work too, since previous Image reference
+    remains valid, as long as CompositeImage is not freed.
+    So it's enough to call ImageChanged after changing Image reference. }
+
+  ImageChanged;
 
   UpdateCaption(Window);
 end;
 
+procedure ImageChanged;
+begin
+  GLImage.Load(Image);
+end;
+
 initialization
 finalization
-  DestroyNonGLImage;
+  DestroyImage;
 end.

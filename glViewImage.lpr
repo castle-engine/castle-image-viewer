@@ -67,26 +67,14 @@ var
   Images: TStringList;
   CurrentImageIndex: Integer = 0; { change this only with SetCurrentImageIndex }
 
-{ Create non-GL image part, based on list index ListPos. }
-procedure CreateNonGLImageFromList(const ListPos: Integer;
-  const InvalidImage: boolean);
+{ Create image, based on list index ListPos. }
+procedure CreateImageFromList(const ListPos: Integer; const InvalidImage: boolean = false);
 begin
   if InvalidImage then
-    CreateNonGLImageInvalid(Window, Images[ListPos]) else
-  if Images.Objects[ListPos] = nil then
-    CreateNonGLImage(Window, Images[ListPos]) else
-    CreateNonGLImage(Window,
-      TCastleImage(Images.Objects[ListPos]).MakeCopy,
-      Images[ListPos]);
-end;
-
-{ Create both non-GL and GL image parts, based on list index ListPos. }
-procedure CreateImageFromList(const ListPos: Integer);
-begin
+    CreateImageInvalid(Window, Images[ListPos]) else
   if Images.Objects[ListPos] = nil then
     CreateImage(Window, Images[ListPos]) else
-    CreateImage(Window,
-      TCastleImage(Images.Objects[ListPos]).MakeCopy,
+    CreateImage(Window, TCastleImage(Images.Objects[ListPos]).MakeCopy,
       Images[ListPos]);
 end;
 
@@ -259,9 +247,10 @@ const
 begin
   glLoadIdentity;
 
-  { fpc zle sobie radzi gdy przychodzi do porownywania integerow i cardinali :
-    wybiera wspolny typ jako cardinal - tragiczny blad. Przydadza nam sie tutaj
-    Width i Height jako int. }
+  Assert(Image <> nil, 'Image not loaded yet');
+
+  { Make sure to treat Width and Height as signed values for compurations
+    and comparisons below. }
   Width := Image.Width;
   Height := Image.Height;
 
@@ -423,8 +412,7 @@ procedure Open(Container: TUIContainer);
 begin
   DecompressTexture := @GLDecompressTexture;
 
-  if Image <> nil then
-    CreateGLImage else
+  if Image = nil then
     { Image failed to initialize before (because texture could
       not be decompressed), initialize it fully now. }
     CreateImageFromList(CurrentImageIndex);
@@ -434,11 +422,6 @@ begin
     MessageOk(Window, Trim(SavedErrorMessages));
     SavedErrorMessages := '';
   end;
-end;
-
-procedure Close(Container: TUIContainer);
-begin
-  DestroyGLImage;
 end;
 
 { menu ------------------------------------------------------------ }
@@ -603,9 +586,8 @@ procedure MenuClick(Container: TUIContainer; Item: TMenuItem);
       Color := White;
       if Window.ColorDialog(Color) then
       begin
-        DestroyGLImage;
         Image.Clear(Color);
-        CreateGLImage;
+        ImageChanged;
       end;
     end;
   end;
@@ -629,9 +611,8 @@ procedure MenuClick(Container: TUIContainer; Item: TMenuItem);
     if MessageInputQueryCardinal(Window,
       'Resize to given Height (leave 0 to keep current)', ResizeToY) then
     begin
-      DestroyGLImage;
       Image.Resize(ResizeToX, ResizeToY, Interpolation);
-      CreateGLImage;
+      ImageChanged;
     end;
   end;
 
@@ -674,49 +655,41 @@ begin
 
     410: if CheckNotGrayscale then
          begin
-          DestroyGLImage;
-          Image.Grayscale;
-          CreateGLImage;
+           Image.Grayscale;
+           ImageChanged;
          end;
     420..422:
          if CheckNotGrayscale then
          begin
-          DestroyGLImage;
-          Image.ConvertToChannelRGB(Item.IntData - 420);
-          CreateGLImage;
+           Image.ConvertToChannelRGB(Item.IntData - 420);
+           ImageChanged;
          end;
     430..432:
          if CheckNotGrayscale then
          begin
-          DestroyGLImage;
-          Image.StripToChannelRGB(Item.IntData - 430);
-          CreateGLImage;
+           Image.StripToChannelRGB(Item.IntData - 430);
+           ImageChanged;
          end;
     440: begin
-           DestroyGLImage;
            Image.FlipHorizontal;
-           CreateGLImage;
+           ImageChanged;
          end;
     441: begin
-           DestroyGLImage;
            Image.FlipVertical;
-           CreateGLImage;
+           ImageChanged;
          end;
 
     450: begin
-           DestroyGLImage;
            Image.Rotate(1);
-           CreateGLImage;
+           ImageChanged;
          end;
     451: begin
-           DestroyGLImage;
            Image.Rotate(2);
-           CreateGLImage;
+           ImageChanged;
          end;
     452: begin
-           DestroyGLImage;
            Image.Rotate(3);
-           CreateGLImage;
+           ImageChanged;
          end;
     460: ImageClear;
     510: ShowImageInfo;
@@ -936,18 +909,19 @@ begin
     { initialize Image. This must be done before window is created,
       as we want to use Image size for initial window size. }
     try
-      CreateNonGLImageFromList(CurrentImageIndex, false);
+      CreateImageFromList(CurrentImageIndex);
+      Assert(Image <> nil, 'Image not loaded correctly by CreateImageFromList');
     except
       on E: ECannotDecompressTexture do
       begin
-        { Silence warning in this case, image size cannot be known
+        { Silence exception in this case, image size cannot be known
           before we initialize OpenGL context.
           Leave Image = nil, Open callback will initialize it. }
       end;
       on E: Exception do
       begin
         SavedErrorMessages += ExceptMessage(E, nil) + NL;
-        CreateNonGLImageFromList(CurrentImageIndex, true);
+        CreateImageFromList(CurrentImageIndex, true);
       end;
     end;
 
@@ -975,7 +949,6 @@ begin
     Window.OnUpdate := @Update;
     Window.OnRender := @Render;
     Window.OnOpen := @Open;
-    Window.OnClose := @Close;
     Window.OnResize := @Resize2D;
     Window.OnDropFiles := @DropFiles;
 
