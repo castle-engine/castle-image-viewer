@@ -47,6 +47,7 @@ var
   { error messages gathered before Window was open }
   SavedErrorMessages: string = '';
   UseImageAlpha: boolean = true;
+  RetryLoadingAtOpen: boolean = false;
 
 var
   { A list of images to browse by previous/next keys/menu items.
@@ -412,7 +413,7 @@ procedure Open(Container: TUIContainer);
 begin
   DecompressTexture := @GLDecompressTexture;
 
-  if Image = nil then
+  if RetryLoadingAtOpen then
     { Image failed to initialize before (because texture could
       not be decompressed), initialize it fully now. }
     CreateImageFromList(CurrentImageIndex);
@@ -916,7 +917,8 @@ begin
       begin
         { Silence exception in this case, image size cannot be known
           before we initialize OpenGL context.
-          Leave Image = nil, Open callback will initialize it. }
+          Leave Image as invalid now, the Open callback will initialize it. }
+        RetryLoadingAtOpen := true;
       end;
       on E: Exception do
       begin
