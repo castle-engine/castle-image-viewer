@@ -524,7 +524,7 @@ procedure MenuClick(Container: TUIContainer; Item: TMenuItem);
         '  Simple 2D images inside: %d',
         [ DImg.Width, DImg.Height, DImg.Depth,
           CompositeTypeToString[DImg.CompositeType],
-          BoolToStr[DImg.Mipmaps],
+          BoolToStr(DImg.Mipmaps, true),
           DImg.Images.Count ]);
     end;
 
