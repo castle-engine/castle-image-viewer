@@ -36,6 +36,7 @@ uses SysUtils, Math, Classes, TypInfo,
   CastleFindFiles, CastleVectors, CastleStringUtils, CastleWarnings,
   CastleGLImages, CastleWindowRecentFiles, CastleCompositeImage, CastleFilesUtils,
   CastleColors, CastleConfig, CastleKeysMouse, CastleURIUtils, CastleRectangles,
+  CastleWindowProgress, CastleProgress,
   ImageLoading, GVIImages;
 
 var
@@ -625,6 +626,11 @@ begin
     120: ImageSave;
     140: Window.Close;
 
+    205: begin
+           SmoothScaling := not SmoothScaling;
+           if GLImage <> nil then
+             GLImage.SmoothScaling := SmoothScaling;
+         end;
     210: begin
           change:=(Window.Width / Image.Width) / zoomx;
           MultZoomGL(ZoomX, change);
@@ -657,6 +663,10 @@ begin
     410: if CheckNotGrayscale then
          begin
            Image.Grayscale;
+           ImageChanged;
+         end;
+    415: begin
+           Image.AlphaBleed('Alpha Bleeding');
            ImageChanged;
          end;
     420..422:
@@ -725,19 +735,19 @@ begin
     M.Append(TMenuItem.Create('_Exit',                     140, CharEscape));
     Result.Append(M);
   M := TMenu.Create('_View');
-    M.Append(TMenuItem.Create('Fit image to window _width',          210, 'w'));
-    M.Append(TMenuItem.Create('Fit image to window _height',         211, 'h'));
-    M.Append(TMenuItem.Create('Fit image width to window width',    220, 'W'));
-    M.Append(TMenuItem.Create('Fit image height to window height',  221, 'H'));
+    M.Append(TMenuItemChecked.Create('Smooth Scaling', 205, SmoothScaling, true));
     M.Append(TMenuSeparator.Create);
-    M.Append(TMenuItemChecked.Create(
-      'Testing is image "_tileable" on/off',                         230, 't',
-      DrawTiled, true));
+    M.Append(TMenuItem.Create('Fit Image to Window _Width',         210, 'w'));
+    M.Append(TMenuItem.Create('Fit Image to Window _Height',        211, 'h'));
+    M.Append(TMenuItem.Create('Fit Image Width to Window Width',    220, 'W'));
+    M.Append(TMenuItem.Create('Fit Image Height to Window Height',  221, 'H'));
     M.Append(TMenuSeparator.Create);
-    M.Append(TMenuItem.Create('No _zoom and no translation',         240, K_Home));
+    M.Append(TMenuItemChecked.Create('Test Is _Tileable', 230, 't', DrawTiled, true));
+    M.Append(TMenuSeparator.Create);
+    M.Append(TMenuItem.Create('Reset _Zoom and Translation',         240, K_Home));
     M.Append(TMenuSeparator.Create);
     M.Append(TMenuItemChecked.Create('Use Image Alpha Channel', 270,  UseImageAlpha, true));
-    M.Append(TMenuItem.Create('Background color ...',                260));
+    M.Append(TMenuItem.Create('Background Color ...',                260));
     M.Append(TMenuSeparator.Create);
     M.Append(TMenuItemToggleFullScreen.Create(Window.FullScreen));
     Result.Append(M);
@@ -747,17 +757,18 @@ begin
     Result.Append(M);
   M := TMenu.Create('_Edit');
     M.Append(TMenuItem.Create('_Grayscale',                          410));
+    M.Append(TMenuItem.Create('_Alpha Bleed (Slow but Correct Algorithm)', 415));
     M.Append(TMenuSeparator.Create);
-    M.Append(TMenuItem.Create('Convert to _red channel',             420));
-    M.Append(TMenuItem.Create('Convert to gr_een channel',           421));
-    M.Append(TMenuItem.Create('Convert to _blue channel',            422));
+    M.Append(TMenuItem.Create('Convert to Red Channel',             420));
+    M.Append(TMenuItem.Create('Convert to Green Channel',           421));
+    M.Append(TMenuItem.Create('Convert to Blue Channel',            422));
     M.Append(TMenuSeparator.Create);
-    M.Append(TMenuItem.Create('Strip to red channel',                430));
-    M.Append(TMenuItem.Create('Strip to green channel',              431));
-    M.Append(TMenuItem.Create('Strip to blue channel',               432));
+    M.Append(TMenuItem.Create('Strip to Red Channel',                430));
+    M.Append(TMenuItem.Create('Strip to Green Channel',              431));
+    M.Append(TMenuItem.Create('Strip to Blue Channel',               432));
     M.Append(TMenuSeparator.Create);
-    M.Append(TMenuItem.Create('_Mirror horizontally',                440));
-    M.Append(TMenuItem.Create('Mirror vertically',                   441));
+    M.Append(TMenuItem.Create('_Mirror Horizontally',                440));
+    M.Append(TMenuItem.Create('Mirror Vertically',                   441));
     M.Append(TMenuSeparator.Create);
     M.Append(TMenuItem.Create('Rotate 90 Degrees (Clockwise)', 450));
     M.Append(TMenuItem.Create('Rotate 180 Degrees', 451));
@@ -767,11 +778,11 @@ begin
     Result.Append(M);
   M := TMenu.Create('_Images');
   ImagesMenu := M;
-    M.Append(TMenuItem.Create('_Previous subimage in Composite (DDS, KTX)', 320, CtrlP));
-    M.Append(TMenuItem.Create('_Next subimage in Composite (DDS, KTX)',     321, CtrlN));
+    M.Append(TMenuItem.Create('_Previous Subimage in Composite (DDS, KTX)', 320, CtrlP));
+    M.Append(TMenuItem.Create('_Next Subimage in Composite (DDS, KTX)',     321, CtrlN));
     M.Append(TMenuSeparator.Create);
-    M.Append(TMenuItem.Create('_Previous image', 310, 'p'));
-    M.Append(TMenuItem.Create('_Next image',     311, 'n'));
+    M.Append(TMenuItem.Create('_Previous Image', 310, 'p'));
+    M.Append(TMenuItem.Create('_Next Image',     311, 'n'));
     M.Append(TMenuSeparator.Create);
     Result.Append(M);
   M := TMenu.Create('_Help');
@@ -857,6 +868,10 @@ var
 begin
   Window := TCastleWindowCustom.Create(Application);
   Theme.DialogsLight;
+
+  { to show "Alpha Bleed" progress }
+  Progress.UserInterface := WindowProgressInterface;
+  Application.MainWindow := Window;
 
   OnWarning := @OnWarningWrite;
 

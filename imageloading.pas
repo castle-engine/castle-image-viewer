@@ -36,7 +36,7 @@ var
 
     This is always initialized (even when not @link(IsImageValid)),
     because we show ImageInvalid in case loading failed.
-     }
+  }
   Image: TCastleImage;
   GLImage: TGLImage;
 
@@ -51,6 +51,8 @@ var
     CompositeImageIndex is > 0 and Image is just = CompositeImage.Images[CompositeImageIndex]. }
   CompositeImage: TCompositeImage;
   CompositeImageIndex: Integer;
+
+  SmoothScaling: boolean = true;
 
 { Load image from URL. The image may be composite, in which case CompositeImage
   will be loaded too, otherwise CompositeImage is left @nil.
@@ -172,7 +174,7 @@ begin
     end;
   end;
 
-  GLImage := TGLImage.Create(Image, true, false);
+  GLImage := TGLImage.Create(Image, SmoothScaling, false);
 end;
 
 procedure CreateImage(Window: TCastleWindowCustom; const NewImage: TCastleImage; const NewImageURL: string);
@@ -186,7 +188,7 @@ begin
   IsImageValid := true;
   UpdateCaption(Window);
 
-  GLImage := TGLImage.Create(Image, true, false);
+  GLImage := TGLImage.Create(Image, SmoothScaling, false);
 end;
 
 procedure CreateImageInvalid(Window: TCastleWindowCustom; const ErrorURL: string);
@@ -200,7 +202,7 @@ begin
   IsImageValid := false;
   UpdateCaption(Window);
 
-  GLImage := TGLImage.Create(Image, true, false);
+  GLImage := TGLImage.Create(Image, SmoothScaling, false);
 end;
 
 procedure ChangeCompositeImageIndex(Window: TCastleWindowCustom; NewIndex: Cardinal);
