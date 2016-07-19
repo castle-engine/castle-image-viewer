@@ -194,18 +194,18 @@ const
 
 var
   { Zawsze bedzie 0 < MinZoom <= Zoom* <=MaxZoom.
-    Uzywaj tylko funkcji ponizej, Set/MultZoomGL aby zmieniac zmienne Zoom* -
+    Uzywaj tylko funkcji ponizej, Set/MultZoom aby zmieniac zmienne Zoom* -
     poza tym procedurami, te zmienne sa read only. }
   ZoomX: Single = 1.0;
   ZoomY: Single = 1.0;
 
-procedure SetZoomGL(var Zoom: Single; const NewZoom: Single);
+procedure SetZoom(var Zoom: Single; const NewZoom: Single);
 begin
   Zoom := Clamped(NewZoom, MinZoom, MaxZoom);
   Window.Invalidate;
 end;
 
-procedure MultZoomGL(var Zoom: Single; const Multiplier: Single);
+procedure MultZoom(var Zoom: Single; const Multiplier: Single);
 begin
   Zoom *= Multiplier;
   ClampVar(Zoom, MinZoom, MaxZoom);
@@ -367,47 +367,51 @@ end;
 
 procedure Update(Container: TUIContainer);
 
-  procedure Move(var value: TGLfloat; change: TGLfloat);
+  procedure Move(var value: TGLfloat; Change: TGLfloat);
   begin
-   change *= 8*Window.Fps.UpdateSecondsPassed * 50;
-   if Window.Pressed[k_Ctrl] then change *= 10;
-   value += change;
+   Change *= 8 * 50 * Window.Fps.UpdateSecondsPassed;
+   if Window.Pressed[k_Ctrl] then Change *= 10;
+   value += Change;
    Window.Invalidate;
   end;
 
-const SCALE_FACTOR = 0.1;
-var scale_up, scale_down: Single;
+const
+  ScaleFactor = 5;
+var
+  ScaleUp, ScaleDown: Single;
 begin
- with Window do begin
-  if Pressed[K_Up] then Move(MoveY, -1 / zoomY);
-  if Pressed[K_Down] then Move(MoveY, 1 / zoomY);
-  if Pressed[K_Right] then Move(MoveX, -1 / zoomX);
-  if Pressed[K_Left] then Move(MoveX, 1 / zoomX);
+  if Window.Pressed[K_Up] then Move(MoveY, -1 / zoomY);
+  if Window.Pressed[K_Down] then Move(MoveY, 1 / zoomY);
+  if Window.Pressed[K_Right] then Move(MoveX, -1 / zoomX);
+  if Window.Pressed[K_Left] then Move(MoveX, 1 / zoomX);
 
-  scale_up := 1 + SCALE_FACTOR * Window.Fps.UpdateSecondsPassed * 50;
-  scale_down := 1 / scale_up;
+  ScaleUp := Power(ScaleFactor, Window.Fps.UpdateSecondsPassed);
+  ScaleDown := Power(1 / ScaleFactor, Window.Fps.UpdateSecondsPassed);
 
-  if Pressed[K_Numpad_Plus ] or Pressed[K_Plus ] or Pressed.Characters['+'] then
+  if Window.Pressed[K_Numpad_Plus ] or
+     Window.Pressed[K_Plus ] or
+     Window.Pressed.Characters['+'] then
   begin
-    MultZoomGL(ZoomX, scale_up);
-    MultZoomGL(ZoomY, scale_up);
+    MultZoom(ZoomX, ScaleUp);
+    MultZoom(ZoomY, ScaleUp);
   end;
 
-  if Pressed[K_Numpad_Minus] or Pressed[K_Minus] or Pressed.Characters['-'] then
+  if Window.Pressed[K_Numpad_Minus] or
+     Window.Pressed[K_Minus] or
+     Window.Pressed.Characters['-'] then
   begin
-    MultZoomGL(ZoomX, scale_down);
-    MultZoomGL(ZoomY, scale_down);
+    MultZoom(ZoomX, ScaleDown);
+    MultZoom(ZoomY, ScaleDown);
   end;
 
-  if Pressed[K_x] then
-   if Pressed[K_Shift] then
-    MultZoomGL(ZoomX, scale_up) else
-    MultZoomGL(ZoomX, scale_down);
-  if Pressed[K_y] then
-   if Pressed[K_Shift] then
-    MultZoomGL(ZoomY, scale_up) else
-    MultZoomGL(ZoomY, scale_down);
- end;
+  if Window.Pressed[K_x] then
+    if Window.Pressed[K_Shift] then
+      MultZoom(ZoomX, ScaleUp) else
+      MultZoom(ZoomX, ScaleDown);
+  if Window.Pressed[K_y] then
+    if Window.Pressed[K_Shift] then
+      MultZoom(ZoomY, ScaleUp) else
+      MultZoom(ZoomY, ScaleDown);
 end;
 
 procedure Open(Container: TUIContainer);
@@ -423,6 +427,37 @@ begin
   begin
     MessageOk(Window, Trim(SavedErrorMessages));
     SavedErrorMessages := '';
+  end;
+end;
+
+procedure Motion(Container: TUIContainer; const Event: TInputMotion);
+begin
+  if mbLeft in Event.Pressed then
+  begin
+    MoveX += (Event.Position[0] - Event.OldPosition[0]) / ZoomX;
+    MoveY += (Event.Position[1] - Event.OldPosition[1]) / ZoomY;
+    Window.Invalidate;
+  end;
+end;
+
+procedure Press(Container: TUIContainer; const Event: TInputPressRelease);
+const
+  ScaleFactor = 1.1;
+var
+  ScaleUp, ScaleDown: Single;
+begin
+  if Event.IsMouseWheel(mwUp) then
+  begin
+    ScaleUp := ScaleFactor;
+    MultZoom(ZoomX, ScaleUp);
+    MultZoom(ZoomY, ScaleUp);
+  end;
+
+  if Event.IsMouseWheel(mwDown) then
+  begin
+    ScaleDown := 1 / ScaleFactor;
+    MultZoom(ZoomX, ScaleDown);
+    MultZoom(ZoomY, ScaleDown);
   end;
 end;
 
@@ -633,20 +668,20 @@ begin
          end;
     210: begin
           change:=(Window.Width / Image.Width) / zoomx;
-          MultZoomGL(ZoomX, change);
-          MultZoomGL(ZoomY, change);
+          MultZoom(ZoomX, change);
+          MultZoom(ZoomY, change);
          end;
     211: begin
           change:=(Window.Height / Image.Height) / zoomy;
-          MultZoomGL(ZoomX, change);
-          MultZoomGL(ZoomY, change);
+          MultZoom(ZoomX, change);
+          MultZoom(ZoomY, change);
          end;
-    220: SetZoomGL(ZoomX, Window.Width / Image.Width);
-    221: SetZoomGL(ZoomY, Window.Height / Image.Height);
+    220: SetZoom(ZoomX, Window.Width / Image.Width);
+    221: SetZoom(ZoomY, Window.Height / Image.Height);
     230: DrawTiled := not DrawTiled;
     240: begin
-          SetZoomGL(ZoomX, 1.0);
-          SetZoomGL(ZoomY, 1.0);
+          SetZoom(ZoomX, 1.0);
+          SetZoom(ZoomY, 1.0);
           MoveX := 0;
           MoveY := 0;
          end;
@@ -944,7 +979,7 @@ begin
 
     { set window size, if we managed to load image before Open callback,
       and user did not already request some size }
-    if (Image <> nil) and not (poGeometry in SpecifiedOptions) then
+    if (Image <> nil) and IsImageValid and not (poGeometry in SpecifiedOptions) then
     begin
       { Clamp to:
         - not make window too large (some window managers accept it
@@ -959,8 +994,8 @@ begin
           and having to display scrollbars. (see CastleWindow WinAPI comments about
           AdjustWindowRectEx, this is documented WinAPI bug without any sensible
           workaround.) }
-      Window.width  := Clamped(Image.Width , 400, Application.ScreenWidth -50);
-      Window.height := Clamped(Image.Height, 400, Application.ScreenHeight-50);
+      Window.width  := Clamped(Image.Width , 400, Application.ScreenWidth  - 50);
+      Window.height := Clamped(Image.Height, 400, Application.ScreenHeight - 50);
     end;
 
     Window.OnUpdate := @Update;
@@ -968,6 +1003,8 @@ begin
     Window.OnOpen := @Open;
     Window.OnResize := @Resize2D;
     Window.OnDropFiles := @DropFiles;
+    Window.OnMotion := @Motion;
+    Window.OnPress := @Press;
 
     Window.DepthBits := 0; { depth buffer not needed here }
     Window.OpenAndRun;
