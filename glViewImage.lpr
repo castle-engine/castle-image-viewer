@@ -234,7 +234,7 @@ procedure Render(Container: TUIContainer);
 
     GLImage.Draw(
       MoveX, MoveY,
-      Round(GLImage.Width * ZoomX), Round(GLImage.Height * ZoomX),
+      Round(GLImage.Width * ZoomX), Round(GLImage.Height * ZoomY),
       0, 0, GLImage.Width, GLImage.Height);
   end;
 
@@ -357,7 +357,7 @@ begin
         glEnd;
 
         visibleYStart := Round(MapRange(visibleYStart, 0, Height, ScrollbarSize+ScrollbarMargin, Window.height-ScrollbarMargin));
-        visibleYEnd    :=Round(MapRange(visibleYEnd,   0, Height, ScrollbarSize+ScrollbarMargin, Window.height-ScrollbarMargin));
+        visibleYEnd   := Round(MapRange(visibleYEnd,   0, Height, ScrollbarSize+ScrollbarMargin, Window.height-ScrollbarMargin));
         DrawRectangle(Rectangle(ScrollbarMargin, visibleYStart,
           ScrollbarSize - 2 * ScrollbarMargin, visibleYEnd - visibleYStart), Gray);
       end;
@@ -408,6 +408,7 @@ begin
     if Window.Pressed[K_Shift] then
       MultZoom(ZoomX, ScaleUp) else
       MultZoom(ZoomX, ScaleDown);
+
   if Window.Pressed[K_y] then
     if Window.Pressed[K_Shift] then
       MultZoom(ZoomY, ScaleUp) else
