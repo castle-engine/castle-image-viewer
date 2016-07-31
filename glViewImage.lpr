@@ -33,10 +33,10 @@ program glViewImage;
 uses SysUtils, Math, Classes, TypInfo,
   CastleWindow, CastleGL, CastleGLUtils, CastleUtils, CastleImages,
   CastleClassUtils, CastleMessages, CastleParameters, CastleControls,
-  CastleFindFiles, CastleVectors, CastleStringUtils, CastleWarnings,
+  CastleFindFiles, CastleVectors, CastleStringUtils,
   CastleGLImages, CastleWindowRecentFiles, CastleCompositeImage, CastleFilesUtils,
   CastleColors, CastleConfig, CastleKeysMouse, CastleURIUtils, CastleRectangles,
-  CastleWindowProgress, CastleProgress,
+  CastleWindowProgress, CastleProgress, CastleApplicationProperties,
   ImageLoading, GVIImages;
 
 var
@@ -909,7 +909,7 @@ begin
   Progress.UserInterface := WindowProgressInterface;
   Application.MainWindow := Window;
 
-  OnWarning := @OnWarningWrite;
+  ApplicationProperties.OnWarning.Add(@ApplicationProperties.WriteWarningOnConsole);
 
   Images := TStringList.Create;
   try
