@@ -315,20 +315,20 @@ begin
 
       if horizScrollbar and vertScrollbar then
       begin
-        ScissorEnable(Window.Rect.RemoveLeft(ScrollbarSize + 1).RemoveBottom(ScrollbarSize + 1));
+        RenderContext.ScissorEnable(Window.Rect.RemoveLeft(ScrollbarSize + 1).RemoveBottom(ScrollbarSize + 1));
       end else
       if horizScrollbar then
       begin
-        ScissorEnable(Window.Rect.RemoveBottom(ScrollbarSize + 1));
+        RenderContext.ScissorEnable(Window.Rect.RemoveBottom(ScrollbarSize + 1));
       end else
       if vertScrollbar then
       begin
-        ScissorEnable(Window.Rect.RemoveLeft(ScrollbarSize + 1));
+        RenderContext.ScissorEnable(Window.Rect.RemoveLeft(ScrollbarSize + 1));
       end;
 
       DrawImage(Round(MoveX * ZoomX), Round(MoveY * ZoomY));
 
-      ScissorDisable;
+      RenderContext.ScissorDisable;
 
       if horizScrollbar then
       begin
