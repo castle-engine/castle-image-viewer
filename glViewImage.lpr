@@ -258,7 +258,7 @@ begin
 
   { Clear color buffer bit, even when DrawTiled --- because image may
     have alpha channel, and then background is visible. }
-  GLClear([cbColor], BackgroundColor);
+  RenderContext.Clear([cbColor], BackgroundColor);
 
   if DrawTiled then
   begin
