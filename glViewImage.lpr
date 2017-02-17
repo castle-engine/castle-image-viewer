@@ -896,8 +896,9 @@ begin
   end;
 end;
 
-{ main part ----------------------------------------------------------------- }
+{ main ----------------------------------------------------------------------- }
 
+procedure Run;
 var
   i: Integer;
   SpecifiedOptions: TWindowParseOptions;
@@ -1015,5 +1016,21 @@ begin
   finally
     FreeAndNil(Images);
     FreeAndNil(RecentMenu);
+  end;
+end;
+
+begin
+  try
+    Run;
+  except
+    on E: TObject do
+    begin
+      { In case of exception, write nice message and exit with non-zero status,
+        without dumping any stack trace (because it's normal to
+        exit with exception in case of project/environment error, not a bug,
+        and the stack trace is mostly useless for end-users in -dRELEASE mode). }
+      Writeln(ErrOutput, ExceptMessage(E));
+      Halt(1);
+    end;
   end;
 end.
