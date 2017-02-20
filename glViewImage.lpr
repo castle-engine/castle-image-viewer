@@ -22,7 +22,7 @@
 
 program glViewImage;
 
-{$I castleconf.inc}
+{$I gviconf.inc}
 
 {$ifdef MSWINDOWS}
   {$R automatic-windows-resources.res}
@@ -229,7 +229,7 @@ procedure Render(Container: TUIContainer);
   procedure DrawImage(MoveX, MoveY: Integer);
   begin
     if Image.HasAlpha and UseImageAlpha then
-      GLImage.Alpha := acFullRange else
+      GLImage.Alpha := acBlending else
       GLImage.Alpha := acNone;
 
     GLImage.Draw(
