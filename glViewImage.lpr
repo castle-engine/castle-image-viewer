@@ -44,7 +44,7 @@ var
   MoveX: TGLfloat = 0;
   MoveY: TGLfloat = 0;
   DrawTiled: boolean = false;
-  BackgroundColor: TCastleColor = (0, 0, 0, 1);
+  BackgroundColor: TCastleColor = (Data: (0, 0, 0, 1));
   { error messages gathered before Window was open }
   SavedErrorMessages: string = '';
   UseImageAlpha: boolean = true;
