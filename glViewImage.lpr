@@ -37,6 +37,7 @@ uses SysUtils, Math, Classes, TypInfo,
   CastleGLImages, CastleWindowRecentFiles, CastleCompositeImage, CastleFilesUtils,
   CastleColors, CastleConfig, CastleKeysMouse, CastleURIUtils, CastleRectangles,
   CastleWindowProgress, CastleProgress, CastleApplicationProperties,
+  CastleDownload,
   ImageLoading, GVIImages;
 
 var
@@ -113,16 +114,16 @@ procedure AddImageNamesFromFile(const URL: string);
   end;
 
 var
-  f: TTextReader;
+  F: TTextReader;
 begin
   if URL = '-' then
-    AddImageNamesFromTextReader(StdinReader) else
-  begin
-    f := TTextReader.Create(URL);
-    try
-      AddImageNamesFromTextReader(f);
-    finally f.Free end;
-  end;
+    F := TTextReader.Create(StdInStream, false)
+  else
+    F := TTextReader.Create(URL);
+
+  try
+    AddImageNamesFromTextReader(F);
+  finally FreeAndNil(F) end;
 end;
 
 procedure AddToList(const FileInfo: TFileInfo; Data: Pointer; var StopSearch: boolean);
