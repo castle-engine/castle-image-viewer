@@ -37,7 +37,7 @@ uses SysUtils, Math, Classes, TypInfo,
   CastleGLImages, CastleWindowRecentFiles, CastleCompositeImage, CastleFilesUtils,
   CastleColors, CastleConfig, CastleKeysMouse, CastleURIUtils, CastleRectangles,
   CastleWindowProgress, CastleProgress, CastleApplicationProperties,
-  CastleDownload,
+  CastleDownload, CastleLog,
   ImageLoading, GVIImages;
 
 var
@@ -832,9 +832,10 @@ end;
 { params ------------------------------------------------------------------- }
 
 const
-  Options: array[0..1]of TOption = (
+  Options: array [0..2] of TOption = (
     (Short: 'h'; Long: 'help'; Argument: oaNone),
-    (Short: 'v'; Long: 'version'; Argument: oaNone)
+    (Short: 'v'; Long: 'version'; Argument: oaNone),
+    (Short:  #0; Long: 'debug-log'; Argument: oaNone)
   );
 
 procedure OptionProc(OptionNum: Integer; HasArgument: boolean;
@@ -893,6 +894,7 @@ begin
         WritelnStr(Version);
         Halt;
       end;
+    2:InitializeLog(Version);
     else raise EInternalError.Create('OptionProc');
   end;
 end;
