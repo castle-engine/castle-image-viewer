@@ -46,10 +46,7 @@ var
   MoveY: TGLfloat = 0;
   DrawTiled: boolean = false;
   BackgroundColor: TCastleColor = (Data: (0, 0, 0, 1));
-  { error messages gathered before Window was open }
-  SavedErrorMessages: string = '';
   UseImageAlpha: boolean = true;
-  RetryLoadingAtOpen: boolean = false;
 
 var
   { A list of images to browse by previous/next keys/menu items.
@@ -419,17 +416,6 @@ end;
 procedure Open(Container: TUIContainer);
 begin
   DecompressTexture := @GLDecompressTexture;
-
-  if RetryLoadingAtOpen then
-    { Image failed to initialize before (because texture could
-      not be decompressed), initialize it fully now. }
-    CreateImageFromList(CurrentImageIndex);
-
-  if Trim(SavedErrorMessages) <> '' then
-  begin
-    MessageOk(Window, Trim(SavedErrorMessages));
-    SavedErrorMessages := '';
-  end;
 end;
 
 procedure Motion(Container: TUIContainer; const Event: TInputMotion);
@@ -904,7 +890,8 @@ end;
 procedure Run;
 var
   i: Integer;
-  SpecifiedOptions: TWindowParseOptions;
+  { error messages gathered }
+  SavedErrorMessages: string;
 begin
   ApplicationProperties.Version := Version;
   ApplicationProperties.OnWarning.Add(@ApplicationProperties.WriteWarningOnConsole);
@@ -925,13 +912,23 @@ begin
     Window.MainMenu := CreateMainMenu;
     Window.OnMenuClick := @MenuClick;
 
-    UserConfig.Load;
-    RecentMenu.LoadFromConfig(UserConfig);
-
-    { parse glw options }
-    Window.ParseParameters(StandardParseOptions, SpecifiedOptions);
+    { parse options }
+    Window.ParseParameters(StandardParseOptions);
     { parse our options }
     Parameters.Parse(Options, @OptionProc, nil);
+
+    Window.DepthBits := 0; { depth buffer not needed here }
+    Window.OnUpdate := @Update;
+    Window.OnRender := @Render;
+    Window.OnOpen := @Open;
+    Window.OnResize := @Resize2D;
+    Window.OnDropFiles := @DropFiles;
+    Window.OnMotion := @Motion;
+    Window.OnPress := @Press;
+    Window.Open;
+
+    UserConfig.Load;
+    RecentMenu.LoadFromConfig(UserConfig);
 
     { calculate Images = parse the list of image files to open }
     if Parameters.High = 0 then
@@ -940,6 +937,8 @@ begin
       Images.Sort;
     end else
     begin
+      SavedErrorMessages := '';
+
       for i := 1 to Parameters.High do
       begin
         if SCharIs(Parameters[i], 1, '@') then
@@ -948,7 +947,14 @@ begin
           AddImageNamesAllLoadable(InclPathDelim(Parameters[i])) else
         if FileExists(Parameters[i]) then
           AddImageNamesFromFileName(Parameters[i]) else
-          SavedErrorMessages := SavedErrorMessages + ('File "' + Parameters[i] + '" does not exist.' + NL);
+          SavedErrorMessages := SavedErrorMessages +
+            'File "' + Parameters[i] + '" does not exist.' + NL;
+      end;
+
+      if SavedErrorMessages <> '' then
+      begin
+        MessageOk(Window, Trim(SavedErrorMessages));
+        SavedErrorMessages := '';
       end;
     end;
 
@@ -963,57 +969,12 @@ begin
 
     ImagesChanged;
 
-    { initialize Image. This must be done before window is created,
-      as we want to use Image size for initial window size. }
-    try
-      CreateImageFromList(CurrentImageIndex);
-      Assert(Image <> nil, 'Image not loaded correctly by CreateImageFromList');
-    except
-      on E: ECannotDecompressTexture do
-      begin
-        { Silence exception in this case, image size cannot be known
-          before we initialize OpenGL context.
-          Leave Image as invalid now, the Open callback will initialize it. }
-        RetryLoadingAtOpen := true;
-      end;
-      on E: Exception do
-      begin
-        SavedErrorMessages := SavedErrorMessages + (ExceptMessage(E, nil) + NL);
-        CreateImageFromList(CurrentImageIndex, true);
-      end;
-    end;
+    { Initialize Image. Window is open now (it has to, otherwise we get
+      warnings that opening files before Application.OnInitialize is not portable),
+      DecompressTexture is assigned, so we load it in a straightforward way. }
+    CreateImageFromList(CurrentImageIndex);
 
-    { set window size, if we managed to load image before Open callback,
-      and user did not already request some size }
-    if (Image <> nil) and IsImageValid and not (poGeometry in SpecifiedOptions) then
-    begin
-      { Clamp to:
-        - not make window too large (some window managers accept it
-          and show window that's uncomfortable for user, covers top/bottom
-          panels and such),
-        - not make window too small (as then messages ("about", "image info",
-          errors when reading images etc.) and other things are uncomfortable.
-          Remember that Image.Width/Height may come from ImageInvalid
-          if command-line image is invalid.)
-          Under Windows, this also should avoid menu bar wrapping (at least with
-          typical themes), which avoids accidentaly creating too small OpenGL area
-          and having to display scrollbars. (see CastleWindow WinAPI comments about
-          AdjustWindowRectEx, this is documented WinAPI bug without any sensible
-          workaround.) }
-      Window.width  := Clamped(Image.Width , 400, Application.ScreenWidth  - 50);
-      Window.height := Clamped(Image.Height, 400, Application.ScreenHeight - 50);
-    end;
-
-    Window.OnUpdate := @Update;
-    Window.OnRender := @Render;
-    Window.OnOpen := @Open;
-    Window.OnResize := @Resize2D;
-    Window.OnDropFiles := @DropFiles;
-    Window.OnMotion := @Motion;
-    Window.OnPress := @Press;
-
-    Window.DepthBits := 0; { depth buffer not needed here }
-    Window.OpenAndRun;
+    Application.Run;
 
     RecentMenu.SaveToConfig(UserConfig);
     UserConfig.Save;

@@ -57,11 +57,11 @@ var
 { Load image from URL. The image may be composite, in which case CompositeImage
   will be loaded too, otherwise CompositeImage is left @nil.
 
-  If (for any reason) loading of image from URL fails, then
-  we will replace current image with special InvalidImage.
-  If Window is open, then the message about failing to load an image will be shown
-  using MessageOK and no exception will be raised outside of this procedure.
-  Otherwise, there will be an exception, like from LoadImage. }
+  If (for any reason) loading of image from URL fails,
+  then we will
+  - replace current image with special InvalidImage,
+  - show failure message using MessageOK,
+  - and no exception will be raised outside of this procedure. }
 procedure CreateImage(Window: TCastleWindowCustom; const URL: string);
 
 { Load a ready TCastleImage instance. It becomes owned by this unit
@@ -128,6 +128,8 @@ procedure CreateImage(Window: TCastleWindowCustom; const URL: string);
 var
   NewComposite: TCompositeImage;
 begin
+  Assert(not Window.Closed, 'CreateImage can only be called when Window is open now');
+
   DestroyImage;
 
   try
@@ -164,13 +166,7 @@ begin
     on E: Exception do
     begin
       CreateImageInvalid(Window, URL);
-      if not Window.Closed then
-        MessageOK(Window, ExceptMessage(E, nil)) else
-        { it is normal in case of loading S3TC that it fails before window is open.
-          In other cases, it means that image is invalid
-          In all cases, the exception must be caught to be reported Ok. }
-        raise;
-      Exit;
+      MessageOK(Window, ExceptMessage(E, nil));
     end;
   end;
 
