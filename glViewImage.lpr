@@ -208,7 +208,7 @@ end;
 
 procedure MultZoom(var Zoom: Single; const Multiplier: Single);
 begin
-  Zoom *= Multiplier;
+  Zoom := Zoom * Multiplier;
   ClampVar(Zoom, MinZoom, MaxZoom);
   Window.Invalidate;
 end;
@@ -370,9 +370,9 @@ procedure Update(Container: TUIContainer);
 
   procedure Move(var value: TGLfloat; Change: TGLfloat);
   begin
-   Change *= 8 * 50 * Window.Fps.UpdateSecondsPassed;
-   if Window.Pressed[k_Ctrl] then Change *= 10;
-   value += Change;
+   Change := Change * (8 * 50 * Window.Fps.SecondsPassed);
+   if Window.Pressed[k_Ctrl] then Change := Change * 10;
+   value := value + Change;
    Window.Invalidate;
   end;
 
@@ -386,8 +386,8 @@ begin
   if Window.Pressed[K_Right] then Move(MoveX, -1 / zoomX);
   if Window.Pressed[K_Left] then Move(MoveX, 1 / zoomX);
 
-  ScaleUp := Power(ScaleFactor, Window.Fps.UpdateSecondsPassed);
-  ScaleDown := Power(1 / ScaleFactor, Window.Fps.UpdateSecondsPassed);
+  ScaleUp := Power(ScaleFactor, Window.Fps.SecondsPassed);
+  ScaleDown := Power(1 / ScaleFactor, Window.Fps.SecondsPassed);
 
   if Window.Pressed[K_Numpad_Plus ] or
      Window.Pressed[K_Plus ] or
@@ -436,8 +436,8 @@ procedure Motion(Container: TUIContainer; const Event: TInputMotion);
 begin
   if mbLeft in Event.Pressed then
   begin
-    MoveX += (Event.Position[0] - Event.OldPosition[0]) / ZoomX;
-    MoveY += (Event.Position[1] - Event.OldPosition[1]) / ZoomY;
+    MoveX := MoveX + ((Event.Position[0] - Event.OldPosition[0]) / ZoomX);
+    MoveY := MoveY + ((Event.Position[1] - Event.OldPosition[1]) / ZoomY);
     Window.Invalidate;
   end;
 end;
@@ -466,7 +466,7 @@ end;
 { menu ------------------------------------------------------------ }
 
 const
-  Version = '1.7.0';
+  Version = '1.8.0';
   DisplayApplicationName = 'glViewImage';
 
 var
@@ -577,8 +577,8 @@ procedure MenuClick(Container: TUIContainer; Item: TMenuItem);
         [ImageURL, Image.ClassName, Image.Width, Image.Height]) else
       S := '<invalid image file>';
     if CompositeImage <> nil then
-      S += NL + Format('Composite subimage: %d', [CompositeImageIndex]) + NL +
-        CompositeImageInfo(CompositeImage);
+      S := S + (NL + Format('Composite subimage: %d', [CompositeImageIndex]) + NL +
+        CompositeImageInfo(CompositeImage));
     MessageOK(Window, S);
    end;
 
@@ -851,7 +851,7 @@ begin
           for J := 0 to LoadImage_FileFilters[I].Patterns.Count - 1 do
           begin
             Pattern := LoadImage_FileFilters[I].Patterns[J];
-            RecognizedPatterns += ' ' + Pattern;
+            RecognizedPatterns := RecognizedPatterns + (' ' + Pattern);
           end;
         InfoWrite(
           'glViewImage: simple image viewer. Allows browsing images list,' +nl+
@@ -894,7 +894,7 @@ begin
         WritelnStr(Version);
         Halt;
       end;
-    2:InitializeLog(Version);
+    2:InitializeLog;
     else raise EInternalError.Create('OptionProc');
   end;
 end;
@@ -906,14 +906,15 @@ var
   i: Integer;
   SpecifiedOptions: TWindowParseOptions;
 begin
+  ApplicationProperties.Version := Version;
+  ApplicationProperties.OnWarning.Add(@ApplicationProperties.WriteWarningOnConsole);
+
   Window := TCastleWindowCustom.Create(Application);
   Theme.DialogsLight;
 
   { to show "Alpha Bleed" progress }
   Progress.UserInterface := WindowProgressInterface;
   Application.MainWindow := Window;
-
-  ApplicationProperties.OnWarning.Add(@ApplicationProperties.WriteWarningOnConsole);
 
   Images := TStringList.Create;
   try
@@ -947,11 +948,11 @@ begin
           AddImageNamesAllLoadable(InclPathDelim(Parameters[i])) else
         if FileExists(Parameters[i]) then
           AddImageNamesFromFileName(Parameters[i]) else
-          SavedErrorMessages += 'File "' + Parameters[i] + '" does not exist.' + NL;
+          SavedErrorMessages := SavedErrorMessages + ('File "' + Parameters[i] + '" does not exist.' + NL);
       end;
     end;
 
-    { Always insert wecome image }
+    { Always insert welcome image }
     Images.InsertObject(0, '<Welcome image>', Welcome);
     Assert(Images.Count > 0);
 
@@ -977,7 +978,7 @@ begin
       end;
       on E: Exception do
       begin
-        SavedErrorMessages += ExceptMessage(E, nil) + NL;
+        SavedErrorMessages := SavedErrorMessages + (ExceptMessage(E, nil) + NL);
         CreateImageFromList(CurrentImageIndex, true);
       end;
     end;
