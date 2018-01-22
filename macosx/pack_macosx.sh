@@ -7,7 +7,7 @@ set -eu
 . ../../cge-scripts/create_macosx_bundle.sh
 
 create_bundle glViewImage ../glViewImage ../desktop/glViewImage.icns \
-  "`output_macosx_document_types`"
+  "`../utils/output_macosx_document_types`"
 
 # add libraries from fink
 cd glViewImage.app/Contents/MacOS/
@@ -21,3 +21,5 @@ check_libs_not_depending_on_fink glViewImage
 cd ../../../
 
 make -f ../../cge-scripts/macosx_dmg.makefile NAME=glViewImage
+
+echo 'Done OK'

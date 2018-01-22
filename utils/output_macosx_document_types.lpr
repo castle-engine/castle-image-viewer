@@ -24,11 +24,7 @@
   suitable to use in an Mac OS X bundle info.
   Use this to associate glViewImage with all supported image types on Mac OS X. }
 
-{ THIS DOES NOT COMPILE FOR NOW.
-  It requires access to ImageFormatInfos, and we cut if off
-  to cleanup CastleImages API. }
-
-uses CastleUtils, CastleImages;
+uses CastleUtils, CastleImagesFormats;
 var
   FormatInfo: TImageFormatInfo;
   Output: string = '';
@@ -56,7 +52,7 @@ begin
       '      <string>****</string>' +NL+
       '    </array>' +NL+
       '    <key>CFBundleTypeRole</key>' +NL;
-    if Assigned(FormatInfo.Save) then
+    if FormatInfo.HasSave then
       Output += '    <string>Editor</string>' +NL else
       Output += '    <string>Viewer</string>' +NL;
     Output +=
