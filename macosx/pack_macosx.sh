@@ -5,7 +5,6 @@ set -euo pipefail
 # create Mac OS X bundle (.app),
 # create dmg (disk image) file to distribute.
 
-
 . ../../cge-scripts/create_macosx_bundle.sh
 
 make -C ../ clean
