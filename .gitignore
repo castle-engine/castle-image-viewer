@@ -2,6 +2,7 @@
 *.o
 *.ppu
 *.compiled
+*.log
 glViewImage
 glViewImage.exe
 castle-engine-output
