@@ -125,7 +125,7 @@ end;
 
 procedure AddToList(const FileInfo: TFileInfo; Data: Pointer; var StopSearch: boolean);
 begin
-  { avoid adding dups, otherwise AddImageNamesFromFileName always adds dups.
+  { avoid adding dups, otherwise AddImageNamesFromURL always adds dups.
     Note: we cannot use Images.Duplicates := dupIgnore,
     because of http://bugs.freepascal.org/view.php?id=28774 }
   if Images.IndexOf(FileInfo.AbsoluteName) = -1 then
@@ -151,15 +151,15 @@ begin
     end;
 end;
 
-procedure AddImageNamesFromFileName(const FileName: string);
+procedure AddImageNamesFromURL(const URL: string);
 begin
-  // FileName will match exactly 1 file
-  AddImageNamesFromMask(ExpandFileName(FileName));
+  // URL will match exactly 1 file
+  AddImageNamesFromMask(URL);
 
   { Add also other filenames within this directory.
     This way if you open a file by double-clicking,
     you can still browse other images in this dir. }
-  AddImageNamesAllLoadable(ExtractFilePath(FileName));
+  AddImageNamesAllLoadable(ExtractURIPath(URL));
 end;
 
 { open file --------------------------------------------------------------- }
@@ -944,13 +944,13 @@ begin
       for i := 1 to Parameters.High do
       begin
         if SCharIs(Parameters[i], 1, '@') then
-          AddImageNamesFromFile(SEnding(Parameters[i], 2)) else
-        if DirectoryExists(Parameters[i]) then
-          AddImageNamesAllLoadable(InclPathDelim(Parameters[i])) else
-        if FileExists(Parameters[i]) then
-          AddImageNamesFromFileName(Parameters[i]) else
-          SavedErrorMessages := SavedErrorMessages +
-            'File "' + Parameters[i] + '" does not exist.' + NL;
+          AddImageNamesFromFile(SEnding(Parameters[i], 2))
+        else
+        case URIExists(Parameters[i]) of
+          ueFile, ueUnknown: AddImageNamesFromURL(Parameters[i]);
+          ueDirectory: AddImageNamesAllLoadable(InclPathDelim(Parameters[i]));
+          else SavedErrorMessages := SavedErrorMessages + 'File "' + Parameters[i] + '" does not exist.' + NL;
+        end;
       end;
 
       if SavedErrorMessages <> '' then
