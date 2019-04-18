@@ -1,5 +1,5 @@
 {
-  Copyright 2001-2017 Michalis Kamburelis.
+  Copyright 2001-2019 Michalis Kamburelis.
 
   This file is part of "glViewImage".
 
@@ -893,8 +893,10 @@ var
   { error messages gathered }
   SavedErrorMessages: string;
 begin
+  ApplicationProperties.ApplicationName := 'glViewImage';
   ApplicationProperties.Version := Version;
   ApplicationProperties.OnWarning.Add(@ApplicationProperties.WriteWarningOnConsole);
+  InitializeLog;
 
   Window := TCastleWindowCustom.Create(Application);
   Theme.DialogsLight;
@@ -953,6 +955,9 @@ begin
 
       if SavedErrorMessages <> '' then
       begin
+        { make sure to create some Image, to be able to Render }
+        if Image = nil then
+          CreateImageInvalid(Window, '');
         MessageOk(Window, Trim(SavedErrorMessages));
         SavedErrorMessages := '';
       end;
@@ -994,7 +999,7 @@ begin
         without dumping any stack trace (because it's normal to
         exit with exception in case of project/environment error, not a bug,
         and the stack trace is mostly useless for end-users in -dRELEASE mode). }
-      Writeln(ErrOutput, ExceptMessage(E));
+      ErrorWrite(ExceptMessage(E));
       Halt(1);
     end;
   end;
