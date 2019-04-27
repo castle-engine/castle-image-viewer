@@ -1,10 +1,10 @@
 #!/bin/bash
 set -eu
 
-# Install glViewImage menu entries, icons, mime types.
+# Install castle-view-image menu entries, icons, mime types.
 # Based on ../../view3dscene/desktop/install.sh
 
-APP_NAME='glViewImage'
+APP_NAME='castle-view-image'
 
 # For non-user install, change this to
 #   SHARE_PREFIX = /usr/local/share

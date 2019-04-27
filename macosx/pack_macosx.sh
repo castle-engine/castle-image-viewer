@@ -16,21 +16,21 @@ cd utils/
 castle-engine compile
 popd
 
-# compile glViewImage for Mac OS X
-echo '--------------------- Compiling glViewImage  --------------------'
-temporary_change_lpi_to_alternative_castle_window_based_on_lcl ../glViewImage.lpi
-lazbuild ../glViewImage.lpi
+# compile castle-view-image for Mac OS X
+echo '--------------------- Compiling castle-view-image  --------------------'
+temporary_change_lpi_to_alternative_castle_window_based_on_lcl ../castle-view-image.lpi
+lazbuild ../castle-view-image.lpi
 
 # Fail if utils/output_macosx_document_types is missing
 utils/output_macosx_document_types > /tmp/document_types.txt
 
-create_bundle glViewImage ../glViewImage ../desktop/glViewImage.icns \
+create_bundle castle-view-image ../castle-view-image ../desktop/castle-view-image.icns \
   "`cat /tmp/document_types.txt`"
 
 # We used to add now libpng from Fink, but
 # - we don't use Fink anymore
 # - we don't need libpng anymore, FpImage has internal png reader
 
-create_dmg glViewImage
+create_dmg castle-view-image
 
 finish_macosx_pack

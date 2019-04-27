@@ -1,4 +1,4 @@
-APP_NAME := glViewImage
+APP_NAME := castle-view-image
 
 ALL_IMAGES := $(APP_NAME).icns
 

@@ -3,7 +3,7 @@
 *.ppu
 *.compiled
 *.log
-glViewImage
-glViewImage.exe
+castle-view-image
+castle-view-image.exe
 castle-engine-output
 macosx/utils/output_macosx_document_types

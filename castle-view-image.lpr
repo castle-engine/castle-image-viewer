@@ -1,28 +1,28 @@
 {
   Copyright 2001-2019 Michalis Kamburelis.
 
-  This file is part of "glViewImage".
+  This file is part of "castle-view-image".
 
-  "glViewImage" is free software; you can redistribute it and/or modify
+  "castle-view-image" is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation; either version 2 of the License, or
   (at your option) any later version.
 
-  "glViewImage" is distributed in the hope that it will be useful,
+  "castle-view-image" is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
 
   You should have received a copy of the GNU General Public License
-  along with "glViewImage"; if not, write to the Free Software
+  along with "castle-view-image"; if not, write to the Free Software
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 
   ----------------------------------------------------------------------------
 }
 
-program glViewImage;
+//program castle-view-image;
 
-{$I gviconf.inc}
+{$I conf.inc}
 
 {$ifdef MSWINDOWS}
   {$R automatic-windows-resources.res}
@@ -38,10 +38,10 @@ uses SysUtils, Math, Classes, TypInfo,
   CastleColors, CastleConfig, CastleKeysMouse, CastleURIUtils, CastleRectangles,
   CastleWindowProgress, CastleProgress, CastleApplicationProperties,
   CastleDownload, CastleLog,
-  ImageLoading, GVIImages;
+  ImageLoading, EmbeddedImages;
 
 var
-  Window: TCastleWindowCustom;
+  Window: TCastleWindowBase;
   MoveX: TGLfloat = 0;
   MoveY: TGLfloat = 0;
   DrawTiled: boolean = false;
@@ -224,16 +224,16 @@ procedure Render(Container: TUIContainer);
   end;
 
   { Draw image with current (ZoomX, ZoomY) and (MoveX, MoveY). }
-  procedure DrawImage(MoveX, MoveY: Integer);
+  procedure DrawImage(const MoveX, MoveY: Single);
   begin
     if Image.HasAlpha and UseImageAlpha then
-      GLImage.Alpha := acBlending else
-      GLImage.Alpha := acNone;
+      DrawableImage.Alpha := acBlending else
+      DrawableImage.Alpha := acNone;
 
-    GLImage.Draw(
+    DrawableImage.Draw(
       MoveX, MoveY,
-      Round(GLImage.Width * ZoomX), Round(GLImage.Height * ZoomY),
-      0, 0, GLImage.Width, GLImage.Height);
+      DrawableImage.Width * ZoomX, DrawableImage.Height * ZoomY,
+      0, 0, DrawableImage.Width, DrawableImage.Height);
   end;
 
 var
@@ -289,8 +289,8 @@ begin
           { We have to round this way, to make drawn rectangles fit perfectly
             next to each other, without any 1-pixel border because of different
             rounding. }
-          Round(MoveX * ZoomX) + i * Round(GLImage.Width  * ZoomX),
-          Round(MoveY * ZoomY) + j * Round(GLImage.Height * ZoomY));
+          MoveX * ZoomX + i * DrawableImage.Width  * ZoomX,
+          MoveY * ZoomY + j * DrawableImage.Height * ZoomY);
   end else
   begin
     visibleXStart := -Round(MoveX);
@@ -453,7 +453,7 @@ end;
 
 const
   Version = '1.8.0';
-  DisplayApplicationName = 'glViewImage';
+  DisplayApplicationName = 'castle-view-image';
 
 var
   { initialized in CreateMainMenu, then updated in each ImagesNamesListChanged. }
@@ -651,8 +651,8 @@ begin
 
     205: begin
            SmoothScaling := not SmoothScaling;
-           if GLImage <> nil then
-             GLImage.SmoothScaling := SmoothScaling;
+           if DrawableImage <> nil then
+             DrawableImage.SmoothScaling := SmoothScaling;
          end;
     210: begin
           change:=(Window.Width / Image.Width) / zoomx;
@@ -811,7 +811,7 @@ begin
   M := TMenu.Create('_Help');
     M.Append(TMenuItem.Create('Image Information', 510, CtrlI));
     M.Append(TMenuSeparator.Create);
-    M.Append(TMenuItem.Create('About glViewImage', 520));
+    M.Append(TMenuItem.Create('About castle-view-image', 520));
     Result.Append(M);
 end;
 
@@ -840,18 +840,18 @@ begin
             RecognizedPatterns := RecognizedPatterns + (' ' + Pattern);
           end;
         InfoWrite(
-          'glViewImage: simple image viewer. Allows browsing images list,' +nl+
+          'castle-view-image: simple image viewer. Allows browsing images list,' +nl+
           '  allows to scale and move viewed image, allows to test visually' +nl+
           '  is image "tileable".' +nl+
           nl+
           'Usage:' +nl+
-          '  glViewImage [OPTIONS]... [IMAGES]...' +nl+
+          '  castle-view-image [OPTIONS]... [IMAGES]...' +nl+
           nl+
           'You can give as many image names on the command line as you like' +nl+
           '(you will be able to switch between them using n/p (next/previous)' +nl+
           'keys). Each image name will be treated as a mask with special chars' +nl+
           '* (any number of any chars) and ? (any char), e.g.' +nl+
-          '  glViewImage *.png' +nl+
+          '  castle-view-image *.png' +nl+
           'will open any png images (i.e., even if the shell itself will not expand' +nl+
           '*.png). Non-existing image names (so, also filename masks not matching any'+nl+
           'existing filename) will be ignored.' +nl+
@@ -860,16 +860,16 @@ begin
           'parameter "@file_list.txt" means "read image names to load' +nl+
           'from the file file_list.txt - one image name per line".' +nl+
           nl+
-          'Not giving any image names for glViewImage to load will have the same' +nl+
+          'Not giving any image names for castle-view-image to load will have the same' +nl+
           'effect as calling' +nl+
-          '  glViewImage' +RecognizedPatterns +nl+
+          '  castle-view-image' +RecognizedPatterns +nl+
           'so all images in known format (in the current directory) will be loaded.' +nl+
           nl+
           'Accepted command-line options:' +nl+
           HelpOptionHelp+ nl+
           VersionOptionHelp +nl+
           nl+
-          TCastleWindowCustom.ParseParametersHelp(StandardParseOptions, true) +nl+
+          TCastleWindowBase.ParseParametersHelp(StandardParseOptions, true) +nl+
           nl+
           'By default, window size will be the same as of the first loaded image.'+nl+
           nl+
@@ -893,12 +893,12 @@ var
   { error messages gathered }
   SavedErrorMessages: string;
 begin
-  ApplicationProperties.ApplicationName := 'glViewImage';
+  ApplicationProperties.ApplicationName := 'castle-view-image';
   ApplicationProperties.Version := Version;
   ApplicationProperties.OnWarning.Add(@ApplicationProperties.WriteWarningOnConsole);
   InitializeLog;
 
-  Window := TCastleWindowCustom.Create(Application);
+  Window := TCastleWindowBase.Create(Application);
   Theme.DialogsLight;
 
   { to show "Alpha Bleed" progress }

@@ -7,5 +7,5 @@ compile:
 clean:
 	castle-engine clean
 	cd macosx/utils && castle-engine clean
-	rm -f glViewImage glViewImage.exe
-	rm -Rf glViewImage.app macosx/glViewImage.app .DS_Store backup
+	rm -f castle-view-image castle-view-image.exe
+	rm -Rf castle-view-image.app macosx/castle-view-image.app .DS_Store backup

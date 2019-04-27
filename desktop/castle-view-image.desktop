@@ -1,10 +1,10 @@
 [Desktop Entry]
 Encoding=UTF-8
-Name=glViewImage
-GenericName=Image Viewer
-Exec=glViewImage %u
-Icon=glViewImage
+Name=castle-view-image
+GenericName=Image Viewer using Castle Game Game Engine
+Exec=castle-view-image %u
+Icon=castle-view-image
 Type=Application
 Categories=Graphics;2DGraphics;Viewer;
-Comment=Image viewer for many image formats, including DDS and RGBE
+Comment=Image viewer for many image formats, including popular ones (PNG, JPG...) and more exotic (DDS, KTX, RGBE...)
 MimeType=image/png;image/bmp;image/x-portable-pixmap;image/jpeg;image/gif;image/x-targa;image/x-xpixmap;image/photoshop;image/pcx;image/x-portable-anymap;image/x-dds;image/vnd.radiance;image/x-ipl;image/tiff;image/sgi;image/jp2;image/x-exr;
