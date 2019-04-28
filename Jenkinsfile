@@ -12,7 +12,7 @@ pipeline {
   stages {
     stage('Build Desktop') {
       steps {
-        sh 'rm -f castle-view-image-*.tar.gz castle-view-image-*.zip castle-view-image*.apk
+        sh 'rm -f castle-view-image-*.tar.gz castle-view-image-*.zip castle-view-image*.apk'
         sh 'castle-engine package --os=win64 --cpu=x86_64 --verbose'
         sh 'castle-engine package --os=win32 --cpu=i386 --verbose'
         sh 'castle-engine package --os=linux --cpu=x86_64 --verbose'
