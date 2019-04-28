@@ -762,7 +762,7 @@ begin
     NextRecentMenuItem := TMenuSeparator.Create;
     M.Append(NextRecentMenuItem);
     RecentMenu.NextMenuItem := NextRecentMenuItem;
-    M.Append(TMenuItem.Create('_Exit',                     140, CharEscape));
+    M.Append(TMenuItem.Create('_Exit',                     140, CtrlW));
     Result.Append(M);
   M := TMenu.Create('_View');
     M.Append(TMenuItemChecked.Create('Smooth Scaling', 205, SmoothScaling, true));
