@@ -808,11 +808,12 @@ begin
     Result.Append(M);
   M := TMenu.Create('_Images');
   ImagesMenu := M;
+    // TODO: Ctrl + PageUp/Down would be more consistent
     M.Append(TMenuItem.Create('_Previous Subimage in Composite (DDS, KTX)', 320, CtrlP));
     M.Append(TMenuItem.Create('_Next Subimage in Composite (DDS, KTX)',     321, CtrlN));
     M.Append(TMenuSeparator.Create);
-    M.Append(TMenuItem.Create('_Previous Image', 310, 'p'));
-    M.Append(TMenuItem.Create('_Next Image',     311, 'n'));
+    M.Append(TMenuItem.Create('_Previous Image', 310, keyPageUp));
+    M.Append(TMenuItem.Create('_Next Image',     311, keyPageDown));
     M.Append(TMenuSeparator.Create);
     Result.Append(M);
   M := TMenu.Create('_Help');
