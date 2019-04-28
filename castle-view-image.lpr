@@ -22,8 +22,6 @@
 
 //program castle-view-image;
 
-{$I conf.inc}
-
 {$ifdef MSWINDOWS}
   {$R automatic-windows-resources.res}
 {$endif MSWINDOWS}
@@ -31,7 +29,7 @@
 {$apptype GUI}
 
 uses SysUtils, Math, Classes, TypInfo,
-  CastleWindow, CastleGL, CastleGLUtils, CastleUtils, CastleImages,
+  CastleWindow, CastleGLUtils, CastleUtils, CastleImages,
   CastleClassUtils, CastleMessages, CastleParameters, CastleControls,
   CastleFindFiles, CastleVectors, CastleStringUtils,
   CastleGLImages, CastleWindowRecentFiles, CastleCompositeImage, CastleFilesUtils,
@@ -42,11 +40,12 @@ uses SysUtils, Math, Classes, TypInfo,
 
 var
   Window: TCastleWindowBase;
-  MoveX: TGLfloat = 0;
-  MoveY: TGLfloat = 0;
+  MoveX: Single = 0;
+  MoveY: Single = 0;
   DrawTiled: boolean = false;
-  BackgroundColor: TCastleColor = (Data: (0, 0, 0, 1));
+  BackgroundColor: TCastleColor = (Data: (0.1, 0.1, 0.1, 1));
   UseImageAlpha: boolean = true;
+  ImageArrowLeft, ImageArrowRight, ImageArrowUp, ImageArrowDown: TCastleImageControl;
 
 var
   { A list of images to browse by previous/next keys/menu items.
@@ -185,7 +184,7 @@ end;
 
 const
   { musimy miec jakies min i max Zoom - gdyby nie, to rozne integery po drodze
-    moga sie latwo przewinac i dzielenie cos / zoomx (lub zoomy) tez moze
+    moga sie latwo przewinac i dzielenie cos / ZoomX (lub ZoomY) tez moze
     powodowac roznorakie przewiniecia. }
   MinZoom: Single = 0.01;
   MaxZoom: Single = 300;
@@ -210,18 +209,9 @@ begin
   Window.Invalidate;
 end;
 
-{ glw callbacks ---------------------------------------------------------- }
+{ window callbacks ---------------------------------------------------------- }
 
 procedure Render(Container: TUIContainer);
-
-  procedure Arrow(const Angle: TGLfloat);
-  begin
-    glTranslatef(Window.width div 2, Window.height div 2, 0);
-    glRotatef(Angle, 0, 0, 1);
-    glColorv(Yellow);
-    glScalef(50, 50, 0);
-    GLDrawArrow;
-  end;
 
   { Draw image with current (ZoomX, ZoomY) and (MoveX, MoveY). }
   procedure DrawImage(const MoveX, MoveY: Single);
@@ -237,16 +227,13 @@ procedure Render(Container: TUIContainer);
   end;
 
 var
-  visibleXStart, visibleXEnd,
-  visibleYStart, visibleYEnd,
+  VisibleXStart, VisibleXEnd, VisibleYStart, VisibleYEnd: Single;
   Width, Height, i, j, i0, i1, j0, j1: integer;
-  horizScrollbar, vertScrollbar: boolean;
+  HorizScrollBar, VertScrollBar: boolean;
 const
   ScrollbarSize = 10; {< scrollbar thickness (with frames around) }
   ScrollbarMargin = 2; {< margin between scrollbar inside and frame }
 begin
-  glLoadIdentity;
-
   Assert(Image <> nil, 'Image not loaded yet');
 
   { Make sure to treat Width and Height as signed values for compurations
@@ -254,110 +241,106 @@ begin
   Width := Image.Width;
   Height := Image.Height;
 
-  { Clear color buffer bit, even when DrawTiled --- because image may
-    have alpha channel, and then background is visible. }
-  RenderContext.Clear([cbColor], BackgroundColor);
+  ImageArrowLeft.Exists := false;
+  ImageArrowRight.Exists := false;
+  ImageArrowUp.Exists := false;
+  ImageArrowDown.Exists := false;
 
   if DrawTiled then
   begin
     { MoveX to wspolrzedna X zasadniczego obrazka (tego ktory bylby
       wyswietlany z not DrawTiled). Znajdujemy i0 takie ze jest to najwieksze
-      i dla ktorego (MoveX + i*Width)*zoomX <= 0 a wiec jest to
+      i dla ktorego (MoveX + i * Width) * ZoomX <= 0 a wiec jest to
       i dla lewej kolumny kafelkow. Podobnie, i1 dla prawej kolumny
-      kafelkow to najmniejsze i t.ze (MoveX + (i+1)*Width)*zoomx >= Window.width.
+      kafelkow to najmniejsze i t.ze (MoveX + (i+1) * Width) * ZoomX >= Window.Width.
       Podobnie znajdujemy j0, j1.
 
       (operujemy przesuwajac MoveX o Width ale pamietamy ze
       faktyczna pozycja obrazka w pixelach to pozycja*zoom).
 
-      (MoveX + i0*Width)*zoomX <= 0 wiec
-        i0 <= -MoveX/Width wiec
-        i0 = Floor(-MoveX/Width)
-      (MoveX + (i1 + 1)*Width)*zoomx >= Window.Width wiec
-        i1 >= (Window.Width/zoomx - MoveX)/Width - 1 wiec
-        i1 = Ceil((Window.width/zoomx - MoveX)/Width - 1)
+      (MoveX + i0 * Width) * ZoomX <= 0 wiec
+        i0 <= -MoveX / Width wiec
+        i0 = Floor(-MoveX / Width)
+      (MoveX + (i1 + 1) * Width) * ZoomX >= Window.Width wiec
+        i1 >= (Window.Width / ZoomX - MoveX) / Width - 1 wiec
+        i1 = Ceil((Window.Width / ZoomX - MoveX) / Width - 1)
     }
 
-    i0 := Floor(-MoveX/Width);
-    i1 := Ceil((Window.Width/zoomX - MoveX)/Width - 1);
-    j0 := Floor(-MoveY/Height);
-    j1 := Ceil((Window.Height/zoomY - MoveY)/Height - 1);
+    i0 := Floor(-MoveX / Width);
+    i1 := Ceil((Window.Width / ZoomX - MoveX) / Width - 1);
+    j0 := Floor(-MoveY / Height);
+    j1 := Ceil((Window.Height / ZoomY - MoveY) / Height - 1);
 
     for i := i0 to i1 do
       for j := j0 to j1 do
         DrawImage(
-          { We have to round this way, to make drawn rectangles fit perfectly
-            next to each other, without any 1-pixel border because of different
-            rounding. }
           MoveX * ZoomX + i * DrawableImage.Width  * ZoomX,
           MoveY * ZoomY + j * DrawableImage.Height * ZoomY);
   end else
   begin
-    visibleXStart := -Round(MoveX);
-    visibleXEnd   := Round(Window.width/zoomX - MoveX);
-    visibleYStart := -Round(MoveY);
-    visibleYEnd   := Round(Window.height/zoomY - MoveY);
+    VisibleXStart := -MoveX;
+    VisibleXEnd   := Window.Width / ZoomX - MoveX;
+    VisibleYStart := -MoveY;
+    VisibleYEnd   := Window.Height/ZoomY - MoveY;
 
-    if visibleXStart > Width  then Arrow(90) else
-    if visibleXEnd < 0        then Arrow(-90) else
-    if visibleYStart > Height then Arrow(180) else
-    if visibleYEnd < 0        then Arrow(0) else
+    if VisibleXStart > Width  then ImageArrowLeft.Exists := true else
+    if VisibleXEnd < 0        then ImageArrowRight.Exists := true else
+    if VisibleYStart > Height then ImageArrowDown.Exists := true else
+    if VisibleYEnd < 0        then ImageArrowUp.Exists := true else
     begin
-      ClampVar(visibleXStart, 0, Width);
-      ClampVar(visibleXEnd  , 0, Width);
-      ClampVar(visibleYStart, 0, Height);
-      ClampVar(visibleYEnd  , 0, Height);
+      ClampVar(VisibleXStart, 0, Width);
+      ClampVar(VisibleXEnd  , 0, Width);
+      ClampVar(VisibleYStart, 0, Height);
+      ClampVar(VisibleYEnd  , 0, Height);
 
-      horizScrollbar := (visibleXStart > 0) or (visibleXEnd < Width);
-      vertScrollbar := (visibleYStart > 0) or (visibleYEnd < Height);
+      HorizScrollBar := (VisibleXStart > 0) or (VisibleXEnd < Width);
+      VertScrollBar := (VisibleYStart > 0) or (VisibleYEnd < Height);
 
-      if horizScrollbar and vertScrollbar then
+      if HorizScrollBar and VertScrollBar then
       begin
         RenderContext.ScissorEnable(Window.Rect.RemoveLeft(ScrollbarSize + 1).RemoveBottom(ScrollbarSize + 1));
       end else
-      if horizScrollbar then
+      if HorizScrollBar then
       begin
         RenderContext.ScissorEnable(Window.Rect.RemoveBottom(ScrollbarSize + 1));
       end else
-      if vertScrollbar then
+      if VertScrollBar then
       begin
         RenderContext.ScissorEnable(Window.Rect.RemoveLeft(ScrollbarSize + 1));
       end;
 
-      DrawImage(Round(MoveX * ZoomX), Round(MoveY * ZoomY));
+      DrawImage(MoveX * ZoomX, MoveY * ZoomY);
 
       RenderContext.ScissorDisable;
 
-      if horizScrollbar then
+      if HorizScrollBar then
       begin
-        glColorv(Yellow);
-        glBegin(GL_LINES);
-          glVertex2f(ScrollbarSize, ScrollbarSize);
-          glVertex2f(Window.width, ScrollbarSize);
-          glVertex2f(ScrollbarSize, 0);
-          glVertex2f(ScrollbarSize, ScrollbarSize);
-        glEnd;
+        DrawPrimitive2D(pmLines, [
+          Vector2(ScrollbarSize, ScrollbarSize),
+          Vector2(Window.Width, ScrollbarSize),
+          Vector2(ScrollbarSize, 0),
+          Vector2(ScrollbarSize, ScrollbarSize)
+        ], Yellow);
 
-        visibleXStart := Round(MapRange(visibleXStart, 0, Width, ScrollbarSize+ScrollbarMargin, Window.width-ScrollbarMargin));
-        visibleXEnd   := Round(MapRange(visibleXEnd,   0, Width, ScrollbarSize+ScrollbarMargin, Window.width-ScrollbarMargin));
-        DrawRectangle(Rectangle(visibleXStart, ScrollbarMargin,
-          visibleXEnd - visibleXStart, ScrollbarSize - 2 * ScrollbarMargin), Gray);
+        VisibleXStart := MapRange(VisibleXStart, 0, Width, ScrollbarSize+ScrollbarMargin, Window.Width-ScrollbarMargin);
+        VisibleXEnd   := MapRange(VisibleXEnd,   0, Width, ScrollbarSize+ScrollbarMargin, Window.Width-ScrollbarMargin);
+        DrawRectangle(FloatRectangle(VisibleXStart, ScrollbarMargin,
+          VisibleXEnd - VisibleXStart, ScrollbarSize - 2 * ScrollbarMargin), Gray);
       end;
 
-      if vertScrollbar then
+      if VertScrollBar then
       begin
-        glColorv(Yellow);
-        glBegin(GL_LINES);
-          glVertex2f(ScrollbarSize, ScrollbarSize);
-          glVertex2f(ScrollbarSize, Window.height);
-          glVertex2f(0, ScrollbarSize);
-          glVertex2f(ScrollbarSize, ScrollbarSize);
-        glEnd;
+        DrawPrimitive2D(pmLines, [
+          Vector2(ScrollbarSize, ScrollbarSize),
+          Vector2(ScrollbarSize, Window.Height),
+          Vector2(0, ScrollbarSize),
+          Vector2(ScrollbarSize, ScrollbarSize)
+        ], Yellow);
 
-        visibleYStart := Round(MapRange(visibleYStart, 0, Height, ScrollbarSize+ScrollbarMargin, Window.height-ScrollbarMargin));
-        visibleYEnd   := Round(MapRange(visibleYEnd,   0, Height, ScrollbarSize+ScrollbarMargin, Window.height-ScrollbarMargin));
-        DrawRectangle(Rectangle(ScrollbarMargin, visibleYStart,
-          ScrollbarSize - 2 * ScrollbarMargin, visibleYEnd - visibleYStart), Gray);
+        VisibleYStart := MapRange(VisibleYStart, 0, Height, ScrollbarSize + ScrollbarMargin, Window.Height - ScrollbarMargin);
+        VisibleYEnd   := MapRange(VisibleYEnd,   0, Height, ScrollbarSize + ScrollbarMargin, Window.Height - ScrollbarMargin);
+        DrawRectangle(FloatRectangle(ScrollbarMargin, VisibleYStart,
+          ScrollbarSize - 2 * ScrollbarMargin, VisibleYEnd - VisibleYStart), Gray);
       end;
     end;
   end;
@@ -365,12 +348,12 @@ end;
 
 procedure Update(Container: TUIContainer);
 
-  procedure Move(var value: TGLfloat; Change: TGLfloat);
+  procedure Move(var value: Single; Change: Single);
   begin
-   Change := Change * (8 * 50 * Window.Fps.SecondsPassed);
-   if Window.Pressed[k_Ctrl] then Change := Change * 10;
-   value := value + Change;
-   Window.Invalidate;
+    Change := Change * (8 * 50 * Window.Fps.SecondsPassed);
+    if Window.Pressed[k_Ctrl] then Change := Change * 10;
+    value := value + Change;
+    Window.Invalidate;
   end;
 
 const
@@ -378,10 +361,10 @@ const
 var
   ScaleUp, ScaleDown: Single;
 begin
-  if Window.Pressed[K_Up] then Move(MoveY, -1 / zoomY);
-  if Window.Pressed[K_Down] then Move(MoveY, 1 / zoomY);
-  if Window.Pressed[K_Right] then Move(MoveX, -1 / zoomX);
-  if Window.Pressed[K_Left] then Move(MoveX, 1 / zoomX);
+  if Window.Pressed[K_Up] then Move(MoveY, -1 / ZoomY);
+  if Window.Pressed[K_Down] then Move(MoveY, 1 / ZoomY);
+  if Window.Pressed[K_Right] then Move(MoveX, -1 / ZoomX);
+  if Window.Pressed[K_Left] then Move(MoveX, 1 / ZoomX);
 
   ScaleUp := Power(ScaleFactor, Window.Fps.SecondsPassed);
   ScaleDown := Power(1 / ScaleFactor, Window.Fps.SecondsPassed);
@@ -404,12 +387,14 @@ begin
 
   if Window.Pressed[K_x] then
     if Window.Pressed[K_Shift] then
-      MultZoom(ZoomX, ScaleUp) else
+      MultZoom(ZoomX, ScaleUp)
+    else
       MultZoom(ZoomX, ScaleDown);
 
   if Window.Pressed[K_y] then
     if Window.Pressed[K_Shift] then
-      MultZoom(ZoomY, ScaleUp) else
+      MultZoom(ZoomY, ScaleUp)
+    else
       MultZoom(ZoomY, ScaleDown);
 end;
 
@@ -447,6 +432,26 @@ begin
     MultZoom(ZoomX, ScaleDown);
     MultZoom(ZoomY, ScaleDown);
   end;
+end;
+
+procedure CreateUserInterface;
+
+  function CreateArrowImage(const Image: TCastleImage): TCastleImageControl;
+  begin
+    Result := TCastleImageControl.Create(Application);
+    Result.Anchor(hpMiddle);
+    Result.Anchor(vpMiddle);
+    Result.Content.OwnsImage := false;
+    Result.Content.Image := Image;
+    Result.Color := Yellow;
+    Window.Controls.InsertFront(Result);
+  end;
+
+begin
+  ImageArrowLeft := CreateArrowImage(Arrow_left_circle);
+  ImageArrowRight := CreateArrowImage(Arrow_right_circle);
+  ImageArrowUp := CreateArrowImage(Arrow_up_circle);
+  ImageArrowDown := CreateArrowImage(Arrow_down_circle);
 end;
 
 { menu ------------------------------------------------------------ }
@@ -498,42 +503,41 @@ procedure MenuClick(Container: TUIContainer; Item: TMenuItem);
   var
     URL: string;
   begin
-   if IsImageValid then
-   begin
-    URL := ImageURL;
-    if Window.FileDialog('Save image to file', URL, false, SaveImage_FileFilters) then
-    try
-      if CompositeImage <> nil then
-      begin
-        if TCompositeImage.MatchesURL(URL) then
+    if IsImageValid then
+    begin
+      URL := ImageURL;
+      if Window.FileDialog('Save image to file', URL, false, SaveImage_FileFilters) then
+      try
+        if CompositeImage <> nil then
         begin
-          CompositeImage.SaveToFile(URL);
+          if TCompositeImage.MatchesURL(URL) then
+          begin
+            CompositeImage.SaveToFile(URL);
+          end else
+          begin
+            if MessageYesNo(Window, 'Composite (DDS, KTX...) image is composed from many single (normal, simple, 2D) images. Saving from composite image to other file format will only save the current single image layer. Continue?') then
+              SaveImage(Image, URL);
+          end;
         end else
-        begin
-          if MessageYesNo(Window, 'Composite (DDS, KTX...) image is composed from many single (normal, simple, 2D) images. Saving from composite image to other file format will only save the current single image layer. Continue?') then
-            SaveImage(Image, URL);
-        end;
-      end else
-        SaveImage(Image, URL);
-    except
-      on E: EImageSaveError do
-        MessageOk(Window, Format('Saving image "%s" failed: %s', [URL, E.Message]));
-    end;
-   end else
-    MessageOK(Window, 'No valid image loaded');
+          SaveImage(Image, URL);
+      except
+        on E: EImageSaveError do
+          MessageOk(Window, Format('Saving image "%s" failed: %s', [URL, E.Message]));
+      end;
+    end else
+      MessageOK(Window, 'No valid image loaded');
   end;
 
   procedure ImageOpen;
   var
     URL: string;
   begin
-   if IsImageValid then
-    URL := ImageURL else
-    URL := '';
-   if Window.FileDialog('Load image from file', URL, true, LoadImage_FileFilters) then
-   begin
-     THelper.FileOpen(URL);
-   end;
+    if IsImageValid then
+      URL := ImageURL
+    else
+      URL := '';
+    if Window.FileDialog('Load image from file', URL, true, LoadImage_FileFilters) then
+      THelper.FileOpen(URL);
   end;
 
   procedure ShowImageInfo;
@@ -566,7 +570,7 @@ procedure MenuClick(Container: TUIContainer; Item: TMenuItem);
       S := S + (NL + Format('Composite subimage: %d', [CompositeImageIndex]) + NL +
         CompositeImageInfo(CompositeImage));
     MessageOK(Window, S);
-   end;
+  end;
 
   procedure ShowAbout;
   var
@@ -642,7 +646,7 @@ procedure MenuClick(Container: TUIContainer; Item: TMenuItem);
   end;
 
 var
-  change: TGLfloat;
+  change: Single;
 begin
   case Item.IntData of
     110: ImageOpen;
@@ -655,26 +659,29 @@ begin
              DrawableImage.SmoothScaling := SmoothScaling;
          end;
     210: begin
-          change:=(Window.Width / Image.Width) / zoomx;
-          MultZoom(ZoomX, change);
-          MultZoom(ZoomY, change);
+           Change := (Window.Width / Image.Width) / ZoomX;
+           MultZoom(ZoomX, change);
+           MultZoom(ZoomY, change);
          end;
     211: begin
-          change:=(Window.Height / Image.Height) / zoomy;
-          MultZoom(ZoomX, change);
-          MultZoom(ZoomY, change);
+           Change := (Window.Height / Image.Height) / ZoomY;
+           MultZoom(ZoomX, change);
+           MultZoom(ZoomY, change);
          end;
     220: SetZoom(ZoomX, Window.Width / Image.Width);
     221: SetZoom(ZoomY, Window.Height / Image.Height);
     230: DrawTiled := not DrawTiled;
     240: begin
-          SetZoom(ZoomX, 1.0);
-          SetZoom(ZoomY, 1.0);
-          MoveX := 0;
-          MoveY := 0;
+           SetZoom(ZoomX, 1.0);
+           SetZoom(ZoomY, 1.0);
+           MoveX := 0;
+           MoveY := 0;
          end;
 
-    260: Window.ColorDialog(BackgroundColor);
+    260: begin
+           if Window.ColorDialog(BackgroundColor) then
+             Window.Container.BackgroundColor := BackgroundColor;
+         end;
     270: UseImageAlpha := not UseImageAlpha;
 
     310: ChangeCurrentImageIndex(-1);
@@ -928,6 +935,8 @@ begin
     Window.OnMotion := @Motion;
     Window.OnPress := @Press;
     Window.Open;
+
+    CreateUserInterface;
 
     UserConfig.Load;
     RecentMenu.LoadFromConfig(UserConfig);

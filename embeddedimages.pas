@@ -13,6 +13,14 @@ function Invalid: TRGBImage;
 
 function Welcome: TRGBAlphaImage;
 
+function Arrow_left_circle: TRGBAlphaImage;
+
+function Arrow_right_circle: TRGBAlphaImage;
+
+function Arrow_down_circle: TRGBAlphaImage;
+
+function Arrow_up_circle: TRGBAlphaImage;
+
 implementation
 
 uses SysUtils;
@@ -28,4 +36,8 @@ initialization
 finalization
   FreeAndNil(FInvalid);
   FreeAndNil(FWelcome);
+  FreeAndNil(FArrow_left_circle);
+  FreeAndNil(FArrow_right_circle);
+  FreeAndNil(FArrow_down_circle);
+  FreeAndNil(FArrow_up_circle);
 end.
