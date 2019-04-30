@@ -4,6 +4,10 @@
 */
 
 pipeline {
+  triggers {
+    pollSCM('H/4 * * * *')
+    upstream(upstreamProjects: 'castle_game_engine_update_docker_image', threshold: hudson.model.Result.SUCCESS)
+  }
   agent {
     docker {
       image 'kambi/castle-engine-cloud-builds-tools:cge-unstable'
