@@ -444,6 +444,9 @@ procedure CreateUserInterface;
     Result.Content.OwnsImage := false;
     Result.Content.Image := Image;
     Result.Color := Yellow;
+    { Intial Exists = false matters in case we have an error (and make MessageOK)
+      at opening 1st image. }
+    Result.Exists := false;
     Window.Controls.InsertFront(Result);
   end;
 
@@ -903,7 +906,11 @@ var
 begin
   ApplicationProperties.ApplicationName := 'castle-view-image';
   ApplicationProperties.Version := Version;
-  ApplicationProperties.OnWarning.Add(@ApplicationProperties.WriteWarningOnConsole);
+  { Do not show warnings,
+    as on Windows GUI this would result in new modal window for each warning.
+    Worse, font rendering warnings (about missing glyphs) would prevent
+    us showing MessageOK with errors about the image. }
+  // ApplicationProperties.OnWarning.Add(@ApplicationProperties.WriteWarningOnConsole);
   InitializeLog;
 
   Window := TCastleWindowBase.Create(Application);
