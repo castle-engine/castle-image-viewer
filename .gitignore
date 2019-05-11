@@ -3,6 +3,7 @@
 *.ppu
 *.compiled
 *.log
+*.res
 castle-view-image
 castle-view-image.exe
 castle-engine-output
