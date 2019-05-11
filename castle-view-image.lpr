@@ -22,11 +22,11 @@
 
 //program castle-view-image;
 
-{$ifdef MSWINDOWS}
-  {$R automatic-windows-resources.res}
-{$endif MSWINDOWS}
+{$ifdef MSWINDOWS} {$apptype GUI} {$endif}
 
-{$apptype GUI}
+{ This adds icons and version info for Windows,
+  automatically created by "castle-engine compile". }
+{$ifdef CASTLE_AUTO_GENERATED_RESOURCES} {$R castle-auto-generated-resources.res} {$endif}
 
 uses SysUtils, Math, Classes, TypInfo,
   CastleWindow, CastleGLUtils, CastleUtils, CastleImages,
