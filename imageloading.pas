@@ -166,7 +166,7 @@ begin
     on E: Exception do
     begin
       CreateImageInvalid(Window, URL);
-      MessageOK(Window, ExceptMessage(E, nil));
+      MessageOK(Window, ExceptMessage(E));
     end;
   end;
 
