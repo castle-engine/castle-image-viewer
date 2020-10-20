@@ -351,7 +351,7 @@ procedure Update(Container: TUIContainer);
   procedure Move(var value: Single; Change: Single);
   begin
     Change := Change * (8 * 50 * Window.Fps.SecondsPassed);
-    if Window.Pressed[k_Ctrl] then Change := Change * 10;
+    if Window.Pressed[keyCtrl] then Change := Change * 10;
     value := value + Change;
     Window.Invalidate;
   end;
@@ -361,38 +361,38 @@ const
 var
   ScaleUp, ScaleDown: Single;
 begin
-  if Window.Pressed[K_Up] then Move(MoveY, -1 / ZoomY);
-  if Window.Pressed[K_Down] then Move(MoveY, 1 / ZoomY);
-  if Window.Pressed[K_Right] then Move(MoveX, -1 / ZoomX);
-  if Window.Pressed[K_Left] then Move(MoveX, 1 / ZoomX);
+  if Window.Pressed[keyArrowUp] then Move(MoveY, -1 / ZoomY);
+  if Window.Pressed[keyArrowDown] then Move(MoveY, 1 / ZoomY);
+  if Window.Pressed[keyArrowRight] then Move(MoveX, -1 / ZoomX);
+  if Window.Pressed[keyArrowLeft] then Move(MoveX, 1 / ZoomX);
 
   ScaleUp := Power(ScaleFactor, Window.Fps.SecondsPassed);
   ScaleDown := Power(1 / ScaleFactor, Window.Fps.SecondsPassed);
 
-  if Window.Pressed[K_Numpad_Plus ] or
-     Window.Pressed[K_Plus ] or
+  if Window.Pressed[keyNumpadPlus] or
+     Window.Pressed[keyPlus] or
      Window.Pressed.Characters['+'] then
   begin
     MultZoom(ZoomX, ScaleUp);
     MultZoom(ZoomY, ScaleUp);
   end;
 
-  if Window.Pressed[K_Numpad_Minus] or
-     Window.Pressed[K_Minus] or
+  if Window.Pressed[keyNumpadMinus] or
+     Window.Pressed[keyMinus] or
      Window.Pressed.Characters['-'] then
   begin
     MultZoom(ZoomX, ScaleDown);
     MultZoom(ZoomY, ScaleDown);
   end;
 
-  if Window.Pressed[K_x] then
-    if Window.Pressed[K_Shift] then
+  if Window.Pressed[keyX] then
+    if Window.Pressed[keyShift] then
       MultZoom(ZoomX, ScaleUp)
     else
       MultZoom(ZoomX, ScaleDown);
 
-  if Window.Pressed[K_y] then
-    if Window.Pressed[K_Shift] then
+  if Window.Pressed[keyY] then
+    if Window.Pressed[keyShift] then
       MultZoom(ZoomY, ScaleUp)
     else
       MultZoom(ZoomY, ScaleDown);
@@ -777,7 +777,7 @@ begin
     M.Append(TMenuSeparator.Create);
     M.Append(TMenuItemChecked.Create('Test Is _Tileable', 230, 't', DrawTiled, true));
     M.Append(TMenuSeparator.Create);
-    M.Append(TMenuItem.Create('Reset _Zoom and Translation',         240, K_Home));
+    M.Append(TMenuItem.Create('Reset _Zoom and Translation',         240, keyHome));
     M.Append(TMenuSeparator.Create);
     M.Append(TMenuItemChecked.Create('Use Image Alpha Channel', 270,  UseImageAlpha, true));
     M.Append(TMenuItem.Create('Background Color ...',                260));
