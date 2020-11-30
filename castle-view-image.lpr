@@ -405,7 +405,7 @@ end;
 
 procedure Motion(Container: TUIContainer; const Event: TInputMotion);
 begin
-  if mbLeft in Event.Pressed then
+  if buttonLeft in Event.Pressed then
   begin
     MoveX := MoveX + ((Event.Position[0] - Event.OldPosition[0]) / ZoomX);
     MoveY := MoveY + ((Event.Position[1] - Event.OldPosition[1]) / ZoomY);
