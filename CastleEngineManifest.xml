@@ -12,4 +12,10 @@
     <include path="COPYING.GPL2.txt" />
   </package>
   <data exists="false" />
+  <compiler_options>
+    <custom_options>
+      <!-- Test PNG reading using FpImage (when we don't use libpng). -->
+      <!-- <option>-dCASTLE_DISABLE_LIBPNG</option> -->
+    </custom_options>
+  </compiler_options>
 </project>
