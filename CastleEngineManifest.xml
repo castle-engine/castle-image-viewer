@@ -7,7 +7,7 @@
     <icon path="desktop/castle-view-image.png" />
     <icon path="desktop/castle-view-image.ico" />
   </icons>
-  <version value="1.8.0" />
+  <version value="2.0.0" />
   <package>
     <include path="COPYING.GPL2.txt" />
   </package>
