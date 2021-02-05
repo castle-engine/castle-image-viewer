@@ -1,5 +1,5 @@
 {
-  Copyright 2001-2019 Michalis Kamburelis.
+  Copyright 2001-2021 Michalis Kamburelis.
 
   This file is part of "castle-view-image".
 
@@ -460,7 +460,7 @@ end;
 { menu ------------------------------------------------------------ }
 
 const
-  Version = '1.8.0';
+  Version = '2.0.0';
   DisplayApplicationName = 'castle-view-image';
 
 var
