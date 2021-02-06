@@ -9,6 +9,7 @@
   </icons>
   <version value="2.0.0" />
   <package>
+    <include path="README.md" />
     <include path="COPYING.GPL2.txt" />
     <include path="freedesktop/*" recursive="True" />
   </package>
