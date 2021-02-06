@@ -829,10 +829,9 @@ end;
 { params ------------------------------------------------------------------- }
 
 const
-  Options: array [0..2] of TOption = (
+  Options: array [0..1] of TOption = (
     (Short: 'h'; Long: 'help'; Argument: oaNone),
-    (Short: 'v'; Long: 'version'; Argument: oaNone),
-    (Short:  #0; Long: 'debug-log'; Argument: oaNone)
+    (Short: 'v'; Long: 'version'; Argument: oaNone)
   );
 
 procedure OptionProc(OptionNum: Integer; HasArgument: boolean;
@@ -891,7 +890,6 @@ begin
         WritelnStr(Version);
         Halt;
       end;
-    2:InitializeLog;
     else raise EInternalError.Create('OptionProc');
   end;
 end;
@@ -911,7 +909,15 @@ begin
     Worse, font rendering warnings (about missing glyphs) would prevent
     us showing MessageOK with errors about the image. }
   // ApplicationProperties.OnWarning.Add(@ApplicationProperties.WriteWarningOnConsole);
-  InitializeLog;
+
+  // Initialize log as early as possible, but avoid messing --help/--version output
+  if not Parameters.IsPresent([
+        '-h',
+        '--help',
+        '-v',
+        '--version'
+      ]) then
+    InitializeLog;
 
   Window := TCastleWindowBase.Create(Application);
   Theme.DialogsLight;
