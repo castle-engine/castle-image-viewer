@@ -7,6 +7,10 @@
     <icon path="freedesktop/castle-view-image.png" />
     <icon path="freedesktop/castle-view-image.ico" />
   </icons>
+  <dependencies>
+    <dependency name="Png" /> <!-- read .png -->
+    <!-- dependency name="Https" /> <!- - read https links -->
+  </dependencies>
   <version value="2.0.0" />
   <package>
     <include path="README.md" />
