@@ -24,7 +24,7 @@ lazbuild ../castle-view-image.lpi
 # Fail if utils/output_macosx_document_types is missing
 utils/output_macosx_document_types > /tmp/document_types.txt
 
-create_bundle castle-view-image ../castle-view-image ../desktop/castle-view-image.icns \
+create_bundle castle-view-image ../castle-view-image ../freedesktop/castle-view-image.icns \
   "`cat /tmp/document_types.txt`"
 
 # We used to add now libpng from Fink, but

@@ -2,7 +2,7 @@
 set -eu
 
 # Install castle-view-image menu entries, icons, mime types.
-# Based on ../../view3dscene/desktop/install.sh
+# Based on ../../view3dscene/freedesktop/install.sh
 
 APP_NAME='castle-view-image'
 

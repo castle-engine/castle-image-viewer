@@ -3,13 +3,14 @@
   standalone_source="castle-view-image.lpr"
   author="Michalis Kamburelis">
   <icons>
-    <icon path="desktop/castle-view-image.svg" />
-    <icon path="desktop/castle-view-image.png" />
-    <icon path="desktop/castle-view-image.ico" />
+    <icon path="freedesktop/castle-view-image.svg" />
+    <icon path="freedesktop/castle-view-image.png" />
+    <icon path="freedesktop/castle-view-image.ico" />
   </icons>
   <version value="2.0.0" />
   <package>
     <include path="COPYING.GPL2.txt" />
+    <include path="freedesktop/*" recursive="True" />
   </package>
   <data exists="false" />
   <compiler_options>
