@@ -459,10 +459,6 @@ end;
 
 { menu ------------------------------------------------------------ }
 
-const
-  Version = '2.0.0';
-  DisplayApplicationName = 'castle-view-image';
-
 var
   { initialized in CreateMainMenu, then updated in each ImagesNamesListChanged. }
   ImagesMenu: TMenu;
@@ -576,30 +572,17 @@ procedure MenuClick(Container: TUIContainer; Item: TMenuItem);
   end;
 
   procedure ShowAbout;
-  var
-    SList: TStringList;
   begin
-    SList := TStringList.Create;
-    try
-      AddStrArrayToStrings([
-        'Keys (the ones not documented already in the menu):',
-        'Arrows: move image,',
-        'Arrows + Ctrl: move image 10 x faster,',
-        '- / +: scale image,',
-        'x / X: scale only horizontally,',
-        'y / Y: scale only vertically.',
-        ''], SList);
-      Strings_AddCastleEngineProgramHelpSuffix(SList,
-        DisplayApplicationName, Version, false);
-
-      { Don't show this, long and useless for normal user:
-      AddStrArrayToStrings([
-        '',
-        Format('Image list (%d images) :', [Images.Count])], SList);
-      SList.AddStrings(Images); }
-
-      MessageOK(Window, SList);
-    finally SList.Free end;
+    MessageOK(Window,
+      'Keys (the ones not documented already in the menu):' + NL +
+      'Arrows: move image,' + NL +
+      'Arrows + Ctrl: move image 10 x faster,' + NL +
+      '- / +: scale image,' + NL +
+      'x / X: scale only horizontally,' + NL +
+      'y / Y: scale only vertically.' + NL +
+      NL +
+      ApplicationProperties.Description
+    );
   end;
 
   function CheckNotGrayscale: boolean;
@@ -883,11 +866,11 @@ begin
           nl+
           'By default, window size will be the same as of the first loaded image.'+nl+
           nl+
-          SCastleEngineProgramHelpSuffix(DisplayApplicationName, Version, true));
+          ApplicationProperties.Description);
         Halt;
       end;
     1:begin
-        WritelnStr(Version);
+        WritelnStr(ApplicationProperties.Version);
         Halt;
       end;
     else raise EInternalError.Create('OptionProc');
@@ -903,7 +886,7 @@ var
   SavedErrorMessages: string;
 begin
   ApplicationProperties.ApplicationName := 'castle-view-image';
-  ApplicationProperties.Version := Version;
+  ApplicationProperties.Version := '2.0.0';
   { Do not show warnings,
     as on Windows GUI this would result in new modal window for each warning.
     Worse, font rendering warnings (about missing glyphs) would prevent
