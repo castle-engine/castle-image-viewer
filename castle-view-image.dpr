@@ -211,7 +211,7 @@ end;
 
 { window callbacks ---------------------------------------------------------- }
 
-procedure Render(Container: TUIContainer);
+procedure Render(Container: TCastleContainer);
 
   { Draw image with current (ZoomX, ZoomY) and (MoveX, MoveY). }
   procedure DrawImage(const MoveX, MoveY: Single);
@@ -274,8 +274,8 @@ begin
     for i := i0 to i1 do
       for j := j0 to j1 do
         DrawImage(
-          MoveX * ZoomX + i * DrawableImage.Width  * ZoomX,
-          MoveY * ZoomY + j * DrawableImage.Height * ZoomY);
+          MoveX * ZoomX + i * Integer(DrawableImage.Width)  * ZoomX,
+          MoveY * ZoomY + j * Integer(DrawableImage.Height) * ZoomY);
   end else
   begin
     VisibleXStart := -MoveX;
@@ -346,7 +346,7 @@ begin
   end;
 end;
 
-procedure Update(Container: TUIContainer);
+procedure Update(Container: TCastleContainer);
 
   procedure Move(var value: Single; Change: Single);
   begin
@@ -398,12 +398,12 @@ begin
       MultZoom(ZoomY, ScaleDown);
 end;
 
-procedure Open(Container: TUIContainer);
+procedure Open(Container: TCastleContainer);
 begin
   DecompressTexture := @GLDecompressTexture;
 end;
 
-procedure Motion(Container: TUIContainer; const Event: TInputMotion);
+procedure Motion(Container: TCastleContainer; const Event: TInputMotion);
 begin
   if buttonLeft in Event.Pressed then
   begin
@@ -413,7 +413,7 @@ begin
   end;
 end;
 
-procedure Press(Container: TUIContainer; const Event: TInputPressRelease);
+procedure Press(Container: TCastleContainer; const Event: TInputPressRelease);
 const
   ScaleFactor = 1.1;
 var
@@ -484,7 +484,7 @@ begin
       SQuoteMenuEntryCaption(URICaption(Images[i])), 10000 + i));
 end;
 
-procedure DropFiles(Container: TUIContainer; const FileNames: array of string);
+procedure DropFiles(Container: TCastleContainer; const FileNames: array of string);
 var
   URL: string;
 begin
@@ -496,7 +496,7 @@ begin
   end;
 end;
 
-procedure MenuClick(Container: TUIContainer; Item: TMenuItem);
+procedure MenuClick(Container: TCastleContainer; Item: TMenuItem);
 
   procedure ImageSave;
   var
@@ -914,7 +914,7 @@ begin
     { init menu things. We must do it before we add something to Images,
       this is required by CreateMainMenu. }
     RecentMenu := TWindowRecentFiles.Create(nil);
-    RecentMenu.OnOpenRecent := @THelper(nil).FileOpen;
+    RecentMenu.OnOpenRecent := {$ifdef FPC}@{$endif}THelper{$ifdef FPC}(nil){$endif}.FileOpen;
     Window.MainMenu := CreateMainMenu;
     Window.OnMenuClick := @MenuClick;
 

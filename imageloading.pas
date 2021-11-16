@@ -62,12 +62,12 @@ var
   - replace current image with special InvalidImage,
   - show failure message using MessageOK,
   - and no exception will be raised outside of this procedure. }
-procedure CreateImage(Window: TCastleWindowBase; const URL: string);
+procedure CreateImage(Window: TCastleWindowBase; const URL: string); overload;
 
 { Load a ready TCastleImage instance. It becomes owned by this unit
   (will be freed by this unit automatically). }
 procedure CreateImage(Window: TCastleWindowBase; const NewImage: TCastleImage;
-  const NewImageURL: string);
+  const NewImageURL: string); overload;
 
 { Load a special "invalid" image.
   ErrorURL is used for Window.Caption suffix, so pass here an image URL that can't be loaded. }
@@ -98,11 +98,11 @@ begin
   begin
     S := URICaption(ImageURL);
     if CompositeImage <> nil then
-      S += Format(' (Composite subimage: %d)', [CompositeImageIndex]);
+      S := S + Format(' (Composite subimage: %d)', [CompositeImageIndex]);
   end else
     S := '<error: ' + URIDisplay(ImageURL) + '>';
 
-  S += ' - castle-view-image';
+  S := S + ' - castle-view-image';
 
   Window.Caption := S;
 end;
