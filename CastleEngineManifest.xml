@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <project name="castle-view-image"
-  standalone_source="castle-view-image.lpr"
+  standalone_source="castle-view-image.dpr"
   author="Michalis Kamburelis">
   <icons>
     <icon path="freedesktop/castle-view-image.svg" />

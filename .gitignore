@@ -4,6 +4,7 @@
 *.compiled
 *.log
 *.res
+*.dll
 castle-view-image
 castle-view-image.exe
 castle-engine-output
