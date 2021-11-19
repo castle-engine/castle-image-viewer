@@ -539,6 +539,22 @@ procedure MenuClick(Container: TCastleContainer; Item: TMenuItem);
       THelper.FileOpen(URL);
   end;
 
+  procedure ImageOpenWithDirectory;
+  var
+    URL: string;
+  begin
+    if IsImageValid then
+      URL := ImageURL
+    else
+      URL := '';
+    if Window.FileDialog('Load image from file', URL, true, LoadImage_FileFilters) then
+    begin
+      Images.Clear;
+      AddImageNamesFromURL(URL);
+      SetCurrentImageIndex(0);
+    end;
+  end;
+
   procedure ShowImageInfo;
 
     function CompositeImageInfo(DImg: TCompositeImage): string;
@@ -636,6 +652,7 @@ var
 begin
   case Item.IntData of
     110: ImageOpen;
+    115: ImageOpenWithDirectory;
     120: ImageSave;
     140: Window.Close;
 
@@ -744,6 +761,7 @@ begin
   Result := TMenu.Create('Main menu');
   M := TMenu.Create('_File');
     M.Append(TMenuItem.Create('_Open ...',                 110, CtrlO));
+    M.Append(TMenuItem.Create('_Open (and place other images in the same directory on a list) ...', 115, 'o'));
     M.Append(TMenuItem.Create('_Save ...',                 120, CtrlS));
     NextRecentMenuItem := TMenuSeparator.Create;
     M.Append(NextRecentMenuItem);
