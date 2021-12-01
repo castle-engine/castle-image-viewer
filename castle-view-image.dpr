@@ -35,7 +35,7 @@ uses SysUtils, Math, Classes, TypInfo,
   CastleGLImages, CastleWindowRecentFiles, CastleCompositeImage, CastleFilesUtils,
   CastleColors, CastleConfig, CastleKeysMouse, CastleURIUtils, CastleRectangles,
   CastleWindowProgress, CastleProgress, CastleApplicationProperties,
-  CastleDownload, CastleLog, CastleRenderContext,
+  CastleDownload, CastleLog, CastleRenderContext, CastleUIControls,
   ImageLoading, EmbeddedImages;
 
 var
