@@ -1,5 +1,5 @@
 {
-  Copyright 2001-2021 Michalis Kamburelis.
+  Copyright 2001-2022 Michalis Kamburelis.
 
   This file is part of "castle-view-image".
 
@@ -32,7 +32,7 @@ uses SysUtils, Math, Classes, TypInfo,
   CastleWindow, CastleGLUtils, CastleUtils, CastleImages,
   CastleClassUtils, CastleMessages, CastleParameters, CastleControls,
   CastleFindFiles, CastleVectors, CastleStringUtils,
-  CastleGLImages, CastleWindowRecentFiles, CastleCompositeImage, CastleFilesUtils,
+  CastleGLImages, CastleWindowRecentFiles, CastleInternalCompositeImage, CastleFilesUtils,
   CastleColors, CastleConfig, CastleKeysMouse, CastleURIUtils, CastleRectangles,
   CastleWindowProgress, CastleProgress, CastleApplicationProperties,
   CastleDownload, CastleLog, CastleRenderContext, CastleUIControls,

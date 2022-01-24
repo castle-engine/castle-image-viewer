@@ -1,5 +1,5 @@
 {
-  Copyright 2003-2019 Michalis Kamburelis.
+  Copyright 2003-2022 Michalis Kamburelis.
 
   This file is part of "castle-view-image".
 
@@ -26,7 +26,7 @@ unit ImageLoading;
 interface
 
 uses CastleGLUtils, SysUtils, CastleUtils, CastleImages, Classes,
-  CastleClassUtils, CastleMessages, CastleWindow, CastleGLImages, CastleCompositeImage,
+  CastleClassUtils, CastleMessages, CastleWindow, CastleGLImages, CastleInternalCompositeImage,
   CastleWindowRecentFiles;
 
 var
