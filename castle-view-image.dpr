@@ -39,7 +39,7 @@ uses SysUtils, Math, Classes, TypInfo,
   ImageLoading, EmbeddedImages;
 
 var
-  Window: TCastleWindowBase;
+  Window: TCastleWindow;
   MoveX: Single = 0;
   MoveY: Single = 0;
   DrawTiled: boolean = false;
@@ -880,7 +880,7 @@ begin
           HelpOptionHelp+ nl+
           VersionOptionHelp +nl+
           nl+
-          TCastleWindowBase.ParseParametersHelp(StandardParseOptions, true) +nl+
+          TCastleWindow.ParseParametersHelp(StandardParseOptions, true) +nl+
           nl+
           'By default, window size will be the same as of the first loaded image.'+nl+
           nl+
@@ -920,7 +920,7 @@ begin
       ]) then
     InitializeLog;
 
-  Window := TCastleWindowBase.Create(Application);
+  Window := TCastleWindow.Create(Application);
   Theme.DialogsLight;
 
   { to show "Alpha Bleed" progress }
