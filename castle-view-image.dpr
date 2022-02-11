@@ -43,7 +43,7 @@ var
   MoveX: Single = 0;
   MoveY: Single = 0;
   DrawTiled: boolean = false;
-  BackgroundColor: TCastleColor = (Data: (0.1, 0.1, 0.1, 1));
+  BackgroundColor: TCastleColor = (X: 0.1; Y: 0.1; Z: 0.1; W: 1);
   UseImageAlpha: boolean = true;
   ImageArrowLeft, ImageArrowRight, ImageArrowUp, ImageArrowDown: TCastleImageControl;
 
