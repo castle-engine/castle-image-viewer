@@ -1,5 +1,5 @@
 {
-  Copyright 2013-2019 Michalis Kamburelis.
+  Copyright 2013-2022 Michalis Kamburelis.
 
   This file is part of "castle-view-image".
 
@@ -29,36 +29,34 @@ unit CastleImagesFormats;
 interface
 
 type
-  { Possible image file format. }
+  { Possible image file format.
+
+    The order on this list matters --- it determines the order of filters
+    for open/save dialogs.
+    First we list most adviced and well-known formats, starting from lossless. }
   TImageFormat = (
-    { We handle PNG file format fully, both reading and writing,
-      through the libpng library.
-
-      This format supports a full alpha channel.
-      Besides PSD, this is the only format that allows full-range
-      (partial transparency) alpha channel.
-
-      Trying to read / write PNG file when libpng is not installed
-      (through LoadImage, LoadEncodedImage, SaveImage, LoadPNG, SavePNG and others)
-      will raise exception ELibPngNotAvailable. Note that the check
-      for availability of libpng is done only once you try to load/save PNG file.
-      You can perfectly compile and even run your programs without
-      PNG installed, until you try to load/save PNG format. }
+    { We have full PNG support, for both reading and writing.
+      We can use LibPng (if available on given system), (FPC) FpImage,
+      Vampyre Imaging Library, or (Delphi) PngImage. }
     ifPNG,
 
-    { We handle uncompressed BMP images. }
+    { Image formats below are supported by FPImage and/or Vampyre Imaging Library. }
     ifBMP,
+    ifJPEG,
+    ifGIF,
+    ifTGA,
+    ifXPM,
+    ifPSD,
+    ifPCX,
+    ifPNM,
 
-    ifPPM,
-
-    { Image formats below are supported by FPImage. }
-    ifJPEG, ifGIF, ifTGA, ifXPM, ifPSD, ifPCX, ifPNM,
-
-    { We handle fully DDS (DirectDraw Surface) image format.
-      See also TCompositeImage class in CastleCompositeImage unit,
-      that exposes even more features of the DDS image format. }
+    { We handle fully DDS (DirectDraw Surface) and KTX image formats.
+      They provide images in formats optimal for GPU. }
     ifDDS,
     ifKTX,
+
+    { Reading ASTC image format }
+    ifASTC,
 
     { High-dynamic range image format, originally used by Radiance.
       See e.g. the pfilt and ximage programs from the Radiance package
@@ -88,13 +86,10 @@ type
     ifRGBE,
 
     ifIPL,
-
-    { Image formats below are supported
-      by converting them  "under the hood" with ImageMagick.
-      This is available only if this unit is compiled with FPC
-      (i.e. not with Delphi) on platforms where ExecuteProcess is
-      implemented. And ImageMagick must be installed and available on $PATH. }
-    ifTIFF, ifSGI, ifJP2, ifEXR
+    {$ifdef CASTLE_ENABLE_TIFF}
+    ifTIFF,
+    {$endif}
+    ifJP2
   );
   TImageFormats = set of TImageFormat;
 
@@ -104,14 +99,15 @@ type
     TImageFormatInfo.MimeTypesCount must be >= 1,
     so each file format must have at least one
     (treated as "default" in some cases) MIME type. }
-  TImageFormatInfoMimeTypesCount = 1..6;
+  TImageFormatInfoMimeTypesCount = 1..7;
 
   { A type to index TImageFormatInfo.Exts array and also for TImageFormatInfo.ExtsCount.
     So TImageFormatInfo.Exts array is indexed from 1,
     and TImageFormatInfo.ExtsCount must be >= 1, so each file format must have at least one
     (treated as "default" in some cases) file extension. }
-  TImageFormatInfoExtsCount = 1..3;
+  TImageFormatInfoExtsCount = 1..4;
 
+  { Record with information specific to TImageFormat. }
   TImageFormatInfo = record
     { Human-readable format name.
 
@@ -163,136 +159,135 @@ type
 const
   { Information about supported image formats. }
   ImageFormatInfos: array [TImageFormat] of TImageFormatInfo =
-  ( { The order on this list matters --- it determines the order of filters
-      for open/save dialogs.
-      First list most adviced and well-known formats, starting from lossless. }
+  (
 
     { Portable Network Graphic } { }
     ( FormatName: 'PNG image';
       MimeTypesCount: 1;
-      MimeTypes: ('image/png', '', '', '', '', '');
-      ExtsCount: 1; Exts: ('png', '', '');
-      HasSave: true
+      MimeTypes: ('image/png', '', '', '', '', '', '');
+      ExtsCount: 1; Exts: ('png', '', '', '');
+      HasSave: true;
     ),
     ( FormatName: 'Windows BMP image';
       MimeTypesCount: 1;
-      MimeTypes: ('image/bmp', '', '', '', '', '');
-      ExtsCount: 1; Exts: ('bmp', '', '');
-      HasSave: true
-    ),
-    { Portable Pixel Map } { }
-    ( FormatName: 'PPM image';
-      MimeTypesCount: 1;
-      MimeTypes: ('image/x-portable-pixmap', '', '', '', '', '');
-      ExtsCount: 1; Exts: ('ppm', '', '');
-      HasSave: true
+      MimeTypes: ('image/bmp', '', '', '', '', '', '');
+      ExtsCount: 1; Exts: ('bmp', '', '', '');
+      HasSave: true;
     ),
     { JFIF, JPEG File Interchange Format } { }
     ( FormatName: 'JPEG image';
       MimeTypesCount: 2;
-      MimeTypes: ('image/jpeg', 'image/jpg', '', '', '', '');
-      ExtsCount: 3; Exts: ('jpg', 'jpeg', 'jpe');
-      HasSave: true
+      MimeTypes: ('image/jpeg', 'image/jpg', '', '', '', '', '');
+      ExtsCount: 3; Exts: ('jpg', 'jpeg', 'jpe', '');
+      HasSave: true;
     ),
     { Graphics Interchange Format } { }
     ( FormatName: 'GIF image';
       MimeTypesCount: 1;
-      MimeTypes: ('image/gif', '', '', '', '', '');
-      ExtsCount: 1; Exts: ('gif', '', '');
-      HasSave: false
+      MimeTypes: ('image/gif', '', '', '', '', '', '');
+      ExtsCount: 1; Exts: ('gif', '', '', '');
+      HasSave: true;
     ),
     ( FormatName: 'TarGA image';
       MimeTypesCount: 2;
-      MimeTypes: ('image/x-targa', 'image/x-tga', '', '', '', '');
-      ExtsCount: 2; Exts: ('tga', 'tpic', '');
-      HasSave: false
+      MimeTypes: ('image/x-targa', 'image/x-tga', '', '', '', '', '');
+      ExtsCount: 2; Exts: ('tga', 'tpic', '', '');
+      HasSave: true;
     ),
     ( FormatName: 'XPM image';
       MimeTypesCount: 1;
-      MimeTypes: ('image/x-xpixmap', '', '', '', '', '');
-      ExtsCount: 1; Exts: ('xpm', '', '');
-      HasSave: false
+      MimeTypes: ('image/x-xpixmap', '', '', '', '', '', '');
+      ExtsCount: 1; Exts: ('xpm', '', '', '');
+      HasSave: true;
     ),
     ( FormatName: 'PSD image';
       MimeTypesCount: 4;
-      MimeTypes: ('image/photoshop', 'image/x-photoshop', 'image/psd', 'application/photoshop', '', '');
-      ExtsCount: 1; Exts: ('psd', '', '');
-      HasSave: false
+      MimeTypes: ('image/photoshop', 'image/x-photoshop', 'image/psd', 'application/photoshop', '', '', '');
+      ExtsCount: 1; Exts: ('psd', '', '', '');
+      HasSave: false;
     ),
     ( FormatName: 'ZSoft PCX image';
       MimeTypesCount: 5;
-      MimeTypes: ('image/pcx', 'application/pcx', 'application/x-pcx', 'image/x-pc-paintbrush', 'image/x-pcx', '');
-      ExtsCount: 1; Exts: ('pcx', '', '');
-      HasSave: false
+      MimeTypes: ('image/pcx', 'application/pcx', 'application/x-pcx', 'image/x-pc-paintbrush', 'image/x-pcx', '', '');
+      ExtsCount: 1; Exts: ('pcx', '', '', '');
+      HasSave: false;
     ),
     ( FormatName: 'PNM image';
       MimeTypesCount: 6;
-      MimeTypes: ('image/x-portable-anymap', 'image/x-portable-graymap', 'image/x-pgm', 'image/x-portable-bitmap', 'image/pbm', 'image/x-pbm');
-      ExtsCount: 3; Exts: ('pnm', 'pgm', 'pbm');
-      HasSave: false
+      MimeTypes: ('image/x-portable-anymap', 'image/x-portable-graymap', 'image/x-pgm', 'image/x-portable-bitmap', 'image/pbm', 'image/x-pbm', 'image/x-portable-pixmap');
+      ExtsCount: 4; Exts: ('pnm', 'pgm', 'pbm', 'ppm');
+      HasSave: true;
     ),
 
     { Direct Draw Surface } { }
     ( FormatName: 'DDS image';
       MimeTypesCount: 1;
-      MimeTypes: ('image/x-dds', '', '', '', '', '');
-      ExtsCount: 1; Exts: ('dds', '', '');
-      HasSave: true
+      MimeTypes: ('image/x-dds', '', '', '', '', '', '');
+      ExtsCount: 1; Exts: ('dds', '', '', '');
+      HasSave: true;
     ),
 
     { Khronos KTX } { }
     ( FormatName: 'Khronos KTX image';
       MimeTypesCount: 1;
-      MimeTypes: ('image/ktx', '', '', '', '', '');
-      ExtsCount: 1; Exts: ('ktx', '', '');
-      HasSave: false
+      MimeTypes: ('image/ktx', '', '', '', '', '', '');
+      ExtsCount: 1; Exts: ('ktx', '', '', '');
+      HasSave: false;
     ),
-
-    { Image formats not well known. }
-
-    ( FormatName: 'RGBE (RGB+Exponent) image';
+    { ASTC } { }
+    ( FormatName: 'ASTC image';
       MimeTypesCount: 1;
-      MimeTypes: ('image/vnd.radiance', '', '', '', '', '');
-      ExtsCount: 3; Exts: ('rgbe', 'pic', 'hdr');
-      HasSave: true
+      MimeTypes: ('image/astc', '', '', '', '', '', '');
+      ExtsCount: 1; Exts: ('astc', '', '', '');
+      HasSave: false;
+    ),
+    ( FormatName: 'RGBE (Radiance, HDR) image';
+      MimeTypesCount: 1;
+      MimeTypes: ('image/vnd.radiance', '', '', '', '', '', '');
+      ExtsCount: 3; Exts: ('rgbe', 'pic', 'hdr', '');
+      HasSave: true;
     ),
     ( FormatName: 'IPLab image';
       MimeTypesCount: 1;
       { ipl MIME type invented by Kambi, to make it unique to communicate image format for LoadImage } { }
-      MimeTypes: ('image/x-ipl', '', '', '', '', '');
-      ExtsCount: 1; Exts: ('ipl', '', '');
-      HasSave: false
+      MimeTypes: ('image/x-ipl', '', '', '', '', '', '');
+      ExtsCount: 1; Exts: ('ipl', '', '', '');
+      HasSave: false;
     ),
-
-    { Image formats loaded using ImageMagick's convert.
-      Placed at the end of the list, to be at the end of open/save dialogs
-      filters, since there's a large chance they will not work,
-      if user didn't install ImageMagick. } { }
-
+    {$ifdef CASTLE_ENABLE_TIFF}
     ( FormatName: 'TIFF image';
       MimeTypesCount: 1;
-      MimeTypes: ('image/tiff', '', '', '', '', '');
-      ExtsCount: 2; Exts: ('tiff', 'tif', '');
-      HasSave: false
+      MimeTypes: ('image/tiff', '', '', '', '', '', '');
+      ExtsCount: 2; Exts: ('tiff', 'tif', '', '');
+      HasSave: true;
     ),
+    {$endif}
+    (*
     ( FormatName: 'SGI image';
       MimeTypesCount: 3;
-      MimeTypes: ('image/sgi', 'image/x-sgi', 'image/x-sgi-rgba', '', '', '');
-      ExtsCount: 1; Exts: ('sgi', '', '');
-      HasSave: false
+      MimeTypes: ('image/sgi', 'image/x-sgi', 'image/x-sgi-rgba', '', '', '', '');
+      ExtsCount: 1; Exts: ('sgi', '', '', '');
+      Load: {$ifdef FPC}@{$endif}LoadSGI;
+      Save: nil; SavedClasses: scRGB;
+      DetectClass: nil;
     ),
+    *)
     ( FormatName: 'JPEG 2000 image';
       MimeTypesCount: 4;
-      MimeTypes: ('image/jp2', 'image/jpeg2000', 'image/jpeg2000-image', 'image/x-jpeg2000-image', '', '');
-      ExtsCount: 1; Exts: ('jp2', '', '');
-      HasSave: false
-    ),
+      MimeTypes: ('image/jp2', 'image/jpeg2000', 'image/jpeg2000-image', 'image/x-jpeg2000-image', '', '', '');
+      ExtsCount: 1; Exts: ('jp2', '', '', '');
+      HasSave: true;
+    )
+    (*
     ( FormatName: 'EXR image';
       MimeTypesCount: 1;
-      MimeTypes: ('image/x-exr', '', '', '', '', '');
-      ExtsCount: 1; Exts: ('exr', '', '');
-      HasSave: false
+      MimeTypes: ('image/x-exr', '', '', '', '', '', '');
+      ExtsCount: 1; Exts: ('exr', '', '', '');
+      Load: {$ifdef FPC}@{$endif}LoadEXR;
+      Save: nil; SavedClasses: scRGB;
+      DetectClass: nil;
     )
+    *)
   );
 
 implementation
