@@ -2,7 +2,6 @@
 compile:
 	./compile.sh
 
-# Run also "dircleaner . clean" here to really clean
 .PHONY: clean
 clean:
 	castle-engine clean
