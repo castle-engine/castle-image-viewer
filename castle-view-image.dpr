@@ -1,5 +1,5 @@
 {
-  Copyright 2001-2022 Michalis Kamburelis.
+  Copyright 2001-2023 Michalis Kamburelis.
 
   This file is part of "castle-view-image".
 
@@ -396,11 +396,6 @@ begin
       MultZoom(ZoomY, ScaleUp)
     else
       MultZoom(ZoomY, ScaleDown);
-end;
-
-procedure Open(Container: TCastleContainer);
-begin
-  DecompressTexture := @GLDecompressTexture;
 end;
 
 procedure Motion(Container: TCastleContainer; const Event: TInputMotion);
@@ -944,7 +939,6 @@ begin
     Window.DepthBits := 0; { depth buffer not needed here }
     Window.OnUpdate := @Update;
     Window.OnRender := @Render;
-    Window.OnOpen := @Open;
     Window.OnResize := @Resize2D;
     Window.OnDropFiles := @DropFiles;
     Window.OnMotion := @Motion;
