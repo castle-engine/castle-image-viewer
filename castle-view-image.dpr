@@ -875,7 +875,7 @@ begin
           HelpOptionHelp+ nl+
           VersionOptionHelp +nl+
           nl+
-          TCastleWindow.ParseParametersHelp(StandardParseOptions, true) +nl+
+          TCastleWindow.ParseParametersHelp +nl+
           nl+
           'By default, window size will be the same as of the first loaded image.'+nl+
           nl+
