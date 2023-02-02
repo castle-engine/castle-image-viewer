@@ -872,8 +872,8 @@ begin
           'so all images in known format (in the current directory) will be loaded.' +nl+
           nl+
           'Accepted command-line options:' +nl+
-          HelpOptionHelp+ nl+
-          VersionOptionHelp +nl+
+          OptionDescription('-h / --help', 'Print this help message and exit.') + NL +
+          OptionDescription('-v / --version', 'Print the version number and exit.') + NL +
           nl+
           TCastleWindow.ParseParametersHelp +nl+
           nl+
@@ -932,7 +932,7 @@ begin
     Window.OnMenuClick := @MenuClick;
 
     { parse options }
-    Window.ParseParameters(StandardParseOptions);
+    Window.ParseParameters;
     { parse our options }
     Parameters.Parse(Options, @OptionProc, nil);
 
