@@ -1,5 +1,5 @@
 {
-  Copyright 2001-2023 Michalis Kamburelis.
+  Copyright 2001-2024 Michalis Kamburelis.
 
   This file is part of "castle-view-image".
 
@@ -34,7 +34,7 @@ uses SysUtils, Math, Classes, TypInfo,
   CastleFindFiles, CastleVectors, CastleStringUtils,
   CastleGLImages, CastleWindowRecentFiles, CastleInternalCompositeImage, CastleFilesUtils,
   CastleColors, CastleConfig, CastleKeysMouse, CastleURIUtils, CastleRectangles,
-  CastleWindowProgress, CastleProgress, CastleApplicationProperties,
+  CastleApplicationProperties,
   CastleDownload, CastleLog, CastleRenderContext, CastleUIControls,
   ImageLoading, EmbeddedImages;
 
@@ -825,9 +825,10 @@ end;
 { params ------------------------------------------------------------------- }
 
 const
-  Options: array [0..1] of TOption = (
+  Options: array [0..2] of TOption = (
     (Short: 'h'; Long: 'help'; Argument: oaNone),
-    (Short: 'v'; Long: 'version'; Argument: oaNone)
+    (Short: 'v'; Long: 'version'; Argument: oaNone),
+    (Short: #0 ; Long: 'capabilities'; Argument: oaRequired)
   );
 
 procedure OptionProc(OptionNum: Integer; HasArgument: boolean;
@@ -874,6 +875,7 @@ begin
           'Accepted command-line options:' +nl+
           OptionDescription('-h / --help', 'Print this help message and exit.') + NL +
           OptionDescription('-v / --version', 'Print the version number and exit.') + NL +
+          OptionDescription('--capabilities automatic|force-fixed-function|force-modern', 'Force OpenGL context to have specific capabilities, to test rendering on modern or ancient GPUs.') + NL +
           nl+
           TCastleWindow.ParseParametersHelp +nl+
           nl+
@@ -886,6 +888,7 @@ begin
         WritelnStr(ApplicationProperties.Version);
         Halt;
       end;
+    2:TGLFeatures.RequestCapabilities := StrToCapabilities(Argument);
     else raise EInternalError.Create('OptionProc');
   end;
 end;
@@ -918,8 +921,7 @@ begin
   Window := TCastleWindow.Create(Application);
   Theme.DialogsLight;
 
-  { to show "Alpha Bleed" progress }
-  Progress.UserInterface := WindowProgressInterface;
+  // Assigning Application.MainWindow is probably not necessary now in this application
   Application.MainWindow := Window;
 
   Images := TStringList.Create;
@@ -939,7 +941,6 @@ begin
     Window.DepthBits := 0; { depth buffer not needed here }
     Window.OnUpdate := @Update;
     Window.OnRender := @Render;
-    Window.OnResize := @Resize2D;
     Window.OnDropFiles := @DropFiles;
     Window.OnMotion := @Motion;
     Window.OnPress := @Press;
