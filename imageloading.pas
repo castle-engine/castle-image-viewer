@@ -62,21 +62,21 @@ var
   - replace current image with special InvalidImage,
   - show failure message using MessageOK,
   - and no exception will be raised outside of this procedure. }
-procedure CreateImage(Window: TCastleWindowBase; const URL: string); overload;
+procedure CreateImage(Window: TCastleWindow; const URL: string); overload;
 
 { Load a ready TCastleImage instance. It becomes owned by this unit
   (will be freed by this unit automatically). }
-procedure CreateImage(Window: TCastleWindowBase; const NewImage: TCastleImage;
+procedure CreateImage(Window: TCastleWindow; const NewImage: TCastleImage;
   const NewImageURL: string); overload;
 
 { Load a special "invalid" image.
   ErrorURL is used for Window.Caption suffix, so pass here an image URL that can't be loaded. }
-procedure CreateImageInvalid(Window: TCastleWindowBase; const ErrorURL: string);
+procedure CreateImageInvalid(Window: TCastleWindow; const ErrorURL: string);
 
 { Change CompositeImageIndex.
   Call this only if current image is composite (CompositeImage <> nil) and NewIndex
   is valid (NewIndex < CompositeImages.ImagesCount). }
-procedure ChangeCompositeImageIndex(Window: TCastleWindowBase; NewIndex: Cardinal);
+procedure ChangeCompositeImageIndex(Window: TCastleWindow; NewIndex: Cardinal);
 
 { Call after directly changing the Image contents. }
 procedure ImageChanged;
@@ -90,7 +90,7 @@ implementation
 uses EmbeddedImages, CastleURIUtils;
 
 { Update Window.Caption, reflecting IsImageValid, ImageURL, CompositeImageIndex. }
-procedure UpdateCaption(Window: TCastleWindowBase);
+procedure UpdateCaption(Window: TCastleWindow);
 var
   S: string;
 begin
@@ -124,7 +124,7 @@ begin
   IsImageValid := false;
 end;
 
-procedure CreateImage(Window: TCastleWindowBase; const URL: string);
+procedure CreateImage(Window: TCastleWindow; const URL: string);
 var
   NewComposite: TCompositeImage;
 begin
@@ -173,7 +173,7 @@ begin
   DrawableImage := TDrawableImage.Create(Image, SmoothScaling, false);
 end;
 
-procedure CreateImage(Window: TCastleWindowBase; const NewImage: TCastleImage; const NewImageURL: string);
+procedure CreateImage(Window: TCastleWindow; const NewImage: TCastleImage; const NewImageURL: string);
 begin
   DestroyImage;
 
@@ -187,7 +187,7 @@ begin
   DrawableImage := TDrawableImage.Create(Image, SmoothScaling, false);
 end;
 
-procedure CreateImageInvalid(Window: TCastleWindowBase; const ErrorURL: string);
+procedure CreateImageInvalid(Window: TCastleWindow; const ErrorURL: string);
 begin
   DestroyImage;
 
@@ -201,7 +201,7 @@ begin
   DrawableImage := TDrawableImage.Create(Image, SmoothScaling, false);
 end;
 
-procedure ChangeCompositeImageIndex(Window: TCastleWindowBase; NewIndex: Cardinal);
+procedure ChangeCompositeImageIndex(Window: TCastleWindow; NewIndex: Cardinal);
 begin
   Assert(CompositeImage <> nil);
   Assert(NewIndex < Cardinal(CompositeImage.Images.Count));
