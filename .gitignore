@@ -16,3 +16,4 @@ macosx/utils/output_document_types
 *.dproj.local
 *.identcache
 *.rsm
+*.delphilsp.json
