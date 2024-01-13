@@ -34,7 +34,7 @@ uses SysUtils, Math, Classes, TypInfo,
   CastleFindFiles, CastleVectors, CastleStringUtils,
   CastleGLImages, CastleWindowRecentFiles, CastleInternalCompositeImage, CastleFilesUtils,
   CastleColors, CastleConfig, CastleKeysMouse, CastleURIUtils, CastleRectangles,
-  CastleApplicationProperties,
+  CastleApplicationProperties, CastleOpenDocument,
   CastleDownload, CastleLog, CastleRenderContext, CastleUIControls,
   ImageLoading, EmbeddedImages;
 
@@ -734,6 +734,7 @@ begin
     510: ShowImageInfo;
     520: ShowAbout;
     1600..1700: DoResize(TResizeInterpolation(Item.IntData - 1600));
+    2010: OpenUrl(ImageURL);
     else SetCurrentImageIndex(Item.IntData - 10000);
   end;
   Window.Invalidate;
@@ -779,6 +780,8 @@ begin
     M.Append(TMenuItem.Create('Background Color ...',                260));
     M.Append(TMenuSeparator.Create);
     M.Append(TMenuItemToggleFullScreen.Create(Window.FullScreen));
+    M.Append(TMenuSeparator.Create);
+    M.Append(TMenuItem.Create('Open In External Application', 2010));
     Result.Append(M);
   M := TMenu.Create('_Resize');
     for Interpolation := Low(Interpolation) to High(Interpolation) do

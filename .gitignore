@@ -17,3 +17,4 @@ macosx/utils/output_document_types
 *.identcache
 *.rsm
 *.delphilsp.json
+*.deployproj
