@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<project name="castle-view-image"
-  standalone_source="castle-view-image.dpr"
+<project name="castle-image-viewer"
+  standalone_source="castle_image_viewer.dpr"
   author="Michalis Kamburelis">
   <icons>
-    <icon path="freedesktop/castle-view-image.svg" />
-    <icon path="freedesktop/castle-view-image.png" />
-    <icon path="freedesktop/castle-view-image.ico" />
+    <icon path="freedesktop/castle-image-viewer.svg" />
+    <icon path="freedesktop/castle-image-viewer.png" />
+    <icon path="freedesktop/castle-image-viewer.ico" />
   </icons>
   <dependencies>
     <dependency name="Png" /> <!-- read .png -->

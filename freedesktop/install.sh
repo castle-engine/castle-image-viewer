@@ -1,10 +1,10 @@
 #!/bin/bash
 set -eu
 
-# Install castle-view-image menu entries, icons, mime types.
-# Based on ../../view3dscene/freedesktop/install.sh
+# Install castle-image-viewer menu entries, icons, mime types.
+# Based on ../../castle-model-viewer/freedesktop/install.sh
 
-APP_NAME='castle-view-image'
+APP_NAME='castle-image-viewer'
 
 # For non-user install, change this to
 #   SHARE_PREFIX = /usr/local/share

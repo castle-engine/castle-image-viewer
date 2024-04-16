@@ -6,4 +6,4 @@
   - Licence: MIT https://github.com/feathericons/feather/blob/master/LICENSE
 
 The rest is copyright by Michalis Kamburelis
-(same licence of castle-view-image, see ../COPYING.GPL2.txt ).
+(same licence as castle-image-viewer, see ../COPYING.GPL2.txt ).

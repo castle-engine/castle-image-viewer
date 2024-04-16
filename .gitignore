@@ -6,8 +6,8 @@
 *.res
 *.dll
 *.app
-castle-view-image
-castle-view-image.exe
+castle-image-viewer
+castle-image-viewer.exe
 castle-engine-output
 macosx/utils/output_document_types
 .DS_Store

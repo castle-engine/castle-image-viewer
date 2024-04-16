@@ -1,26 +1,26 @@
 {
   Copyright 2003-2022 Michalis Kamburelis.
 
-  This file is part of "castle-view-image".
+  This file is part of "castle-image-viewer".
 
-  "castle-view-image" is free software; you can redistribute it and/or modify
+  "castle-image-viewer" is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation; either version 2 of the License, or
   (at your option) any later version.
 
-  "castle-view-image" is distributed in the hope that it will be useful,
+  "castle-image-viewer" is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
 
   You should have received a copy of the GNU General Public License
-  along with "castle-view-image"; if not, write to the Free Software
+  along with "castle-image-viewer"; if not, write to the Free Software
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 
   ----------------------------------------------------------------------------
 }
 
-{ Manage the loaded image of castle-view-image. }
+{ Manage the loaded image of castle-image-viewer. }
 unit ImageLoading;
 
 interface
@@ -102,7 +102,7 @@ begin
   end else
     S := '<error: ' + URIDisplay(ImageURL) + '>';
 
-  S := S + ' - castle-view-image';
+  S := S + ' - castle-image-viewer';
 
   Window.Caption := S;
 end;
@@ -149,7 +149,7 @@ begin
       CompositeImageIndex := 0;
       if CompositeImage.Images[0] is TCastleImage then
         Image := TCastleImage(CompositeImage.Images[0]) else
-        raise Exception.Create('castle-view-image cannot display compressed textures from composite (DDS, KTX..) image');
+        raise Exception.Create('castle-image-viewer cannot display compressed textures from composite (DDS, KTX..) image');
     end else
     begin
       CompositeImage := nil;

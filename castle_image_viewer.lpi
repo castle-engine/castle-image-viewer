@@ -45,7 +45,7 @@
     </RequiredPackages>
     <Units Count="1">
       <Unit0>
-        <Filename Value="castle-view-image.dpr"/>
+        <Filename Value="castle_image_viewer.dpr"/>
         <IsPartOfProject Value="True"/>
       </Unit0>
     </Units>

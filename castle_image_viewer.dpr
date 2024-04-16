@@ -1,26 +1,28 @@
 {
   Copyright 2001-2024 Michalis Kamburelis.
 
-  This file is part of "castle-view-image".
+  This file is part of "castle-image-viewer".
 
-  "castle-view-image" is free software; you can redistribute it and/or modify
+  "castle-image-viewer" is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation; either version 2 of the License, or
   (at your option) any later version.
 
-  "castle-view-image" is distributed in the hope that it will be useful,
+  "castle-image-viewer" is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
 
   You should have received a copy of the GNU General Public License
-  along with "castle-view-image"; if not, write to the Free Software
+  along with "castle-image-viewer"; if not, write to the Free Software
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 
   ----------------------------------------------------------------------------
 }
 
-//program castle-view-image;
+{ Image viewer using Castle Game Engine.
+  See README.md and https://castle-engine.io/castle-image-viewer . }
+program castle_image_viewer;
 
 {$ifdef MSWINDOWS} {$apptype GUI} {$endif}
 
@@ -821,7 +823,7 @@ begin
   M := TMenu.Create('_Help');
     M.Append(TMenuItem.Create('Image Information', 510, CtrlI));
     M.Append(TMenuSeparator.Create);
-    M.Append(TMenuItem.Create('About castle-view-image', 520));
+    M.Append(TMenuItem.Create('About castle-image-viewer', 520));
     Result.Append(M);
 end;
 
@@ -850,18 +852,21 @@ begin
             RecognizedPatterns := RecognizedPatterns + (' ' + Pattern);
           end;
         InfoWrite(
-          'castle-view-image: simple image viewer. Allows browsing images list,' +nl+
+          'castle-image-viewer: image viewer using Castle Game Engine.' +nl+
+          '  Support various common image formats (PNG, JPG...)' +nl+
+          '  and some exotic ones useful in game development (DDS, KTX...).' +nl+
+          '  Allows browsing images list,' +nl+
           '  allows to scale and move viewed image, allows to test visually' +nl+
           '  is image "tileable".' +nl+
           nl+
           'Usage:' +nl+
-          '  castle-view-image [OPTIONS]... [IMAGES]...' +nl+
+          '  castle-image-viewer [OPTIONS]... [IMAGES]...' +nl+
           nl+
           'You can give as many image names on the command line as you like' +nl+
           '(you will be able to switch between them using n/p (next/previous)' +nl+
           'keys). Each image name will be treated as a mask with special chars' +nl+
           '* (any number of any chars) and ? (any char), e.g.' +nl+
-          '  castle-view-image *.png' +nl+
+          '  castle-image-viewer *.png' +nl+
           'will open any png images (i.e., even if the shell itself will not expand' +nl+
           '*.png). Non-existing image names (so, also filename masks not matching any'+nl+
           'existing filename) will be ignored.' +nl+
@@ -870,9 +875,9 @@ begin
           'parameter "@file_list.txt" means "read image names to load' +nl+
           'from the file file_list.txt - one image name per line".' +nl+
           nl+
-          'Not giving any image names for castle-view-image to load will have the same' +nl+
+          'Not giving any image names for castle-image-viewer to load will have the same' +nl+
           'effect as calling' +nl+
-          '  castle-view-image' +RecognizedPatterns +nl+
+          '  castle-image-viewer' +RecognizedPatterns +nl+
           'so all images in known format (in the current directory) will be loaded.' +nl+
           nl+
           'Accepted command-line options:' +nl+
@@ -904,7 +909,7 @@ var
   { error messages gathered }
   SavedErrorMessages: string;
 begin
-  ApplicationProperties.ApplicationName := 'castle-view-image';
+  ApplicationProperties.ApplicationName := 'castle-image-viewer';
   ApplicationProperties.Version := '2.0.0';
   { Do not show warnings,
     as on Windows GUI this would result in new modal window for each warning.

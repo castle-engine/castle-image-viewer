@@ -6,5 +6,5 @@ compile:
 clean:
 	castle-engine clean
 	cd macosx/utils && castle-engine clean
-	rm -f castle-view-image castle-view-image.exe
-	rm -Rf castle-view-image.app macosx/castle-view-image.app .DS_Store backup
+	rm -f castle-image-viewer castle-image-viewer.exe
+	rm -Rf castle-image-viewer.app macosx/castle-image-viewer.app .DS_Store backup

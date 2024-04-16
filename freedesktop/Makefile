@@ -1,4 +1,4 @@
-APP_NAME := castle-view-image
+APP_NAME := castle-image-viewer
 
 ALL_IMAGES := $(APP_NAME).icns
 
