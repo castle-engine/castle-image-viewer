@@ -21,7 +21,7 @@
 }
 
 { Image viewer using Castle Game Engine.
-  See README.md and https://castle-engine.io/castle-image-viewer . }
+  See README.md and https://castle-engine.io/image-viewer . }
 program castle_image_viewer;
 
 {$ifdef MSWINDOWS} {$apptype GUI} {$endif}
