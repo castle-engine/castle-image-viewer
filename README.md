@@ -12,7 +12,7 @@ Image viewer, converter and even a very limited image editor. Using _Castle Game
 
 - Perform [alpha bleeding](https://castle-engine.io/manual_alpha_bleeding.php) and other edits (grayscale, mirror, resize).
 
-Complete documentation on https://castle-engine.io/image-viewer .
+Complete documentation on https://castle-engine.io/castle-image-viewer .
 
 Using Castle Game Engine, see https://castle-engine.io/ .
 
