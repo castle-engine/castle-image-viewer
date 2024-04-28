@@ -27,7 +27,7 @@ jobs:
       - name: Archive Artifacts
         uses: actions/upload-artifact@v4
         with:
-          path: *.zip
+          path: "*.zip"
           if-no-files-found: error
   build_runner_native:
     name: Build on Native Runner (target OS/CPU = source OS/CPU)
@@ -54,5 +54,5 @@ jobs:
       - name: Archive Artifacts
         uses: actions/upload-artifact@v4
         with:
-          path: *.zip
+          path: "*.zip"
           if-no-files-found: error
