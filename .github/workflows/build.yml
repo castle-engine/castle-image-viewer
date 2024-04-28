@@ -1,6 +1,5 @@
 # ----------------------------------------------------------------------------
-# GitHub Action workflow to check dependencies using
-# tools/internal/check_units_dependencies#
+# GitHub Actions workflow to build and package the project using Castle Game Engine.
 # ----------------------------------------------------------------------------
 
 name: Build
@@ -18,6 +17,18 @@ jobs:
     container: kambi/castle-engine-cloud-builds-tools:cge-none
     steps:
       - uses: actions/checkout@v4
+
+      # Setup Castle Game Engine
+      - name: Castle Game Engine - Env CASTLE_ENGINE_PATH
+        run: echo "CASTLE_ENGINE_PATH=$GITHUB_WORKSPACE/castle-engine" >> $GITHUB_ENV
+      - name: Castle Game Engine - Env BUILD_TOOL
+        run: echo "BUILD_TOOL=$CASTLE_ENGINE_PATH/tools/build-tool/castle-engine" >> $GITHUB_ENV
+      - name: Castle Game Engine - Clone snapshot
+        run: git clone --depth 1 --single-branch --branch snapshot https://github.com/castle-engine/castle-engine/
+      - name: Castle Game Engine - Build
+        run: cd $CASTLE_ENGINE_PATH/tools/build-tool/ && ./castle-engine_compile.sh
+
+      # Package application
       - name: Package Windows / x86_64
         run: castle-engine package --os=win64 --cpu=x86_64
       - name: Package Windows / i386
@@ -27,6 +38,7 @@ jobs:
       - name: Archive Artifacts
         uses: actions/upload-artifact@v4
         with:
+          name: windows-linux-builds
           path: "*.zip"
           if-no-files-found: error
   build_runner_native:
@@ -54,5 +66,6 @@ jobs:
       - name: Archive Artifacts
         uses: actions/upload-artifact@v4
         with:
+          name: ${{ matrix.runner }}-build
           path: "*.zip"
           if-no-files-found: error
