@@ -33,7 +33,7 @@ jobs:
     name: Build on Native Runner (target OS/CPU = source OS/CPU)
     strategy:
       matrix:
-        runner: [macos_x64,raspberry_pi_64raspberry_pi_32]
+        runner: [macos_x64, raspberry_pi_64, raspberry_pi_32]
     runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v4
