@@ -3,7 +3,7 @@
 # tools/internal/check_units_dependencies#
 # ----------------------------------------------------------------------------
 
-name: Check Dependencies
+name: Build
 
 on: [push, pull_request]
 
