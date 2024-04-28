@@ -1,0 +1,58 @@
+# ----------------------------------------------------------------------------
+# GitHub Action workflow to check dependencies using
+# tools/internal/check_units_dependencies#
+# ----------------------------------------------------------------------------
+
+name: Check Dependencies
+
+on: [push, pull_request]
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build_docker:
+    name: Build From Docker
+    runs-on: ubuntu-latest
+    container: kambi/castle-engine-cloud-builds-tools:cge-none
+    steps:
+      - uses: actions/checkout@v4
+      - name: Package Windows / x86_64
+        run: castle-engine package --os=win64 --cpu=x86_64
+      - name: Package Windows / i386
+        run: castle-engine package --os=win64 --cpu=x86_64
+      - name: Package Linux / x86_64
+        run: castle-engine package --os=win64 --cpu=x86_64
+      - name: Archive Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          path: *.zip
+          if-no-files-found: error
+  build_runner_native:
+    name: Build on Native Runner (target OS/CPU = source OS/CPU)
+    strategy:
+      matrix:
+        runner: [macos_x64,raspberry_pi_64raspberry_pi_32]
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # Setup Castle Game Engine
+      - name: Castle Game Engine - Env CASTLE_ENGINE_PATH
+        run: echo "CASTLE_ENGINE_PATH=$GITHUB_WORKSPACE/castle-engine" >> $GITHUB_ENV
+      - name: Castle Game Engine - Env BUILD_TOOL
+        run: echo "BUILD_TOOL=$CASTLE_ENGINE_PATH/tools/build-tool/castle-engine" >> $GITHUB_ENV
+      - name: Castle Game Engine - Clone snapshot
+        run: git clone --depth 1 --single-branch --branch snapshot https://github.com/castle-engine/castle-engine/
+      - name: Castle Game Engine - Build
+        run: cd $CASTLE_ENGINE_PATH/tools/build-tool/ && ./castle-engine_compile.sh
+
+      # Package application
+      - name: Package
+        run: ${BUILD_TOOL} package
+      - name: Archive Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          path: *.zip
+          if-no-files-found: error
