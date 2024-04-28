@@ -30,11 +30,11 @@ jobs:
 
       # Package application
       - name: Package Windows / x86_64
-        run: castle-engine package --os=win64 --cpu=x86_64
+        run: ${BUILD_TOOL} package --os=win64 --cpu=x86_64
       - name: Package Windows / i386
-        run: castle-engine package --os=win64 --cpu=x86_64
+        run: ${BUILD_TOOL} package --os=win64 --cpu=x86_64
       - name: Package Linux / x86_64
-        run: castle-engine package --os=win64 --cpu=x86_64
+        run: ${BUILD_TOOL} package --os=win64 --cpu=x86_64
       - name: Archive Artifacts
         uses: actions/upload-artifact@v4
         with:
