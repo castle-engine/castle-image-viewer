@@ -39,8 +39,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: windows-linux-builds
-          path: "*.zip"
-          if-no-files-found: error
+          path: |
+            *.zip
+            *.tar.gz
+          #if-no-files-found: error
 
   build_runner_native:
     name: Build on Native Runner (target OS/CPU = source OS/CPU)
@@ -68,5 +70,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.runner }}-build
-          path: "*.zip"
-          if-no-files-found: error
+          path: |
+            *.zip
+            *.tar.gz
+          #if-no-files-found: error
