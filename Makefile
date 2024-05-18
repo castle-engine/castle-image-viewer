@@ -1,6 +1,6 @@
 .PHONY: compile
 compile:
-	./compile.sh
+	castle-engine compile
 
 .PHONY: clean
 clean:
