@@ -910,7 +910,7 @@ var
   SavedErrorMessages: string;
 begin
   ApplicationProperties.ApplicationName := 'castle-image-viewer';
-  ApplicationProperties.Version := '2.2.0';
+  ApplicationProperties.Version := '2.3.0';
   { Do not show warnings,
     as on Windows GUI this would result in new modal window for each warning.
     Worse, font rendering warnings (about missing glyphs) would prevent

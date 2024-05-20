@@ -11,7 +11,7 @@
     <dependency name="Png" /> <!-- read .png -->
     <!-- dependency name="Https" /> <!- - read https links -->
   </dependencies>
-  <version value="2.2.0" />
+  <version value="2.3.0" />
   <package>
     <include path="README.md" />
     <include path="COPYING.GPL2.txt" />
