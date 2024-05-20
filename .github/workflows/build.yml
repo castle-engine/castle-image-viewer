@@ -10,6 +10,10 @@ defaults:
   run:
     shell: bash
 
+env:
+  # To which GitHub release tag should we upload artifacts.
+  release_tag: snapshot
+
 jobs:
   build_docker:
     name: Build From Docker
@@ -91,15 +95,15 @@ jobs:
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: gh auth status
-    # Releases files in the "snapshot" release.
+    # Releases files in the GitHub release.
     - name: Release Artifacts
       if: ${{ github.ref == 'refs/heads/master' }}
-      run: gh release --repo ${{ github.repository }} upload snapshot --clobber *.zip *.tar.gz
+      run: gh release --repo ${{ github.repository }} upload ${{ env.release_tag }} --clobber *.zip *.tar.gz
       env:
         GH_TOKEN: ${{ github.token }}
 
   update-release-tag:
-    name: Update Release Tag (make snapshot tag point to the build commit on master branch)
+    name: Update Release Tag (make release tag point to the build commit on master branch)
     runs-on: ubuntu-latest
     needs: [release]
     steps:
@@ -108,6 +112,6 @@ jobs:
       if: ${{ github.ref == 'refs/heads/master' }}
       run: |
         # --force allows to overwrite previous tag
-        git tag --force snapshot
+        git tag --force ${{ env.release_tag }}
         # --force allows to push with overwritten tag
-        git push --force origin snapshot
+        git push --force origin ${{ env.release_tag }}
