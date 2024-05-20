@@ -94,7 +94,7 @@ jobs:
     # Releases files in the "snapshot" release.
     - name: Release Artifacts
       if: ${{ github.ref == 'refs/heads/master' }}
-      run: gh release --repo ${{ github.repository }} upload snapshot --clobber *.zip *.tar.gz *.apk
+      run: gh release --repo ${{ github.repository }} upload snapshot --clobber *.zip *.tar.gz
       env:
         GH_TOKEN: ${{ github.token }}
 
