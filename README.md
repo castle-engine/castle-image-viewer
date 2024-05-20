@@ -4,7 +4,7 @@ Image viewer, converter and even a very limited image editor. Using _Castle Game
 
 - Supports many common image formats: PNG, JPEG, GIF, TGA, XPM, PSD, PCX, PNM, PBM, PGM, PPM, BMP.
 
-- Supports also some "exotic" file formats that are useful for game developers: DDS and KTX (advanced formats for textures) and RGBE (simple HDR format).
+- Supports also some "exotic" file formats that are useful for game developers: [KTX](https://castle-engine.io/ktx) and [DDS](https://castle-engine.io/dds) (advanced formats for textures) and RGBE (simple HDR format).
 
 - Browse all images in a directory by easy key shortcuts.
 
