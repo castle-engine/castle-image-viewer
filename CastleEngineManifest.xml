@@ -16,6 +16,9 @@
     <include path="README.md" />
     <include path="COPYING.GPL2.txt" />
     <include path="freedesktop/*" recursive="True" />
+    <include path="libtiff.dll" />
+    <include path="run.sh" />
+    <include path="libraries/x86_64-linux/" recursive="True" />
   </package>
   <data exists="false" />
   <compiler_options>
