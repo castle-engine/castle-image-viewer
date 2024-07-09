@@ -23,3 +23,6 @@
 # Even on Windows, shell scripts line endings must be Unix, to work with Cygwin's bash.
 *.sh text eol=lf
 *gradlew text eol=lf
+
+*.la text eol=auto
+*.pc text eol=auto
