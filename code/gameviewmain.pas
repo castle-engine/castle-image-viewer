@@ -20,7 +20,7 @@
   ----------------------------------------------------------------------------
 }
 
-{ Main view, doing most of the work. }
+{ Main view, presenting UI to display everything and initialize all operations. }
 unit GameViewMain;
 
 interface
@@ -57,6 +57,9 @@ type
         Set only by SetZoom/MultZoom. }
       ZoomX: Single;
       ZoomY: Single;
+
+      RectStatus: TCastleRectangleControl;
+      LabelStatus: TCastleLabel;
 
     procedure SetZoom(var Zoom: Single; const NewZoom: Single);
     procedure MultZoom(var Zoom: Single; const Multiplier: Single);
@@ -116,6 +119,21 @@ procedure TViewMain.Start;
     ImageArrowRight := CreateArrowImage(Arrow_right_circle);
     ImageArrowUp := CreateArrowImage(Arrow_up_circle);
     ImageArrowDown := CreateArrowImage(Arrow_down_circle);
+
+    RectStatus := TCastleRectangleControl.Create(FreeAtStop);
+    RectStatus.AutoSizeToChildren := true;
+    RectStatus.Color := Vector4(0.25, 0.25, 0.25, 0.5);
+    RectStatus.Border.AllSides := 1;
+    RectStatus.BorderColor := Yellow;
+    RectStatus.Anchor(hpRight, -10);
+    RectStatus.Anchor(vpTop, -10);
+    InsertFront(RectStatus);
+
+    LabelStatus := TCastleLabel.Create(FreeAtStop);
+    LabelStatus.Color := Yellow;
+    LabelStatus.Padding := 10;
+    LabelStatus.Html := true;
+    RectStatus.InsertFront(LabelStatus);
   end;
 
 begin
@@ -300,6 +318,56 @@ procedure TViewMain.Update(const SecondsPassed: Single;
     Container.Invalidate;
   end;
 
+  procedure UpdateLabelStatus;
+
+    function ImageSizeToStr(const Width, Height, Depth: Cardinal): String;
+    begin
+      // do not show Depth for 2D image, to not confuse users
+      if Depth <> 1 then
+        Result := Format('%d x %d x %d', [Width, Height, Depth])
+      else
+        Result := Format('%d x %d', [Width, Height]);
+    end;
+
+    function CompositeImageInfo(DImg: TCompositeImage): String;
+    begin
+      Result := Format(
+        '  Whole composite image:' +NL+
+        '    Size: <font color="#ffffff">%s</font>'  +NL+
+        '    Type: <font color="#ffffff">%s</font>' +NL+
+        '    Mipmaps: <font color="#ffffff">%s</font>' +NL+
+        '    Subimages count: <font color="#ffffff">%d</font>',[
+        ImageSizeToStr(DImg.Width, DImg.Height, DImg.Depth),
+        CompositeTypeToString[DImg.CompositeType],
+        BoolToStr(DImg.Mipmaps, true),
+        DImg.Images.Count
+      ]);
+    end;
+
+  var
+    S: String;
+  begin
+    if IsImageValid then
+      S := Format(
+        'Image (URL): <font color="#ffffff">%s</font>' + NL +
+        'Class: <font color="#ffffff">%s</font>' +NL +
+        'Size: <font color="#ffffff">%s</font>', [
+        ImageURL,
+        Image.ClassName,
+        ImageSizeToStr(Image.Width, Image.Height, Image.Depth)
+      ])
+    else
+      S := '<invalid image file>';
+
+    if CompositeImage <> nil then
+      S := S + NL + NL +
+        'Part of composite image (KTX, DDS):' + NL +
+        Format('  Subimage: <font color="#ffffff">%d</font>', [CompositeImageIndex]) + NL +
+        CompositeImageInfo(CompositeImage);
+
+    LabelStatus.Caption := S;
+  end;
+
 const
   ScaleFactor = 5;
 var
@@ -342,6 +410,8 @@ begin
       MultZoom(ZoomY, ScaleUp)
     else
       MultZoom(ZoomY, ScaleDown);
+
+  UpdateLabelStatus;
 end;
 
 function TViewMain.Motion(const Event: TInputMotion): Boolean;
@@ -460,38 +530,6 @@ procedure MenuClick(Container: TCastleContainer; Item: TMenuItem);
       Images.AddImageNamesFromURL(URL);
       Images.Current := 0;
     end;
-  end;
-
-  procedure ShowImageInfo;
-
-    function CompositeImageInfo(DImg: TCompositeImage): string;
-    begin
-      Result := Format(
-        'Containing Composite image info:' +NL+
-        '  Width x Height x Depth: %d x %d %d'  +NL+
-        '  Type: %s' +NL+
-        '  Mipmaps: %s' +NL+
-        '  Simple 2D images inside: %d',
-        [ DImg.Width, DImg.Height, DImg.Depth,
-          CompositeTypeToString[DImg.CompositeType],
-          BoolToStr(DImg.Mipmaps, true),
-          DImg.Images.Count ]);
-    end;
-
-  var
-    S: string;
-  begin
-    if IsImageValid then
-      S := Format(
-        'Image URL: %s' + NL +
-        'Class: %s' +NL +
-        'Width x height: %d x %d',
-        [ImageURL, Image.ClassName, Image.Width, Image.Height]) else
-      S := '<invalid image file>';
-    if CompositeImage <> nil then
-      S := S + (NL + Format('Composite subimage: %d', [CompositeImageIndex]) + NL +
-        CompositeImageInfo(CompositeImage));
-    MessageOK(Window, S);
   end;
 
   procedure ShowAbout;
@@ -649,7 +687,7 @@ begin
            ImageChanged;
          end;
     460: ImageClear;
-    510: ShowImageInfo;
+    510: ViewMain.RectStatus.Exists := not ViewMain.RectStatus.Exists;
     520: ShowAbout;
     1600..1700: DoResize(TResizeInterpolation(Item.IntData - 1600));
     2010: OpenUrl(ImageURL);
@@ -737,7 +775,7 @@ begin
     M.Append(TMenuSeparator.Create);
     Result.Append(M);
   M := TMenu.Create('_Help');
-    M.Append(TMenuItem.Create('Image Information', 510, CtrlI));
+    M.Append(TMenuItemChecked.Create('Image Information', 510, keyF1, ViewMain.RectStatus.Exists, true));
     M.Append(TMenuSeparator.Create);
     M.Append(TMenuItem.Create('About castle-image-viewer', 520));
     Result.Append(M);
