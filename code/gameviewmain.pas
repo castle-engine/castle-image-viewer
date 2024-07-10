@@ -83,6 +83,8 @@ type
 var
   ViewMain: TViewMain;
 
+{ Create main menu, to be assigned to Window.MainMenu by the caller.
+  Also initializes Images.Menu. }
 function CreateMainMenu: TMenu;
 
 implementation

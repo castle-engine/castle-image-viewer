@@ -38,6 +38,7 @@ uses SysUtils, Math, Classes, TypInfo,
 type
   TImagesList = class
   private
+    InitializeDone: Boolean;
     FCurrent: Integer;
     { Change Current and try to load newly choosen image.
       Uses CreateImage(Urls[Current]) if it's a normal
@@ -50,8 +51,6 @@ type
 
     { Create image, based on list index ListPos. }
     procedure CreateImageFromList(const ListPos: Integer; const InvalidImage: boolean = false);
-
-    procedure AddToList(const FileInfo: TFileInfo; var StopSearch: boolean);
   public
     { A list of images to browse by previous/next keys/menu items.
       May be relative URLs, so the current dir of this program must never
@@ -74,15 +73,25 @@ type
 
     procedure FileOpen(const URL: string);
 
-    { Add* operations add to Urls list, and @italic(do not call ImagesChanged).
-      Be sure to either use them before @link(Initialize),
-      or set @link(Current) to reload image (for now, @link(Current)
-      always reloads, even if index is equal). }
-    procedure AddImageNamesFromFile(const URL: string);
-    procedure AddImageNamesFromMask(const PathAndMask: string);
+    { Add image names to list.
+
+      If calling after @link(Initialize),
+      be sure to set @link(Current) to reload image (for now, @link(Current)
+      always reloads, even if index is equal, which is helpful here).
+
+      We automatically update menu (in Images.Menu) if these are called
+      after @link(Initialize). Otherwise, @link(Initialize) will do it.
+      Pass @code(UpdateMenu) = @false to avoid it,
+      but this only makes sense if you call many AddImage* methods,
+      and you let the last one update the menu.
+
+      @groupBegin }
+    procedure AddImageNamesFromFile(const URL: string; const UpdateMenu: Boolean = true);
+    procedure AddImageNamesFromMask(const PathAndMask: string; const UpdateMenu: Boolean = true);
     { Path can be '' or must end with '/' }
-    procedure AddImageNamesAllLoadable(const Path: string);
-    procedure AddImageNamesFromURL(const URL: string);
+    procedure AddImageNamesAllLoadable(const Path: string; const UpdateMenu: Boolean = true);
+    procedure AddImageNamesFromURL(const URL: string; const UpdateMenu: Boolean = true);
+    { @groupEnd }
 
     { Add welcome image, initialize @link(Current), load initial image. }
     procedure Initialize;
@@ -131,7 +140,7 @@ begin
   Current := ChangeIntCycle(Current, Change, Urls.Count - 1);
 end;
 
-procedure TImagesList.AddImageNamesFromFile(const URL: string);
+procedure TImagesList.AddImageNamesFromFile(const URL: string; const UpdateMenu: Boolean);
 
   procedure AddImageNamesFromTextReader(Reader: TTextReader);
   var
@@ -151,17 +160,15 @@ begin
     F := TTextReader.Create(StdInStream, false)
   else
     F := TTextReader.Create(URL);
-
   try
     AddImageNamesFromTextReader(F);
   finally FreeAndNil(F) end;
+
+  if InitializeDone and UpdateMenu then
+    ImagesChanged;
 end;
 
-procedure TImagesList.AddToList(const FileInfo: TFileInfo; var StopSearch: boolean);
-begin
-end;
-
-procedure TImagesList.AddImageNamesFromMask(const PathAndMask: string);
+procedure TImagesList.AddImageNamesFromMask(const PathAndMask: string; const UpdateMenu: Boolean);
 var
   List: TFileInfoList;
   FileInfo: TFileInfo;
@@ -187,9 +194,12 @@ begin
         Urls.Append(FileInfo.AbsoluteName);
     end;
   finally FreeAndNil(List) end;
+
+  if InitializeDone and UpdateMenu then
+    ImagesChanged;
 end;
 
-procedure TImagesList.AddImageNamesAllLoadable(const Path: string);
+procedure TImagesList.AddImageNamesAllLoadable(const Path: string; const UpdateMenu: Boolean);
 var
   I, J: Integer;
   Pattern: string;
@@ -198,19 +208,25 @@ begin
     for J := 0 to LoadImage_FileFilters[I].Patterns.Count - 1 do
     begin
       Pattern := LoadImage_FileFilters[I].Patterns[J];
-      AddImageNamesFromMask(Path + Pattern);
+      AddImageNamesFromMask(Path + Pattern, false);
     end;
+
+  if InitializeDone and UpdateMenu then
+    ImagesChanged;
 end;
 
-procedure TImagesList.AddImageNamesFromURL(const URL: string);
+procedure TImagesList.AddImageNamesFromURL(const URL: string; const UpdateMenu: Boolean);
 begin
   // URL will match exactly 1 file
-  AddImageNamesFromMask(URL);
+  AddImageNamesFromMask(URL, false);
 
   { Add also other filenames within this directory.
     This way if you open a file by double-clicking,
     you can still browse other images in this dir. }
-  AddImageNamesAllLoadable(ExtractURIPath(URL));
+  AddImageNamesAllLoadable(ExtractURIPath(URL), false);
+
+  if InitializeDone and UpdateMenu then
+    ImagesChanged;
 end;
 
 { open file --------------------------------------------------------------- }
@@ -231,6 +247,8 @@ const
 var
   i: Integer;
 begin
+  Assert(Menu <> nil);
+
   while Menu.Count > NormalImageMenuCount do
     Menu.Delete(NormalImageMenuCount);
 
@@ -265,6 +283,8 @@ begin
     warnings that opening files before Application.OnInitialize is not portable),
     DecompressTexture is assigned, so we load it in a straightforward way. }
   CreateImageFromList(FCurrent);
+
+  InitializeDone := true;
 end;
 
 initialization
