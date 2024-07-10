@@ -550,7 +550,7 @@ procedure MenuClick(Container: TCastleContainer; Item: TMenuItem);
 
   function CheckNotGrayscale: boolean;
   begin
-    Result := (Image is TRGBImage) or (Image is TRGBAlphaImage);
+    Result := Image.ColorComponentsCount > 2;
     if not Result then
       MessageOk(Window, 'This function is not available for grayscale images.');
   end;
