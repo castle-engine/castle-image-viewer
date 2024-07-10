@@ -368,6 +368,9 @@ procedure TViewMain.Update(const SecondsPassed: Single;
         CompositeImageInfo(CompositeImage);
 
     LabelStatus.Caption := S;
+
+    // in case URL is long, do not make super-wide RectStatus
+    LabelStatus.MaxWidth := Container.UnscaledWidth - 40;
   end;
 
 const
