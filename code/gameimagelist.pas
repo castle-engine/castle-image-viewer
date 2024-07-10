@@ -159,16 +159,34 @@ end;
 
 procedure TImagesList.AddToList(const FileInfo: TFileInfo; var StopSearch: boolean);
 begin
-  { avoid adding dups, otherwise AddImageNamesFromURL always adds dups.
-    Note: we cannot use Urls.Duplicates := dupIgnore,
-    because of http://bugs.freepascal.org/view.php?id=28774 }
-  if Urls.IndexOf(FileInfo.AbsoluteName) = -1 then
-    Urls.Append(FileInfo.AbsoluteName);
 end;
 
 procedure TImagesList.AddImageNamesFromMask(const PathAndMask: string);
+var
+  List: TFileInfoList;
+  FileInfo: TFileInfo;
+  Path, Mask: String;
 begin
-  FindFiles(PathAndMask, false, {$ifdef FPC}@{$endif} AddToList, []);
+  Path := ExtractURIPath(PathAndMask);
+  Mask := ExtractURIName(PathAndMask);
+  List := FindFilesList(Path, Mask, false, []);
+  try
+    { Sort results, this is nice when the order is meaningful,
+      e.g. when comparing castle-image-viewer order with order in file manager
+      when browsing a directory, e.g. for PNG testcase http://www.schaik.com/pngsuite/ . }
+    List.SortUrls;
+    for FileInfo in List do
+    begin
+      { Avoid adding duplicates, otherwise AddImageNamesFromURL always adds duplicates.
+        Note: we cannot use Urls.Duplicates := dupIgnore,
+        because it doesn't work when the list is not sorted (see
+        https://gitlab.com/freepascal.org/fpc/source/-/issues/28774 )
+        and we cannot set Url.Sorted := true as it would change the order
+        of other entries. }
+      if Urls.IndexOf(FileInfo.AbsoluteName) = -1 then
+        Urls.Append(FileInfo.AbsoluteName);
+    end;
+  finally FreeAndNil(List) end;
 end;
 
 procedure TImagesList.AddImageNamesAllLoadable(const Path: string);
