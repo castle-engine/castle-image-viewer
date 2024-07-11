@@ -6,6 +6,8 @@
 *.res
 *.dll
 *.app
+*.lps
+*.dbg
 castle-image-viewer
 castle-image-viewer.exe
 castle-engine-output
