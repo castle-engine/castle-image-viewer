@@ -63,8 +63,9 @@ type
 
     procedure SetZoom(var Zoom: Single; const NewZoom: Single);
     procedure MultZoom(var Zoom: Single; const Multiplier: Single);
+    procedure MenuClick(const Item: TMenuItem);
   public
-    { Window that contains everything, including ViewMain.
+    { Window that contains everything, including this view.
       Set by main program.
       The TViewMain implementation should try to use Container,
       not Window (to be more flexible in theory, e.g. for TCastleControl) ...
@@ -78,23 +79,30 @@ type
       var HandleInput: boolean); override;
     function Motion(const Event: TInputMotion): Boolean; override;
     function Press(const Event: TInputPressRelease): Boolean; override;
+
+    { Create main menu, to be assigned to Window.MainMenu.
+      Also initializes Images.Menu. }
+    function CreateMainMenu: TMenu;
   end;
 
 var
   ViewMain: TViewMain;
 
-{ Create main menu, to be assigned to Window.MainMenu by the caller.
-  Also initializes Images.Menu. }
-function CreateMainMenu: TMenu;
-
 implementation
 
 uses GameImageList;
 
-{ declare menu routines ------------------------------------------------------ }
-
-procedure DropFiles(Container: TCastleContainer; const FileNames: array of string); forward;
-procedure MenuClick(Container: TCastleContainer; Item: TMenuItem); forward;
+procedure DropFiles(Container: TCastleContainer; const FileNames: array of string);
+var
+  URL: string;
+begin
+  if High(FileNames) >= 0 then
+  begin
+    URL := FilenameToURISafe(FileNames[0]);
+    if URL <> '' then
+      Images.FileOpen(URL);
+  end;
+end;
 
 { TViewMain ------------------------------------------------------------------ }
 
@@ -148,13 +156,13 @@ begin
 
   CreateUserInterface;
 
-  Window.OnMenuClick := {$ifdef FPC}@{$endif} MenuClick;
+  Window.OnMenuItemClick := {$ifdef FPC}@{$endif} MenuClick;
   Window.OnDropFiles := {$ifdef FPC}@{$endif} DropFiles;
 end;
 
 procedure TViewMain.Stop;
 begin
-  Window.OnMenuClick := nil;
+  Window.OnMenuItemClick := nil;
   Window.OnDropFiles := nil;
   inherited;
 end;
@@ -461,24 +469,7 @@ end;
 
 { menu ------------------------------------------------------------ }
 
-procedure DropFiles(Container: TCastleContainer; const FileNames: array of string);
-var
-  URL: string;
-begin
-  if High(FileNames) >= 0 then
-  begin
-    URL := FilenameToURISafe(FileNames[0]);
-    if URL <> '' then
-      Images.FileOpen(URL);
-  end;
-end;
-
-procedure MenuClick(Container: TCastleContainer; Item: TMenuItem);
-
-  function Window: TCastleWindow;
-  begin
-    Result := Application.MainWindow;
-  end;
+procedure TViewMain.MenuClick(const Item: TMenuItem);
 
   procedure ImageSave;
   var
@@ -621,27 +612,27 @@ begin
              DrawableImage.SmoothScaling := SmoothScaling;
          end;
     210: begin
-           Change := (Window.Width / Image.Width) / ViewMain.ZoomX;
-           ViewMain.MultZoom(ViewMain.ZoomX, change);
-           ViewMain.MultZoom(ViewMain.ZoomY, change);
+           Change := (Window.Width / Image.Width) / ZoomX;
+           MultZoom(ZoomX, change);
+           MultZoom(ZoomY, change);
          end;
     211: begin
-           Change := (Window.Height / Image.Height) / ViewMain.ZoomY;
-           ViewMain.MultZoom(ViewMain.ZoomX, change);
-           ViewMain.MultZoom(ViewMain.ZoomY, change);
+           Change := (Window.Height / Image.Height) / ZoomY;
+           MultZoom(ZoomX, change);
+           MultZoom(ZoomY, change);
          end;
-    220: ViewMain.SetZoom(ViewMain.ZoomX, Window.Width / Image.Width);
-    221: ViewMain.SetZoom(ViewMain.ZoomY, Window.Height / Image.Height);
-    230: ViewMain.DrawTiled := not ViewMain.DrawTiled;
+    220: SetZoom(ZoomX, Window.Width / Image.Width);
+    221: SetZoom(ZoomY, Window.Height / Image.Height);
+    230: DrawTiled := not DrawTiled;
     240: begin
-           ViewMain.SetZoom(ViewMain.ZoomX, 1.0);
-           ViewMain.SetZoom(ViewMain.ZoomY, 1.0);
-           ViewMain.MoveX := 0;
-           ViewMain.MoveY := 0;
+           SetZoom(ZoomX, 1.0);
+           SetZoom(ZoomY, 1.0);
+           MoveX := 0;
+           MoveY := 0;
          end;
 
     260: ChangeBackgroundColor;
-    270: ViewMain.UseImageAlpha := not ViewMain.UseImageAlpha;
+    270: UseImageAlpha := not UseImageAlpha;
 
     310: Images.ChangeCurrent(-1);
     311: Images.ChangeCurrent(+1);
@@ -692,7 +683,7 @@ begin
            ImageChanged;
          end;
     460: ImageClear;
-    510: ViewMain.RectStatus.Exists := not ViewMain.RectStatus.Exists;
+    510: RectStatus.Exists := not RectStatus.Exists;
     520: ShowAbout;
     1600..1700: DoResize(TResizeInterpolation(Item.IntData - 1600));
     2010: OpenUrl(ImageURL);
@@ -707,14 +698,12 @@ begin
   Result := SEnding(GetEnumName(TypeInfo(TResizeInterpolation), Ord(Interpolation)), 3);
 end;
 
-function CreateMainMenu: TMenu;
+function TViewMain.CreateMainMenu: TMenu;
 var
   M: TMenu;
   NextRecentMenuItem: TMenuEntry;
   Interpolation: TResizeInterpolation;
 begin
-  Assert(ViewMain <> nil);
-
   Result := TMenu.Create('Main menu');
   M := TMenu.Create('_File');
     M.Append(TMenuItem.Create('_Open ...',                 110, CtrlO));
@@ -733,14 +722,14 @@ begin
     M.Append(TMenuItem.Create('Fit Image Width to Window Width',    220, 'W'));
     M.Append(TMenuItem.Create('Fit Image Height to Window Height',  221, 'H'));
     M.Append(TMenuSeparator.Create);
-    M.Append(TMenuItemChecked.Create('Test Is _Tileable', 230, 't', ViewMain.DrawTiled, true));
+    M.Append(TMenuItemChecked.Create('Test Is _Tileable', 230, 't', DrawTiled, true));
     M.Append(TMenuSeparator.Create);
     M.Append(TMenuItem.Create('Reset _Zoom and Translation',         240, keyHome));
     M.Append(TMenuSeparator.Create);
-    M.Append(TMenuItemChecked.Create('Use Image Alpha Channel', 270,  ViewMain.UseImageAlpha, true));
+    M.Append(TMenuItemChecked.Create('Use Image Alpha Channel', 270,  UseImageAlpha, true));
     M.Append(TMenuItem.Create('Background Color ...',                260));
     M.Append(TMenuSeparator.Create);
-    M.Append(TMenuItemToggleFullScreen.Create(ViewMain.Window.FullScreen));
+    M.Append(TMenuItemToggleFullScreen.Create(Window.FullScreen));
     M.Append(TMenuSeparator.Create);
     M.Append(TMenuItem.Create('Open In External Application', 2010));
     Result.Append(M);
@@ -780,7 +769,7 @@ begin
     M.Append(TMenuSeparator.Create);
     Result.Append(M);
   M := TMenu.Create('_Help');
-    M.Append(TMenuItemChecked.Create('Image Information', 510, keyF1, ViewMain.RectStatus.Exists, true));
+    M.Append(TMenuItemChecked.Create('Image Information', 510, keyF1, RectStatus.Exists, true));
     M.Append(TMenuSeparator.Create);
     M.Append(TMenuItem.Create('About castle-image-viewer', 520));
     Result.Append(M);
