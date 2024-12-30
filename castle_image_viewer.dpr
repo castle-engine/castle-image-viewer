@@ -168,7 +168,7 @@ begin
     { We have to set Window.MainMenu before Window is open.
       Although this menu only makes sense with ViewMain,
       but we cannot change it from view's Start / Stop to nil/non-nil. }
-    Window.MainMenu := CreateMainMenu;
+    Window.MainMenu := ViewMain.CreateMainMenu;
     Window.Open;
 
     UserConfig.Load;
