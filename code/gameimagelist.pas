@@ -142,7 +142,7 @@ end;
 
 procedure TImagesList.AddImageNamesFromFile(const URL: string; const UpdateMenu: Boolean);
 
-  procedure AddImageNamesFromTextReader(Reader: TTextReader);
+  procedure AddImageNamesFromTextReader(Reader: TCastleTextReader);
   var
     s: string;
   begin
@@ -154,12 +154,12 @@ procedure TImagesList.AddImageNamesFromFile(const URL: string; const UpdateMenu:
   end;
 
 var
-  F: TTextReader;
+  F: TCastleTextReader;
 begin
   if URL = '-' then
-    F := TTextReader.Create(StdInStream, false)
+    F := TCastleTextReader.Create(StdInStream, false)
   else
-    F := TTextReader.Create(URL);
+    F := TCastleTextReader.Create(URL);
   try
     AddImageNamesFromTextReader(F);
   finally FreeAndNil(F) end;
