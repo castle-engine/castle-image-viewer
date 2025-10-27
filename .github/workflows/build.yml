@@ -159,7 +159,7 @@ jobs:
     needs: [build_docker, build_runner_native, build_arm_runner]
     steps:
     - name: Download packaged releases
-      uses: actions/download-artifact@v5
+      uses: actions/download-artifact@v6
       with:
         merge-multiple: true
     - name: List downloaded files
