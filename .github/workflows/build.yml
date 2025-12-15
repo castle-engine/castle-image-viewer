@@ -46,7 +46,7 @@ jobs:
       - name: Package Linux / x86_64
         run: ${BUILD_TOOL} package --os=linux --cpu=x86_64
       - name: Archive Artifacts
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: windows-linux-builds
           path: |
@@ -82,7 +82,7 @@ jobs:
       - name: Package
         run: ${BUILD_TOOL} package
       - name: Archive Artifacts
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ matrix.runner }}-build
           path: |
@@ -144,7 +144,7 @@ jobs:
             castle-engine package
 
       - name: Archive Artifacts
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: raspberry-pi-${{ matrix.arch }}-build
           path: |
