@@ -11,7 +11,7 @@
 castle-image-viewer
 castle-image-viewer.exe
 castle-engine-output
-macosx/utils/output_document_types
+/macosx/utils/output_document_types
 .DS_Store
 
 # delphi
