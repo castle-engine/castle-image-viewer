@@ -66,8 +66,37 @@ jobs:
           castle-build-ci/setup_castle_engine
 
       # Package application
-      - name: Package
+      - name: Package (non-macOS)
+        if: ${{ runner.os != 'macOS' }}
         run: castle-engine package
+
+      - name: Package to Bundle (macOS)
+        if: ${{ runner.os == 'macOS' }}
+        run: castle-engine package --package-format=mac-app-bundle
+
+      - name: Sign and Notarize (macOS)
+        if: ${{ runner.os == 'macOS' }}
+        env:
+          # for codesigning
+          APPLE_IDENTITY: ${{ vars.APPLE_IDENTITY }}
+          APPLE_BUILD_CERTIFICATE_BASE64: ${{ secrets.APPLE_BUILD_CERTIFICATE_BASE64 }}
+          APPLE_P12_PASSWORD: ${{ secrets.APPLE_P12_PASSWORD }}
+          APPLE_KEYCHAIN_PASSWORD: ${{ secrets.APPLE_KEYCHAIN_PASSWORD }}
+          # for notarization
+          APPLE_ID: ${{ vars.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
+          APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+        run: |
+          /tmp/castle-build-ci/apple/setup_signing
+          /tmp/castle-build-ci/apple/sign_notarize_bundle \
+            "`castle-engine output caption`.app" \
+            "`castle-engine output executable-name`"
+
+      - name: Package to Zip (macOS)
+        if: ${{ runner.os == 'macOS' }}
+        run: |
+          zip -r "`castle-engine output package-name`" "`castle-engine output caption`.app/"
+
       - name: Archive Artifacts
         uses: actions/upload-artifact@v6
         with:
