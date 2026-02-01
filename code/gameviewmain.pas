@@ -1,5 +1,5 @@
 {
-  Copyright 2001-2024 Michalis Kamburelis.
+  Copyright 2001-2026 Michalis Kamburelis.
 
   This file is part of "castle-image-viewer".
 
@@ -711,22 +711,28 @@ begin
   Result := TMenu.Create('Main menu');
   M := TMenu.Create('_File');
     M.Append(TMenuItem.Create('_Open ...',                 110, CtrlO));
-    M.Append(TMenuItem.Create('_Open (and place other images in the same directory on a list) ...', 115, 'o'));
+    M.Append(TMenuItem.Create('_Open Directory (select image, add to list all in given directory) ...', 115, CtrlD));
     M.Append(TMenuItem.Create('_Save ...',                 120, CtrlS));
     NextRecentMenuItem := TMenuSeparator.Create;
     M.Append(NextRecentMenuItem);
     RecentMenu.NextMenuItem := NextRecentMenuItem;
+    {$ifndef DARWIN} // on macOS, we already have Command+Q in application menu, and we need CtrlW for below
     M.Append(TMenuItem.Create('_Exit',                     140, CtrlW));
+    {$endif}
     Result.Append(M);
   M := TMenu.Create('_View');
     M.Append(TMenuItemChecked.Create('Smooth Scaling', 205, SmoothScaling, true));
     M.Append(TMenuSeparator.Create);
-    M.Append(TMenuItem.Create('Fit Image to Window _Width',         210, 'w'));
-    M.Append(TMenuItem.Create('Fit Image to Window _Height',        211, 'h'));
-    M.Append(TMenuItem.Create('Fit Image Width to Window Width',    220, 'W'));
-    M.Append(TMenuItem.Create('Fit Image Height to Window Height',  221, 'H'));
+    { On Cocoa, pressing simple letters like w,h,t is never detected as click
+      on the menu item. (And trying to detect it on our side goes bad,
+      as we could detect 2 times the same key, if we both do it on our side
+      and on Cocoa side.) }
+    M.Append(TMenuItem.Create('Fit Image to Window _Width',         210, {$ifdef DARWIN}CtrlW{$else}'w'{$endif}));
+    M.Append(TMenuItem.Create('Fit Image to Window _Height',        211, {$ifdef DARWIN}CtrlH{$else}'h'{$endif}));
+    M.Append(TMenuItem.Create('Fit Image Width to Window Width',    220, {$ifdef DARWIN}#0{$else}'W'{$endif}));
+    M.Append(TMenuItem.Create('Fit Image Height to Window Height',  221, {$ifdef DARWIN}#0{$else}'H'{$endif}));
     M.Append(TMenuSeparator.Create);
-    M.Append(TMenuItemChecked.Create('Test Is _Tileable', 230, 't', DrawTiled, true));
+    M.Append(TMenuItemChecked.Create('Test Is _Tileable', 230, {$ifdef DARWIN}CtrlT{$else}'t'{$endif}, DrawTiled, true));
     M.Append(TMenuSeparator.Create);
     M.Append(TMenuItem.Create('Reset _Zoom and Translation',         240, keyHome));
     M.Append(TMenuSeparator.Create);
