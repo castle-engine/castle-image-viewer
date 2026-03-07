@@ -1,5 +1,5 @@
 {
-  Copyright 2001-2024 Michalis Kamburelis.
+  Copyright 2001-2026 Michalis Kamburelis.
 
   This file is part of "castle-image-viewer".
 
@@ -172,11 +172,13 @@ procedure TImagesList.AddImageNamesFromMask(const PathAndMask: string; const Upd
 var
   List: TFileInfoList;
   FileInfo: TFileInfo;
-  Path, Mask: String;
 begin
-  Path := ExtractURIPath(PathAndMask);
-  Mask := ExtractURIName(PathAndMask);
-  List := FindFilesList(Path, Mask, false, []);
+  { Note: This behaves correctly when last path component has spaces, like
+    file:///home/michalis/image%20with%20spaces.png .
+    The FindFilesList(PathAndMask...) naturally expects the whole PathAndMask
+    to be URL and percent-encoded, so it correctly decodes %20 to space,
+    and finds the file. }
+  List := FindFilesList(PathAndMask, false, []);
   try
     { Sort results, this is nice when the order is meaningful,
       e.g. when comparing castle-image-viewer order with order in file manager
@@ -190,8 +192,8 @@ begin
         https://gitlab.com/freepascal.org/fpc/source/-/issues/28774 )
         and we cannot set Url.Sorted := true as it would change the order
         of other entries. }
-      if Urls.IndexOf(FileInfo.AbsoluteName) = -1 then
-        Urls.Append(FileInfo.AbsoluteName);
+      if Urls.IndexOf(FileInfo.Url) = -1 then
+        Urls.Append(FileInfo.Url);
     end;
   finally FreeAndNil(List) end;
 
