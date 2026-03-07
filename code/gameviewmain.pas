@@ -774,8 +774,9 @@ begin
     M.Append(TMenuItem.Create('_Previous Subimage in Composite (DDS, KTX)', 320, CtrlP));
     M.Append(TMenuItem.Create('_Next Subimage in Composite (DDS, KTX)',     321, CtrlN));
     M.Append(TMenuSeparator.Create);
-    M.Append(TMenuItem.Create('_Previous Image', 310, keyPageUp));
-    M.Append(TMenuItem.Create('_Next Image',     311, keyPageDown));
+    // TCastleWindow GTK 3 backend doesn't handle PageUp/Down keys as menu shortcuts, so use P/N keys
+    M.Append(TMenuItem.Create('_Previous Image', 310, keyP)); // keyPageUp));
+    M.Append(TMenuItem.Create('_Next Image',     311, keyN)); // keyPageDown));
     M.Append(TMenuSeparator.Create);
     Result.Append(M);
   M := TMenu.Create('_Help');
